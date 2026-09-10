@@ -1,0 +1,54 @@
+# הרצה חינמית 24/7 על GitHub Actions (רק מקור yad2 - פייסבוק דורש דפדפן עם סשן).
+# הגדר ב-Settings -> Secrets: TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+# והעלה config.yaml לרפו (או שמור אותו כ-secret CONFIG_YAML).
+name: marketwatch
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # כל 10 דקות (GitHub לא מבטיח דיוק)
+  workflow_dispatch:
+
+concurrency:
+  group: marketwatch
+  cancel-in-progress: false
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - run: pip install -r requirements.txt
+
+      - name: Restore seen-listings DB
+        uses: actions/cache/restore@v4
+        with:
+          path: data
+          key: seen-db-${{ github.run_id }}
+          restore-keys: seen-db-
+
+      - name: Write config
+        run: |
+          if [ -n "${{ secrets.CONFIG_YAML }}" ]; then
+            printf '%s' "${{ secrets.CONFIG_YAML }}" > config.yaml
+          elif [ ! -f config.yaml ]; then
+            echo "config.yaml missing - add it to the repo or as CONFIG_YAML secret" && exit 1
+          fi
+
+      - name: Run one pass
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python -m marketwatch once
+
+      - name: Save seen-listings DB
+        if: always()
+        uses: actions/cache/save@v4
+        with:
+          path: data
+          key: seen-db-${{ github.run_id }}

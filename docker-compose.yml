@@ -1,0 +1,9 @@
+services:
+  marketwatch:
+    build: .
+    restart: unless-stopped        # מתאושש לבד אחרי קריסה / ריסטארט של המחשב
+    env_file: .env
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./fb_state.json:/app/fb_state.json:ro   # מחק את השורה אם לא משתמשים בפייסבוק
+      - ./data:/app/data

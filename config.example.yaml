@@ -1,0 +1,30 @@
+# העתק את הקובץ הזה ל-config.yaml וערוך.
+# כל "search" הוא פריט אחד שאתה מחפש. הסוכן ירוץ על כולם בכל סבב.
+
+interval_seconds: 300     # כל כמה שניות לבדוק (5 דקות). אל תרד מתחת ל-120 - יחסמו אותך.
+jitter_seconds: 60        # תוספת אקראית להמתנה, כדי לא להיראות כמו רובוט.
+db_path: data/seen.db     # כאן נשמר מה כבר ראינו, כדי לא לקבל את אותה התראה פעמיים.
+notify_console: true      # להדפיס התראות גם למסך (בנוסף לטלגרם).
+
+facebook:
+  state_file: fb_state.json   # נוצר ע"י: python -m marketwatch fb-login
+  city_slug: telaviv          # החלק ב-URL של facebook.com/marketplace/<city>
+  headless: true
+  max_results: 40
+
+searches:
+  - name: "אייפון 13"
+    query: "iphone 13"
+    max_price: 1500
+    min_price: 300               # מסנן "מחירים" של 1 ש"ח / מודעות זבל
+    must_include: ["13"]         # כל המילים חייבות להופיע בכותרת/תיאור
+    exclude: ["מסך שבור", "לחלקים", "case", "כיסוי"]
+    sources: ["yad2", "facebook"]
+
+  - name: "אופני חשמל"
+    query: "אופניים חשמליים"
+    max_price: 2500
+    any_of: ["xiaomi", "שיאומי", "fiido"]   # לפחות אחת מהמילים
+    exclude: ["קורקינט"]
+    sources: ["yad2"]
+    yad2_category: products      # ברירת מחדל products; אפשר גם vehicles/realestate אם רלוונטי

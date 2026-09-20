@@ -1,14 +1,15 @@
-<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>הקמה ראשונית</title><link rel="stylesheet" href="/static/style.css"></head>
-<body class="auth-body">
+{% import "_macros.html" as m %}<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>הקמה ראשונית</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap"><link rel="stylesheet" href="/static/style.css"></head>
+<body class="auth-body">{% include "_icons.html" %}
 <div class="auth-card">
+  <div class="auth-logo">{{ m.icon('sparkle') }}</div>
   <h1>ברוכות הבאות</h1>
-  <p class="muted">זו הכניסה הראשונה למערכת. צרי את משתמש מנהל המערכת.</p>
-  {% for f in flash_messages %}<div class="flash flash-{{ f.kind }}">{{ f.text }}</div>{% endfor %}
+  <p class="muted">זו הכניסה הראשונה. צרי את משתמש מנהל המערכת – אחר כך תוכלי להוסיף את ספיר ויהלי.</p>
+  {% for f in flash_messages %}{{ m.alert(f.kind, f.text) }}{% endfor %}
   <form method="post" action="/setup" class="form">
-    <label>שם מלא<input name="display_name" required></label>
-    <label>שם משתמש<input name="username" required></label>
-    <label>סיסמה (לפחות 8 תווים)<input name="password" type="password" required minlength="8"></label>
-    <label>אימות סיסמה<input name="password2" type="password" required minlength="8"></label>
-    <button class="btn btn-primary btn-block">הקמת המערכת</button>
+    <label class="req">שם מלא<input name="display_name" required></label>
+    <label class="req">שם משתמש<input name="username" required autocapitalize="off"></label>
+    <label class="req">סיסמה<input name="password" type="password" required minlength="8" autocomplete="new-password"><span class="hint">לפחות 8 תווים</span></label>
+    <label class="req">אימות סיסמה<input name="password2" type="password" required minlength="8" autocomplete="new-password"></label>
+    {{ m.submit('הקמת המערכת', 'btn btn-primary btn-block btn-lg') }}
   </form>
-</div></body></html>
+</div><script src="/static/app.js"></script></body></html>

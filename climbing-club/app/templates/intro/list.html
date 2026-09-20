@@ -1,8 +1,10 @@
-{% extends "base.html" %}{% set active = 'children' %}{% block title %}מפגשי היכרות{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'children' %}{% set back = '/children' %}{% block title %}מפגשי היכרות{% endblock %}
 {% block content %}
-<div class="page-head"><h1>מפגשי היכרות</h1>{% if can(user, 'payments.add') %}<a class="btn btn-primary" href="/intro/new">+ מפגש היכרות חדש</a>{% endif %}</div>
-<p class="muted">מסלול נפרד למפגש חד-פעמי: הילד אינו נכנס לקבוצה קבועה ולא נוצרים לו מפגשים עתידיים או חיוב חודשי.</p>
-<div class="card"><table class="table"><thead><tr><th>תאריך</th><th>ילד</th><th>הורה</th><th>סכום</th><th>תשלום</th><th>קבלה</th></tr></thead><tbody>
-{% for i in items %}<tr><td><a href="/intro/{{ i.id }}">{{ i.session.date|date }}</a></td><td><a href="/children/{{ i.child_id }}">{{ i.child.full_name }}</a></td><td>{{ i.child.message_contact.full_name if i.child.message_contact else '' }}</td><td>{{ i.amount|money }}</td><td>{% if i.payment %}<a href="/payments/{{ i.payment_id }}">{{ i.payment.paid_on|date }}</a>{% else %}<span class="text-red">טרם שולם</span>{% endif %}</td><td>{% if i.payment %}{% for r in i.payment.receipts %}<a href="/receipts/{{ r.id }}" class="badge {{ r.status|badge }}">{{ r.status|label }}</a>{% endfor %}{% endif %}</td></tr>{% else %}<tr><td colspan="6" class="muted">אין מפגשי היכרות</td></tr>{% endfor %}
-</tbody></table></div>
+<div class="page-head"><h1>מפגשי היכרות</h1>{% if can(user, 'payments.add') %}<a class="btn btn-primary" href="/intro/new">{{ m.icon('plus') }} מפגש היכרות חדש</a>{% endif %}</div>
+{{ m.alert('info', 'מסלול נפרד למפגש חד-פעמי: הילד אינו נכנס לקבוצה קבועה ולא נוצרים לו מפגשים עתידיים או חיוב חודשי.') }}
+{% if items %}
+<div class="card"><div class="table-wrap"><table class="table table-cards"><thead><tr><th>תאריך</th><th>ילד</th><th>הורה</th><th>סכום</th><th>תשלום</th><th>קבלה</th></tr></thead><tbody>
+{% for i in items %}<tr><td class="td-title" data-label="תאריך"><a href="/intro/{{ i.id }}">{{ i.session.date|date }}</a></td><td data-label="ילד"><a href="/children/{{ i.child_id }}">{{ i.child.full_name }}</a></td><td data-label="הורה">{{ i.child.message_contact.full_name if i.child.message_contact else '—' }}</td><td data-label="סכום" class="money">{{ i.amount|money }}</td><td data-label="תשלום">{% if i.payment %}<a href="/payments/{{ i.payment_id }}">{{ m.badge('sent', 'שולם ' ~ (i.payment.paid_on|date)) }}</a>{% else %}{{ m.badge('absent', 'טרם שולם') }}{% endif %}</td><td data-label="קבלה"><span class="pill-row">{% if i.payment %}{% for r in i.payment.receipts %}<a href="/receipts/{{ r.id }}">{{ m.badge(r.status) }}</a>{% else %}—{% endfor %}{% else %}—{% endif %}</span></td></tr>{% endfor %}
+</tbody></table></div></div>
+{% else %}<div class="card">{% call m.empty('אין מפגשי היכרות', '', '/intro/new' if can(user, 'payments.add') else '', 'מפגש היכרות חדש', 'sparkle') %}{% endcall %}</div>{% endif %}
 {% endblock %}

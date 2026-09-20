@@ -1,27 +1,27 @@
-{% extends "base.html" %}{% set active = 'settings' %}{% block title %}משתמשים{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'settings' %}{% set back = '/settings' %}{% block title %}משתמשים והרשאות{% endblock %}
 {% block content %}
-<div class="page-head"><h1>משתמשים והרשאות</h1><a class="btn btn-ghost" href="/settings">להגדרות</a></div>
+<div class="page-head"><h1>משתמשים והרשאות</h1></div>
 <div class="cards">
 {% for u in users %}
 <form method="post" action="/settings/users/{{ u.id }}" class="card form">
-  <div class="card-row"><strong>{{ u.username }}</strong><span class="badge {% if u.is_active %}badge-green{% else %}badge-gray{% endif %}">{{ 'פעיל' if u.is_active else 'מושבת' }}</span></div>
+  <div class="card-row"><strong>{{ u.display_name }} <span class="muted small ltr">{{ u.username }}</span></strong>{{ m.badge('active' if u.is_active else 'left', 'פעיל' if u.is_active else 'מושבת') }}</div>
   <div class="form-grid"><label>שם תצוגה<input name="display_name" value="{{ u.display_name }}"></label>
   <label>תפקיד<select name="role">{% for r in Role %}<option value="{{ r.value }}" {% if u.role == r %}selected{% endif %}>{{ r|label }}</option>{% endfor %}</select></label>
-  <label>סיסמה חדשה (ריק = ללא שינוי)<input name="password" type="password" autocomplete="new-password"></label></div>
-  <label class="check"><input type="checkbox" name="is_active" value="1" {% if u.is_active %}checked{% endif %}> פעיל</label>
-  <button class="btn btn-sm">עדכון</button>
+  <label>סיסמה חדשה<input name="password" type="password" autocomplete="new-password"><span class="hint">ריק = ללא שינוי</span></label></div>
+  <div class="checks"><label class="check"><input type="checkbox" name="is_active" value="1" {% if u.is_active %}checked{% endif %}> פעיל</label></div>
+  {{ m.submit('עדכון', 'btn btn-sm') }}
 </form>
 {% endfor %}
-<form method="post" action="/settings/users" class="card form"><h2>משתמש חדש</h2>
-  <div class="form-grid"><label>שם משתמש<input name="username" required></label><label>שם תצוגה<input name="display_name" required></label><label>סיסמה<input name="password" type="password" required minlength="8"></label>
+<form method="post" action="/settings/users" class="card form"><h2>{{ m.icon('plus') }} משתמש חדש</h2>
+  <div class="form-grid"><label class="req">שם משתמש<input name="username" required autocapitalize="off"></label><label class="req">שם תצוגה<input name="display_name" required></label><label class="req">סיסמה<input name="password" type="password" required minlength="8" autocomplete="new-password"><span class="hint">לפחות 8 תווים</span></label>
   <label>תפקיד<select name="role">{% for r in Role %}<option value="{{ r.value }}" {% if r.value == 'operator' %}selected{% endif %}>{{ r|label }}</option>{% endfor %}</select></label></div>
-  <button class="btn btn-primary btn-sm">יצירה</button>
+  {{ m.submit('יצירה', 'btn btn-primary btn-sm') }}
 </form>
 </div>
 <section class="card"><h2>מה כל תפקיד רשאי</h2>
-<table class="table"><thead><tr><th>פעולה</th><th>מנהל מערכת</th><th>מנהלת</th><th>תפעולית</th></tr></thead><tbody>
+<div class="table-wrap"><table class="table"><thead><tr><th>פעולה</th><th>מנהל מערכת</th><th>מנהלת</th><th>תפעולית</th></tr></thead><tbody>
 <tr><td>צפייה, דיווח נוכחות, קליטת תשלומים, סימון הודעה כנשלחה</td><td>✔</td><td>✔</td><td>✔</td></tr>
 <tr><td>עריכת ילדים, לוח מפגשים, חיובים, אישור והפקת קבלות, הגדרות, סגירת חודש, פרטי בנק ואסמכתאות</td><td>✔</td><td>✔</td><td>—</td></tr>
 <tr><td>ניהול משתמשים, גיבוי ושחזור</td><td>✔</td><td>—</td><td>—</td></tr>
-</tbody></table></section>
+</tbody></table></div></section>
 {% endblock %}

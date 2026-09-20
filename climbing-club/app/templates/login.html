@@ -1,12 +1,13 @@
-<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>כניסה · ניהול החוג</title><link rel="stylesheet" href="/static/style.css"></head>
-<body class="auth-body">
+{% import "_macros.html" as m %}<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>כניסה · ניהול החוג</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;600;700;800&display=swap"><link rel="stylesheet" href="/static/style.css"></head>
+<body class="auth-body">{% include "_icons.html" %}
 <div class="auth-card">
+  <div class="auth-logo">{{ m.icon('sparkle') }}</div>
   <h1>ניהול חוג טיפוס</h1>
   <p class="muted">כניסה למערכת</p>
-  {% for f in flash_messages %}<div class="flash flash-{{ f.kind }}">{{ f.text }}</div>{% endfor %}
+  {% for f in flash_messages %}{{ m.alert(f.kind, f.text) }}{% endfor %}
   <form method="post" action="/login" class="form">
-    <label>שם משתמש<input name="username" required autofocus autocomplete="username"></label>
+    <label>שם משתמש<input name="username" required autofocus autocomplete="username" autocapitalize="off"></label>
     <label>סיסמה<input name="password" type="password" required autocomplete="current-password"></label>
-    <button class="btn btn-primary btn-block">כניסה</button>
+    {{ m.submit('כניסה', 'btn btn-primary btn-block btn-lg') }}
   </form>
-</div></body></html>
+</div><script src="/static/app.js"></script></body></html>

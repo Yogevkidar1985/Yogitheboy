@@ -1,74 +1,37 @@
-{% extends "base.html" %}{% set active = 'calendar' %}{% block title %}לוח מפגשים{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'calendar' %}{% block title %}לוח מפגשים{% endblock %}
 {% block content %}
-<div class="page-head">
-  <h1>לוח מפגשים · {{ MONTH_NAMES[month] }} {{ year }}</h1>
-  <div class="actions">
-    <a class="btn btn-ghost" href="/calendar?year={{ prev_next[0][0] }}&month={{ prev_next[0][1] }}">‹ חודש קודם</a>
-    <a class="btn btn-ghost" href="/calendar?year={{ prev_next[1][0] }}&month={{ prev_next[1][1] }}">חודש הבא ›</a>
-    <a class="btn" href="/groups">קבוצות</a>
-  </div>
-</div>
-{% if can(user, 'calendar.edit') %}
-<div class="toolbar">
-  <form method="post" action="/calendar/generate" class="inline"><input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}"><button class="btn btn-primary">יצירת לוח חודשי לפי ימי הפעילות הקבועים</button></form>
-  <details class="inline-details"><summary class="btn">+ מפגש בתאריך חריג</summary>
-    <form method="post" action="/calendar/extra" class="form sub-form">
-      <div class="form-grid">
-        <label>קבוצה<select name="group_id">{% for g in groups if g.is_active %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}</select></label>
-        <label>תאריך<input type="date" name="on" required value="{{ '%04d-%02d-01'|format(year, month) }}"></label>
-        <label>שעה<input type="time" name="start_time"></label>
-        <label>סיבה<input name="reason" placeholder="למשל: השלמה במקום חג"></label>
-      </div><button class="btn btn-sm">הוספה</button>
-    </form></details>
-  <details class="inline-details"><summary class="btn">ביטול מרוכז לטווח תאריכים</summary>
-    <form method="post" action="/calendar/cancel-range" class="form sub-form">
-      <div class="form-grid">
-        <label>מתאריך<input type="date" name="start" required></label>
-        <label>עד תאריך<input type="date" name="end" required></label>
-        <label>סוג ביטול<select name="status"><option value="cancelled_holiday">בוטל – חג</option><option value="cancelled_admin">בוטל – מנהלת</option><option value="cancelled_other">בוטל – סיבה אחרת</option></select></label>
-        <label>סיבה<input name="reason" placeholder="למשל: חופשת סוכות"></label>
-      </div><button class="btn btn-sm btn-danger" onclick="return confirm('לבטל את כל המפגשים המתוכננים בטווח?')">ביטול המפגשים בטווח</button>
-    </form></details>
-</div>
-{% endif %}
-{% if dups %}<div class="flash flash-error">זוהו כפילויות: {% for a, b in dups %}{{ a.date|date }} ({{ a.group.name }}){% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}
-<div class="card">
-<table class="table table-cal">
+{% include "calendar/_head.html" %}
+<div class="card-row" style="margin-bottom:var(--sp-3)">{{ m.month_nav('/calendar?view=month&', year, month, prev_next) }}<span class="muted small">{{ rows|length }} מפגשים</span></div>
+{% include "calendar/_tools.html" %}
+{% if dups %}{{ m.alert('error', 'זוהו כפילויות: ' ~ (dups|map(attribute=0)|map(attribute='date')|map('date')|join(', '))) }}{% endif %}
+<div class="legend"><span><i class="dot" style="background:var(--c-primary)"></i> מתוכנן</span><span><i class="dot" style="background:var(--c-success)"></i> התקיים</span><span><i class="dot" style="background:var(--c-warning)"></i> ממתין לנוכחות</span><span><i class="dot" style="background:var(--c-info)"></i> בוטל – חג</span><span><i class="dot" style="background:var(--c-danger)"></i> בוטל</span><span><i class="dot" style="background:var(--c-purple)"></i> הועבר</span></div>
+{% if rows %}
+<div class="card"><div class="table-wrap">
+<table class="table table-cards">
 <thead><tr><th>תאריך</th><th>יום</th><th>קבוצה</th><th>שעה</th><th>סטטוס</th><th>ילדים</th><th>הערות</th><th></th></tr></thead>
 <tbody>
 {% for r in rows %}{% set s = r.s %}
 <tr class="status-{{ s.status.value }}">
-  <td>{{ s.date|date }}{% if s.original_date %}<div class="small muted">הועבר מ-{{ s.original_date|date }}</div>{% endif %}{% if s.is_extra and not s.original_date %}<div class="small muted">מועד חריג</div>{% endif %}</td>
-  <td>{{ s.date|weekday }}</td>
-  <td>{{ s.group.name if s.group else 'מפגש היכרות' }}</td>
-  <td>{{ s.start_time }}</td>
-  <td><span class="badge {{ s.status|badge }}">{{ s.status|label }}</span>{% if s.moved_to %}<div class="small">ל-{{ s.moved_to.date|date }}</div>{% endif %}{% if s.reason %}<div class="small muted">{{ s.reason }}</div>{% endif %}</td>
-  <td>{{ r.expected }}{% if r.missing %} <span class="text-red small">({{ r.missing }} ללא דיווח)</span>{% endif %}</td>
-  <td class="small">{{ s.notes }}{% if s.changed_by %}<div class="muted">שונה ע"י {{ s.changed_by }} {{ s.changed_at|datetime }}</div>{% endif %}</td>
+  <td class="td-title" data-label="תאריך"><span>{{ s.date|date }}{% if s.original_date %} <span class="xs muted">(הועבר מ-{{ s.original_date|date }})</span>{% elif s.is_extra %} <span class="xs muted">(מועד חריג)</span>{% endif %}</span></td>
+  <td data-label="יום">{{ s.date|weekday }}</td>
+  <td data-label="קבוצה">{{ s.group.name if s.group else 'מפגש היכרות' }}</td>
+  <td data-label="שעה">{{ s.start_time or '—' }}</td>
+  <td data-label="סטטוס"><span>{{ m.badge(s.status) }}{% if s.moved_to %} <span class="xs">ל-{{ s.moved_to.date|date }}</span>{% endif %}{% if s.reason %}<div class="xs muted">{{ s.reason }}</div>{% endif %}</span></td>
+  <td data-label="ילדים"><span>{{ r.expected }}{% if r.missing %} <span class="text-danger xs">({{ r.missing }} ללא דיווח)</span>{% endif %}</span></td>
+  <td data-label="הערות" class="small"><span>{{ s.notes }}{% if s.changed_by %}<div class="xs muted">שונה ע"י {{ s.changed_by }} · {{ s.changed_at|datetime }}</div>{% endif %}</span></td>
   <td class="cell-actions">
-    {% if s.status.value in ['planned','held','pending_attendance'] %}<a class="btn btn-sm" href="/attendance?session_id={{ s.id }}">נוכחות</a>{% endif %}
-    {% if can(user, 'calendar.edit') %}
-    <details class="menu"><summary class="btn btn-sm btn-ghost">שינוי ▾</summary><div class="menu-body">
-      {% if s.status.value == 'planned' or s.status.counts_as_held %}
-      <form method="post" action="/calendar/{{ s.id }}/cancel" class="form">
-        <select name="status"><option value="cancelled_holiday">בוטל – חג</option><option value="cancelled_admin">בוטל – מנהלת</option><option value="cancelled_other">בוטל – סיבה אחרת</option></select>
-        <input name="reason" placeholder="סיבה"><button class="btn btn-sm btn-danger">ביטול מפגש</button></form>
-      <form method="post" action="/calendar/{{ s.id }}/move" class="form">
-        <input type="date" name="new_date" required><input name="reason" placeholder="סיבת ההעברה"><button class="btn btn-sm">העברה לתאריך אחר</button></form>
-      {% endif %}
-      {% if s.status.is_cancelled %}<form method="post" action="/calendar/{{ s.id }}/restore"><button class="btn btn-sm">שחזור למתוכנן</button></form>{% endif %}
-      <form method="post" action="/calendar/{{ s.id }}/note" class="form"><input name="notes" value="{{ s.notes }}" placeholder="הערה"><input type="time" name="start_time" value="{{ s.start_time }}"><button class="btn btn-sm btn-ghost">שמירת הערה</button></form>
-      {% if s.status.value == 'planned' or s.original_date %}<form method="post" action="/calendar/{{ s.id }}/delete" onsubmit="return confirm('למחוק את המפגש?')"><button class="btn btn-sm btn-ghost">מחיקה</button></form>{% endif %}
-    </div></details>
-    {% endif %}
+    {% if s.status.value in ['planned','held','pending_attendance'] %}<a class="btn btn-sm btn-soft" href="/attendance?session_id={{ s.id }}">{{ m.icon('clipboard') }} נוכחות</a>{% endif %}
+    {% if can(user, 'calendar.edit') %}{% include "calendar/_session_menu.html" %}{% endif %}
   </td>
 </tr>
-{% else %}<tr><td colspan="8" class="muted">אין מפגשים בחודש זה. לחצי על "יצירת לוח חודשי".</td></tr>{% endfor %}
-</tbody></table>
-</div>
+{% endfor %}
+</tbody></table></div></div>
+{% else %}
+<div class="card">{% call m.empty('אין מפגשים בחודש זה', 'לחצי על "יצירת לוח" כדי ליצור מפגשים לפי ימי הפעילות הקבועים של הקבוצות.', ic='calendar') %}{% endcall %}</div>
+{% endif %}
 {% if changes %}
 <section class="card"><h2>יומן שינויים בחודש</h2><ul class="list">
-{% for s in changes %}<li>{{ s.date|date }} · {{ s.group.name if s.group else '' }} · <span class="badge {{ s.status|badge }}">{{ s.status|label }}</span>{% if s.original_date %} (במקום {{ s.original_date|date }}){% endif %}{% if s.reason %} – {{ s.reason }}{% endif %}{% if s.changed_by %} <span class="muted small">{{ s.changed_by }}, {{ s.changed_at|datetime }}</span>{% endif %}</li>{% endfor %}
+{% for s in changes %}<li><div>{{ s.date|date }} · {{ s.group.name if s.group else '' }} {{ m.badge(s.status) }}{% if s.original_date %} <span class="small">(במקום {{ s.original_date|date }})</span>{% endif %}{% if s.reason %} <span class="small">– {{ s.reason }}</span>{% endif %}</div>{% if s.changed_by %}<span class="muted xs">{{ s.changed_by }}, {{ s.changed_at|datetime }}</span>{% endif %}</li>{% endfor %}
 </ul></section>
 {% endif %}
 {% endblock %}

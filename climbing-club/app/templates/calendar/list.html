@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'calendar' %}{% block title %}לוח מפגשים{% endblock %}
+{% block content %}
+{% include "calendar/_head.html" %}
+{% include "calendar/_tools.html" %}
+{% if stale %}
+<section class="card"><h2 class="text-warn">{{ m.icon('warning') }} ממתינים לעדכון</h2>
+<ul class="list">{% for s in stale %}<li><div><strong>{{ s.date|hebdate }}</strong><div class="small muted">{{ s.group.name if s.group else '' }} {{ m.badge(s.status) }}</div></div><div class="actions"><a class="btn btn-sm btn-soft" href="/attendance?session_id={{ s.id }}">נוכחות</a>{% if can(user, 'calendar.edit') %}{% include "calendar/_session_menu.html" %}{% endif %}</div></li>{% endfor %}</ul></section>
+{% endif %}
+<section class="card"><h2>המפגשים הקרובים</h2>
+{% if upcoming %}
+<ul class="list">{% for s, n in upcoming %}<li><div><strong>{{ s.date|hebdate }}</strong><div class="small muted">{{ s.start_time }} · {{ s.group.name if s.group else 'מפגש היכרות' }} · {{ n }} ילדים {{ m.badge(s.status) }}{% if s.reason %} · {{ s.reason }}{% endif %}</div></div><div class="actions">{% if s.status.value == 'planned' %}<a class="btn btn-sm btn-soft" href="/attendance?session_id={{ s.id }}">נוכחות</a>{% endif %}{% if can(user, 'calendar.edit') %}{% include "calendar/_session_menu.html" %}{% endif %}</div></li>{% endfor %}</ul>
+{% else %}{{ m.empty('אין מפגשים קרובים', 'צרי לוח חודשי לפי ימי הפעילות.', ic='calendar') }}{% endif %}
+</section>
+{% endblock %}

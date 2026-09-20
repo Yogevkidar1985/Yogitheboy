@@ -1,58 +1,66 @@
-{% extends "base.html" %}{% set active = 'receipts' %}{% block title %}קבלה{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'receipts' %}{% set back = '/receipts' %}{% block title %}{{ r.kind|label }}{% endblock %}
+{% set st = r.status.value %}
 {% block content %}
-<div class="page-head"><h1>{{ r.kind|label }} <span class="badge {{ r.status|badge }}">{{ r.status|label }}</span></h1><a class="btn btn-ghost" href="/receipts">לרשימה</a></div>
-{% if r.missing_fields %}<div class="flash flash-error">חסרים שדות חובה: {{ r.missing_fields|join(', ') }} – יש להשלים בכרטיס הילד או בטופס למטה.</div>{% endif %}
-{% if r.error %}<div class="flash flash-error">{{ r.error }}</div>{% endif %}
+<div class="page-head"><h1>{{ r.kind|label }} {{ m.badge(r.status) }}</h1><div class="actions">{% if r.pdf_url %}<a class="btn" href="{{ r.pdf_url }}" target="_blank" rel="noopener">{{ m.icon('download') }} PDF</a>{% endif %}</div></div>
+{% if r.missing_fields %}{{ m.alert('error', 'חסרים שדות חובה: ' ~ r.missing_fields|join(', ') ~ ' – יש להשלים בכרטיס הילד או בטופס העריכה.') }}{% endif %}
+{% if st == 'failed' %}{{ m.alert('error', 'ההפקה נכשלה: ' ~ r.error ~ '. הנתונים נשמרו – ניתן לתקן, לאשר שוב ולנסות שוב.') }}{% elif r.error and st not in ['cancelled'] %}{{ m.alert('warning', r.error) }}{% endif %}
 <div class="grid-2">
-<section class="card receipt-preview">
-  <div class="receipt-head"><div><strong>{{ r.data.club_name }}</strong><div class="small muted">תצוגה מקדימה – כך יישלחו הנתונים ל-YPAY</div></div><div class="small">מס' קבלה: <strong dir="ltr">{{ r.receipt_number or '(יינתן בהפקה)' }}</strong></div></div>
-  <table class="table table-kv"><tbody>
-    <tr><th>לכבוד</th><td>{{ r.payer_name }}{% if r.data.payer_id %} (ת.ז. {{ r.data.payer_id }}){% endif %}</td></tr>
-    <tr><th>עבור</th><td>{{ r.data.child_name }}{% if r.data.child_id_number %} (ת.ז. {{ r.data.child_id_number }}){% endif %}</td></tr>
-    {% if r.data.hmo %}<tr><th>קופת חולים / גורם מממן</th><td>{{ r.data.hmo }}</td></tr>{% endif %}
-    <tr><th>תאריך התשלום</th><td>{{ r.data.paid_on_display }}</td></tr>
-    <tr><th>אמצעי תשלום</th><td>{{ r.data.method_display }}{% if r.data.reference %} · אסמכתא {{ r.data.reference }}{% endif %}</td></tr>
-    <tr><th>פירוט</th><td>{{ r.description }}</td></tr>
-    {% if r.data.session_dates %}<tr><th>מפגשים</th><td>{% for d in r.data.session_dates %}{{ d|date }}{% if not loop.last %}, {% endif %}{% endfor %}</td></tr>{% endif %}
-    <tr class="row-hl"><th>סכום</th><td><strong>{{ r.amount|money }}</strong></td></tr>
-    {% if r.notes %}<tr><th>הערות</th><td class="pre">{{ r.notes }}</td></tr>{% endif %}
-    <tr><th>נשלחת אל</th><td dir="ltr">{{ r.email or '—' }}</td></tr>
-    {% if r.data.footer %}<tr><td colspan="2" class="small muted">{{ r.data.footer }}</td></tr>{% endif %}
-  </tbody></table>
-  <div class="small muted">תשלום: <a href="/payments/{{ r.payment_id }}">{{ r.payment.paid_on|date }} · {{ r.payment.amount|money }}</a>{% if r.charge %} · חיוב: <a href="/billing/{{ r.charge_id }}">{{ MONTH_NAMES[r.charge.month] }} {{ r.charge.year }}</a>{% endif %}{% if r.child %} · <a href="/children/{{ r.child_id }}">כרטיס ילד</a>{% endif %}</div>
-  <div class="small muted">מפתח ייחודי: <code>{{ r.idempotency_key }}</code>{% if r.approved_at %} · אושר {{ r.approved_by }} {{ r.approved_at|datetime }}{% endif %}{% if r.issued_at %} · הופק {{ r.issued_at|datetime }} ({{ r.provider }}){% endif %}{% if r.pdf_url %} · <a href="{{ r.pdf_url }}" target="_blank">PDF</a>{% endif %}</div>
+<section>
+  <div class="card-row" style="margin-bottom:var(--sp-2)"><span class="kicker">תצוגה מקדימה – כך יישלחו הנתונים ל-YPAY</span><button type="button" class="btn btn-sm btn-ghost show-mobile" data-zoom="#doc-zoom">{{ m.icon('zoom') }} הגדלה</button></div>
+  <div class="zoom-wrap" id="doc-zoom"><div class="receipt-doc zoomable">
+    <div class="rh"><div><div class="title">{{ r.data.club_name }}</div><div class="xs muted">קבלה{% if st in ['issued','sent'] %} · הופקה {{ r.issued_at|date }}{% else %} · טיוטה{% endif %}</div></div><div class="small">מס' קבלה<br><strong class="ltr">{{ r.receipt_number or '(יינתן בהפקה)' }}</strong></div></div>
+    <table class="table table-kv"><tbody>
+      <tr><th>לכבוד</th><td>{{ r.payer_name or '—' }}{% if r.data.payer_id %} <span class="muted">(ת.ז. <span class="ltr">{{ r.data.payer_id }}</span>)</span>{% endif %}</td></tr>
+      <tr><th>עבור</th><td>{{ r.data.child_name }}{% if r.data.child_id_number %} <span class="muted">(ת.ז. <span class="ltr">{{ r.data.child_id_number }}</span>)</span>{% endif %}</td></tr>
+      {% if r.data.hmo %}<tr><th>קופת חולים / גורם מממן</th><td>{{ r.data.hmo }}</td></tr>{% endif %}
+      <tr><th>תאריך התשלום</th><td>{{ r.data.paid_on_display }}</td></tr>
+      <tr><th>אמצעי תשלום</th><td>{{ r.data.method_display }}{% if r.data.reference %} · אסמכתא <span class="ltr">{{ r.data.reference }}</span>{% endif %}</td></tr>
+      <tr><th>פירוט</th><td>{{ r.description }}</td></tr>
+      {% if r.data.session_dates %}<tr><th>מפגשים</th><td>{% for d in r.data.session_dates %}{{ d|date }}{% if not loop.last %}, {% endif %}{% endfor %}</td></tr>{% endif %}
+      {% if r.notes %}<tr><th>הערות</th><td class="pre">{{ r.notes }}</td></tr>{% endif %}
+      <tr><th>נשלחת אל</th><td><span class="ltr">{{ r.email or '—' }}</span></td></tr>
+    </tbody></table>
+    <div class="total"><span>סה"כ</span><span class="money">{{ r.amount|money }}</span></div>
+    {% if r.data.footer %}<div class="xs muted">{{ r.data.footer }}</div>{% endif %}
+  </div></div>
+  <div class="xs muted" style="margin-top:var(--sp-2)">תשלום: <a href="/payments/{{ r.payment_id }}">{{ r.payment.paid_on|date }} · {{ r.payment.amount|money }}</a>{% if r.charge %} · חיוב: <a href="/billing/{{ r.charge_id }}">{{ MONTH_NAMES[r.charge.month] }} {{ r.charge.year }}</a>{% endif %}{% if r.child %} · <a href="/children/{{ r.child_id }}">כרטיס ילד</a>{% endif %}<br>מפתח ייחודי: <code>{{ r.idempotency_key }}</code>{% if r.approved_at %} · אושר {{ r.approved_by }} {{ r.approved_at|datetime }}{% endif %}{% if r.issued_at %} · הופק {{ r.issued_at|datetime }} ({{ r.provider }}){% endif %}</div>
 </section>
-<section class="card">
+<section>
   {% if can(user, 'receipts.approve') %}
-  {% if r.status.value in ['draft','approved','failed'] %}
-  <h2>עריכת הטיוטה</h2>
+  <div class="card"><h2>תהליך ההפקה</h2>
+  <div class="steps">
+    <div class="step {% if st in ['approved','issued','sent'] %}done{% elif st in ['draft','failed'] %}current{% endif %}"><div class="step-h"><span class="step-n">{% if st in ['approved','issued','sent'] %}{{ m.icon('check') }}{% else %}1{% endif %}</span> בדיקה ואישור</div>
+      {% if st in ['draft','failed'] %}<span class="small muted">בדקי את התצוגה המקדימה. אישור אינו מפיק עדיין.</span><form method="post" action="/receipts/{{ r.id }}/approve" class="inline">{{ m.submit(m.icon('check') ~ ' בדקתי – אישור להפקה', 'btn btn-primary', 'disabled' if r.missing_fields else '') }}</form>{% elif r.approved_at %}<span class="xs muted">אושר ע"י {{ r.approved_by }} · {{ r.approved_at|datetime }}</span>{% endif %}</div>
+    <div class="step {% if st in ['issued','sent'] %}done{% elif st == 'approved' %}current{% endif %}"><div class="step-h"><span class="step-n">{% if st in ['issued','sent'] %}{{ m.icon('check') }}{% else %}2{% endif %}</span> הפקה ב-YPAY</div>
+      {% if st == 'approved' %}<form method="post" action="/receipts/{{ r.id }}/issue" class="form">
+        <div class="alert alert-warning">{{ m.icon('warning') }}<div>פעולה זו מפיקה מסמך חשבונאי ב-YPAY. ההצלחה תדווח רק לאחר אישור מהמערכת החיצונית.</div></div>
+        {% if provider.manual %}<label class="req">מספר הקבלה כפי שהופקה באתר YPAY<input name="manual_number" dir="ltr" required></label>{% endif %}
+        <label class="check"><input type="checkbox" name="confirm" value="1" required> אני מאשרת הפקת קבלה על <strong class="money">{{ r.amount|money }}</strong> עבור {{ r.payer_name }}</label>
+        {{ m.submit((m.icon('receipt') ~ ' רישום ההפקה') if provider.manual else (m.icon('receipt') ~ ' הפקת הקבלה'), 'btn btn-primary') }}</form>
+      {% elif st in ['issued','sent'] %}<span class="xs muted">מספר <span class="ltr">{{ r.receipt_number }}</span> · {{ r.issued_at|datetime }}</span>{% endif %}</div>
+    <div class="step {% if st == 'sent' %}done{% elif st == 'issued' %}current{% endif %}"><div class="step-h"><span class="step-n">{% if st == 'sent' %}{{ m.icon('check') }}{% else %}3{% endif %}</span> שליחה להורה</div>
+      {% if st == 'issued' %}<div class="actions">{% if provider.supports_email %}<form method="post" action="/receipts/{{ r.id }}/send" class="inline">{{ m.submit(m.icon('mail') ~ ' שליחה למייל ' ~ (r.email or ''), 'btn btn-primary', '' if r.email else 'disabled') }}</form>{% endif %}
+      <form method="post" action="/receipts/{{ r.id }}/mark-sent" class="inline">{{ m.submit('נשלחה ידנית – סימון', 'btn') }}</form></div>{% if not r.email %}<span class="xs text-danger">חסרה כתובת מייל</span>{% endif %}
+      {% elif st == 'sent' %}<span class="xs muted">נשלחה {{ r.sent_at|datetime }} אל <span class="ltr">{{ r.email }}</span></span>{% endif %}</div>
+  </div>
+  {% if st in ['issued','sent'] %}<p class="xs muted" style="margin-top:var(--sp-3)">{{ m.icon('lock') }} תיקון או ביטול של קבלה שהופקה מתבצע דרך YPAY / הנהלת החשבונות ולא מהמערכת.</p>{% endif %}
+  </div>
+  {% if st in ['draft','approved','failed'] %}
+  <details class="section"><summary>{{ m.icon('edit') }} עריכת הטיוטה {{ m.icon('chev-down', 'chev') }}</summary><div class="section-body">
   <form method="post" action="/receipts/{{ r.id }}/edit" class="form">
     <div class="form-grid">
-      <label>שם המשלם<input name="payer_name" value="{{ r.payer_name }}"></label>
-      <label>מייל לשליחה<input name="email" dir="ltr" value="{{ r.email }}"></label>
-      <label>סכום (עד סכום התשלום)<input name="amount" inputmode="decimal" value="{{ r.amount }}"></label>
+      <label class="req">שם המשלם<input name="payer_name" value="{{ r.payer_name }}"></label>
+      <label class="req">מייל לשליחה<input name="email" type="email" dir="ltr" value="{{ r.email }}"></label>
+      <label>סכום (₪)<input name="amount" inputmode="decimal" value="{{ r.amount }}"><span class="hint">עד סכום התשלום שהתקבל ({{ r.payment.amount|money }})</span></label>
     </div>
     <label>תיאור / פירוט<textarea name="description" rows="2">{{ r.description }}</textarea></label>
     <label>הערות אישיות<textarea name="notes" rows="2">{{ r.notes }}</textarea></label>
-    <button class="btn btn-sm">שמירת שינויים</button>
+    <div class="form-actions">{{ m.submit('שמירת שינויים', 'btn btn-sm') }}</div>
   </form>
+  <form method="post" action="/receipts/{{ r.id }}/cancel" class="form inline-form sub-form" data-confirm="לבטל את טיוטת הקבלה?"><label>סיבת הביטול<input name="reason"></label><button class="btn btn-sm btn-ghost btn-danger">{{ m.icon('x') }} ביטול טיוטה</button></form>
+  </div></details>
   {% endif %}
-  <h2>פעולות</h2>
-  <div class="steps">
-    <div class="step {% if r.status.value in ['approved','issued','sent'] %}done{% endif %}">1. בדיקה ואישור
-      {% if r.status.value in ['draft','failed'] %}<form method="post" action="/receipts/{{ r.id }}/approve" class="inline"><button class="btn btn-primary" {% if r.missing_fields %}disabled{% endif %}>בדקתי – אישור להפקה</button></form>{% endif %}</div>
-    <div class="step {% if r.status.value in ['issued','sent'] %}done{% endif %}">2. הפקה ב-YPAY
-      {% if r.status.value == 'approved' %}<form method="post" action="/receipts/{{ r.id }}/issue" class="form">
-        {% if provider.manual %}<label>מספר הקבלה כפי שהופקה באתר YPAY<input name="manual_number" dir="ltr" required></label>{% endif %}
-        <label class="check"><input type="checkbox" name="confirm" value="1" required> אני מאשרת הפקת קבלה על {{ r.amount|money }} עבור {{ r.payer_name }}</label>
-        <button class="btn btn-primary" data-once>{{ 'רישום ההפקה' if provider.manual else 'הפקת הקבלה' }}</button></form>{% endif %}</div>
-    <div class="step {% if r.status.value == 'sent' %}done{% endif %}">3. שליחה להורה
-      {% if r.status.value == 'issued' %}{% if provider.supports_email %}<form method="post" action="/receipts/{{ r.id }}/send" class="inline"><button class="btn btn-primary" data-once {% if not r.email %}disabled{% endif %}>שליחה למייל {{ r.email }}</button></form>{% endif %}
-      <form method="post" action="/receipts/{{ r.id }}/mark-sent" class="inline"><button class="btn">נשלחה ידנית – סימון</button></form>{% endif %}</div>
-  </div>
-  {% if r.status.value in ['draft','approved','failed'] %}<form method="post" action="/receipts/{{ r.id }}/cancel" class="form inline-form"><input name="reason" placeholder="סיבת ביטול הטיוטה"><button class="btn btn-sm btn-ghost btn-danger" onclick="return confirm('לבטל את הטיוטה?')">ביטול טיוטה</button></form>{% endif %}
-  {% else %}<p class="muted">אישור והפקת קבלות – למנהלת בלבד.</p>{% endif %}
-  {% if r.status.value in ['issued','sent'] %}<p class="small muted">תיקון או ביטול של קבלה שהופקה מתבצע דרך YPAY / הנהלת החשבונות ולא מהמערכת.</p>{% endif %}
+  {% else %}<div class="card">{{ m.alert('info', 'אישור והפקת קבלות – למנהלת בלבד.') }}</div>{% endif %}
 </section>
 </div>
 {% endblock %}

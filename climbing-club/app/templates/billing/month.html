@@ -1,39 +1,49 @@
-{% extends "base.html" %}{% set active = 'billing' %}{% block title %}חיובים וגבייה{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'billing' %}{% block title %}חיובים וגבייה{% endblock %}
 {% block content %}
-<div class="page-head"><h1>חיובים וגבייה · {{ MONTH_NAMES[month] }} {{ year }}</h1>
-  <div class="actions">
-    <a class="btn btn-ghost" href="/billing?year={{ prev_next[0][0] }}&month={{ prev_next[0][1] }}">‹</a><a class="btn btn-ghost" href="/billing?year={{ prev_next[1][0] }}&month={{ prev_next[1][1] }}">›</a>
-    <a class="btn" href="/billing/messages/list?year={{ year }}&month={{ month }}">הודעות תשלום</a>
-    <a class="btn" href="/month-close?year={{ year }}&month={{ month }}">סגירת חודש</a>
-  </div></div>
-{% if closed %}<div class="flash flash-warning">החודש סגור – החיובים קפואים.</div>{% endif %}
+<div class="page-head"><h1>חיובים וגבייה</h1>
+  <div class="actions"><a class="btn" href="/billing/messages/list?year={{ year }}&month={{ month }}">{{ m.icon('whatsapp') }} הודעות תשלום</a><a class="btn" href="/payments">{{ m.icon('coins') }} תשלומים</a><a class="btn" href="/month-close?year={{ year }}&month={{ month }}">{{ m.icon('star') }} סגירת חודש</a></div></div>
+<div class="card-row" style="margin-bottom:var(--sp-3)">{{ m.month_nav('/billing?', year, month, prev_next) }}{% if closed %}{{ m.badge('closed', 'החודש סגור') }}{% endif %}</div>
 <div class="stats">
-  <div class="stat"><div class="stat-num">{{ totals.amount|money }}</div><div class="stat-label">סך החיובים</div></div>
-  <div class="stat"><div class="stat-num">{{ totals.paid|money }}</div><div class="stat-label">התקבל</div></div>
-  <div class="stat"><div class="stat-num">{{ totals.balance|money }}</div><div class="stat-label">יתרה לגבייה</div></div>
-  <div class="stat"><div class="stat-num">{{ totals.warnings }}</div><div class="stat-label">חיובים עם אזהרות</div></div>
+  <div class="stat"><span class="stat-label">סך החיובים</span><span class="stat-num num">{{ totals.amount|money }}</span></div>
+  <div class="stat stat-ok"><span class="stat-label">התקבל</span><span class="stat-num num">{{ totals.paid|money }}</span></div>
+  <div class="stat {% if totals.balance > 0 %}stat-warn{% endif %}"><span class="stat-label">יתרה לגבייה</span><span class="stat-num num">{{ totals.balance|money }}</span><span class="stat-sub">{{ totals.open }} חיובים פתוחים</span></div>
+  <div class="stat {% if totals.warnings %}stat-danger{% endif %}"><span class="stat-label">אזהרות</span><span class="stat-num num">{{ totals.warnings }}</span><span class="stat-sub">{{ totals.draft }} בטיוטה</span></div>
 </div>
 {% if can(user, 'billing') and not closed %}
 <div class="toolbar">
-  <form method="post" action="/billing/compute" class="inline"><input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}"><button class="btn btn-primary">חישוב / חישוב מחדש של כל החיובים</button></form>
-  <form method="post" action="/billing/approve-all" class="inline"><input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}"><button class="btn">אישור כל החיובים ללא אזהרות</button></form>
+  <form method="post" action="/billing/compute" class="inline"><input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}">{{ m.submit(m.icon('refresh') ~ ' חישוב כל החיובים', 'btn btn-primary') }}</form>
+  <form method="post" action="/billing/approve-all" class="inline" data-confirm="לאשר את כל החיובים ללא אזהרות? לכל חיוב תיווצר הודעת תשלום."><input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}">{{ m.submit(m.icon('check') ~ ' אישור החיובים ללא אזהרות', 'btn') }}</form>
 </div>
 {% endif %}
-{% if not_computed %}<div class="flash flash-warning">{{ not_computed|length }} ילדים פעילים ללא חיוב מחושב: {% for c in not_computed %}{{ c.full_name }}{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}
-<div class="card">
-<table class="table">
-<thead><tr><th>ילד</th><th>שיטה</th><th>התקיימו</th><th>נכח</th><th>החסיר</th><th>לא דווח</th><th>בוטלו</th><th>למפגש</th><th>התאמות</th><th>לחיוב</th><th>שולם</th><th>יתרה</th><th>סטטוס</th><th></th></tr></thead>
+{% if not_computed %}{{ m.alert('warning', not_computed|length ~ ' ילדים פעילים ללא חיוב מחושב: ' ~ (not_computed|map(attribute='full_name')|join(', '))) }}{% endif %}
+<form class="filters" method="get"><input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}">
+  <div class="chips" style="margin:0;flex:1 1 100%">
+    {% for key, lbl in [('', 'הכול'), ('open', 'יתרה פתוחה'), ('paid', 'שולם'), ('draft', 'טיוטה'), ('warnings', 'אזהרות')] %}<a class="chip {% if status == key %}active{% endif %}" href="/billing?year={{ year }}&month={{ month }}&status={{ key }}&group_id={{ group_id or '' }}&q={{ q }}">{{ lbl }}</a>{% endfor %}
+  </div>
+  <div class="search">{{ m.icon('search') }}<input name="q" value="{{ q }}" placeholder="חיפוש ילד" aria-label="חיפוש ילד"></div>
+  <input type="hidden" name="status" value="{{ status }}">
+  <select name="group_id" aria-label="קבוצה" onchange="this.form.submit()"><option value="">כל הקבוצות</option>{% for g in groups %}<option value="{{ g.id }}" {% if group_id == g.id %}selected{% endif %}>{{ g.name }}</option>{% endfor %}</select>
+</form>
+{% if charges %}
+<div class="card"><div class="table-wrap">
+<table class="table table-cards">
+<thead><tr><th>ילד</th><th>שיטה</th><th>התקיימו / נכח / החסיר</th><th>לא דווח</th><th>בוטלו</th><th>לחיוב</th><th>שולם</th><th>יתרה</th><th>סטטוס</th><th></th></tr></thead>
 <tbody>
 {% for ch in charges %}
 <tr class="{% if ch.warnings %}row-warn{% endif %}">
-  <td><a href="/billing/{{ ch.id }}"><strong>{{ ch.child.full_name }}</strong></a>{% if ch.warnings %}<div class="small text-orange">⚠ {{ ch.warnings|length }} אזהרות</div>{% endif %}</td>
-  <td class="small">{{ ch.method|label }}</td>
-  <td>{{ ch.sessions_held }}</td><td>{{ ch.sessions_attended }}</td><td>{{ ch.sessions_absent }}</td><td class="{% if ch.sessions_unreported %}text-red{% endif %}">{{ ch.sessions_unreported }}</td><td>{{ ch.sessions_cancelled }}</td>
-  <td>{{ ch.price_per_session|money }}</td><td>{{ ch.adjustments_total|money }}</td><td><strong>{{ ch.amount|money }}</strong></td><td>{{ ch.paid|money }}</td><td class="{% if ch.balance > 0 %}text-red{% endif %}">{{ ch.balance|money }}</td>
-  <td><span class="badge {{ ch.status|badge }}">{{ ch.status|label }}</span></td>
-  <td>{% if ch.status.value == 'draft' and can(user, 'billing') %}<form method="post" action="/billing/{{ ch.id }}/approve" class="inline"><button class="btn btn-sm">אישור</button></form>{% endif %}</td>
+  <td class="td-title" data-label="ילד"><span><a href="/billing/{{ ch.id }}">{{ ch.child.full_name }}</a>{% if ch.warnings %}<div class="xs text-warn">{{ m.icon('warning') }} {{ ch.warnings|length }} אזהרות</div>{% endif %}</span></td>
+  <td data-label="שיטה" class="small">{{ ch.method|label }}</td>
+  <td data-label="התקיימו / נכח / החסיר" class="num">{{ ch.sessions_held }} / {{ ch.sessions_attended }} / {{ ch.sessions_absent }}</td>
+  <td data-label="לא דווח" class="num {% if ch.sessions_unreported %}text-danger strong{% endif %}">{{ ch.sessions_unreported }}</td>
+  <td data-label="בוטלו" class="num">{{ ch.sessions_cancelled }}</td>
+  <td data-label="לחיוב" class="money strong">{{ ch.amount|money }}</td><td data-label="שולם" class="money">{{ ch.paid|money }}</td>
+  <td data-label="יתרה" class="money {% if ch.balance > 0 %}text-danger strong{% elif ch.status.value != 'draft' %}text-ok{% endif %}">{{ ch.balance|money }}</td>
+  <td data-label="סטטוס">{{ m.badge(ch.status) }}</td>
+  <td class="cell-actions"><a class="btn btn-sm" href="/billing/{{ ch.id }}">{{ m.icon('eye') }} פירוט</a>{% if ch.status.value == 'draft' and can(user, 'billing') and not ch.warnings %}<form method="post" action="/billing/{{ ch.id }}/approve" class="inline">{{ m.submit('אישור', 'btn btn-sm btn-soft') }}</form>{% endif %}</td>
 </tr>
-{% else %}<tr><td colspan="14" class="muted">טרם חושבו חיובים לחודש זה.</td></tr>{% endfor %}
-</tbody></table>
-</div>
+{% endfor %}
+</tbody></table></div></div>
+{% else %}
+<div class="card">{% call m.empty('אין חיובים להצגה', 'טרם חושבו חיובים לחודש זה, או שאין תוצאות לסינון.' if not q and not status else 'אין תוצאות לסינון שנבחר.', ic='coins') %}{% endcall %}</div>
+{% endif %}
 {% endblock %}

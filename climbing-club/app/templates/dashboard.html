@@ -1,11 +1,12 @@
-{% extends "base.html" %}{% set active = 'dashboard' %}{% block title %}דשבורד{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'dashboard' %}{% block title %}דשבורד{% endblock %}
+{% block page_title %}שלום, {{ user.display_name }}{% endblock %}
 {% block content %}
-<div class="page-head"><h1>ניהול החוג</h1><span class="muted">תצוגת מנהלת · {{ MONTH_NAMES[month] }} {{ year }}</span></div>
-<div class="stats">
-  <a class="stat" href="/children?status=active"><div class="stat-num">{{ active_children }}</div><div class="stat-label">ילדים פעילים</div></a>
-  <a class="stat" href="/calendar?year={{ year }}&month={{ month }}"><div class="stat-num">{{ held }}</div><div class="stat-label">מפגשים שהתקיימו החודש</div></a>
-  <a class="stat" href="/billing?year={{ year }}&month={{ month }}"><div class="stat-num">{{ to_collect|money }}</div><div class="stat-label">סכום לגבייה</div></a>
-  <a class="stat" href="/receipts"><div class="stat-num">{{ pending_receipts }}</div><div class="stat-label">קבלות שממתינות לאישור</div></a>
+<div class="page-head"><h1>ניהול החוג</h1><span class="sub">{{ MONTH_NAMES[month] }} {{ year }} · תצוגת {{ user.role|label }}</span></div>
+<div class="stats stagger">
+  <a class="stat" href="/children?status=active"><span class="stat-label">{{ m.icon('users') }} ילדים פעילים</span><span class="stat-num num">{{ active_children }}</span></a>
+  <a class="stat" href="/calendar?year={{ year }}&month={{ month }}"><span class="stat-label">{{ m.icon('calendar') }} מפגשים החודש</span><span class="stat-num num">{{ held }}</span><span class="stat-sub">התקיימו · {{ planned }} מתוכננים</span></a>
+  <a class="stat {% if to_collect > 0 %}stat-warn{% endif %}" href="/billing?year={{ year }}&month={{ month }}"><span class="stat-label">{{ m.icon('coins') }} יתרה לגבייה</span><span class="stat-num num">{{ to_collect|money }}</span><span class="stat-sub">התקבלו {{ paid|money }} מתוך {{ charged|money }}</span></a>
+  <a class="stat {% if pending_receipts %}stat-warn{% endif %}" href="/receipts"><span class="stat-label">{{ m.icon('receipt') }} קבלות ממתינות</span><span class="stat-num num">{{ pending_receipts }}</span><span class="stat-sub">{{ msgs_pending }} הודעות טרם נשלחו</span></a>
 </div>
 <div class="grid-2">
   <section class="card">
@@ -13,19 +14,18 @@
     {% if tasks %}
     <ul class="tasks">
       {% for title, detail, url, kind in tasks %}
-      <li><a href="{{ url }}"><div><strong>{{ title }}</strong><div class="muted small">{{ detail }}</div></div><span class="badge {% if kind == 'action' %}badge-red{% else %}badge-orange{% endif %}">{% if kind == 'action' %}פעולה נדרשת{% else %}ממתין{% endif %}</span></a></li>
+      <li><a href="{{ url }}"><span class="t-icon {% if kind == 'action' %}t-action{% else %}t-pending{% endif %}">{{ m.icon('warning' if kind == 'action' else 'clock') }}</span><span class="t-body"><strong>{{ title }}</strong><div class="muted small">{{ detail }}</div></span><span class="badge {% if kind == 'action' %}badge-red{% else %}badge-orange{% endif %}">{% if kind == 'action' %}פעולה נדרשת{% else %}ממתין{% endif %}</span></a></li>
       {% endfor %}
     </ul>
-    {% else %}<p class="muted">אין משימות פתוחות. כל הכבוד!</p>{% endif %}
+    {% else %}{{ m.empty('אין משימות פתוחות', 'הכול מעודכן. כל הכבוד!', ic='check-circle') }}{% endif %}
   </section>
   <section class="card">
     <h2>המפגשים הקרובים</h2>
     {% if upcoming %}
-    <table class="table"><tbody>
-      {% for s in upcoming %}<tr><td>{{ s.date|hebdate }}</td><td>{{ s.group.name if s.group else 'מפגש היכרות' }}</td><td><a class="btn btn-sm" href="/attendance?session_id={{ s.id }}">נוכחות</a></td></tr>{% endfor %}
-    </tbody></table>
-    {% else %}<p class="muted">אין מפגשים מתוכננים. <a href="/calendar">צרי לוח לחודש</a>.</p>{% endif %}
-    <div class="actions"><a class="btn" href="/attendance">דיווח נוכחות היום</a><a class="btn" href="/payments/new">קליטת תשלום</a><a class="btn" href="/month-close?year={{ year }}&month={{ month }}">סגירת חודש</a></div>
+    <ul class="list">{% for s in upcoming %}<li><div><strong>{{ s.date|hebdate }}</strong><div class="muted small">{{ s.group.name if s.group else 'מפגש היכרות' }} · {{ s.start_time }}</div></div><a class="btn btn-sm btn-soft" href="/attendance?session_id={{ s.id }}">{{ m.icon('clipboard') }} נוכחות</a></li>{% endfor %}</ul>
+    {% else %}{{ m.empty('אין מפגשים מתוכננים', 'צרי לוח חודשי לפי ימי הפעילות הקבועים.', '/calendar', 'ללוח המפגשים', 'calendar') }}{% endif %}
+    <div class="divider"></div>
+    <div class="actions"><a class="btn" href="/attendance">{{ m.icon('clipboard') }} דיווח נוכחות</a><a class="btn" href="/payments/new">{{ m.icon('plus') }} קליטת תשלום</a><a class="btn" href="/month-close?year={{ year }}&month={{ month }}">{{ m.icon('star') }} סגירת חודש</a></div>
   </section>
 </div>
 {% endblock %}

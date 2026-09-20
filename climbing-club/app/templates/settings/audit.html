@@ -1,8 +1,10 @@
-{% extends "base.html" %}{% set active = 'settings' %}{% block title %}היסטוריית שינויים{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'settings' %}{% set back = '/settings' %}{% block title %}היסטוריית שינויים{% endblock %}
 {% block content %}
-<div class="page-head"><h1>היסטוריית שינויים</h1><a class="btn btn-ghost" href="/settings">להגדרות</a></div>
-<form class="filters" method="get"><select name="entity"><option value="">כל הישויות</option>{% for e in ['child','contact','session','attendance','charge','adjustment','payment','payment_allocation','payment_message','receipt','settings','user','month_closure','billing_rule','group'] %}<option value="{{ e }}" {% if entity == e %}selected{% endif %}>{{ e }}</option>{% endfor %}</select><input name="entity_id" value="{{ entity_id or '' }}" placeholder="מזהה"><button class="btn">סינון</button></form>
-<div class="card"><table class="table small"><thead><tr><th>מתי</th><th>מי</th><th>ישות</th><th>פעולה</th><th>לפני</th><th>אחרי</th></tr></thead><tbody>
-{% for r in rows %}<tr><td>{{ r.at|datetime }}</td><td>{{ r.user_name }}</td><td>{{ r.entity }} #{{ r.entity_id }}</td><td>{{ r.action }}{% if r.note %} <span class="muted">({{ r.note }})</span>{% endif %}</td><td class="json">{{ r.before|tojson if r.before else '' }}</td><td class="json">{{ r.after|tojson if r.after else '' }}</td></tr>{% endfor %}
-</tbody></table></div>
+<div class="page-head"><h1>היסטוריית שינויים</h1></div>
+<form class="filters" method="get"><select name="entity" aria-label="ישות" onchange="this.form.submit()"><option value="">כל הישויות</option>{% for e, lbl in [('child','ילד'),('contact','איש קשר'),('session','מפגש'),('attendance','נוכחות'),('charge','חיוב'),('adjustment','התאמה'),('payment','תשלום'),('payment_allocation','שיוך תשלום'),('payment_message','הודעת תשלום'),('receipt','קבלה'),('settings','הגדרות'),('user','משתמש'),('month_closure','סגירת חודש'),('billing_rule','כלל חיוב'),('group','קבוצה')] %}<option value="{{ e }}" {% if entity == e %}selected{% endif %}>{{ lbl }}</option>{% endfor %}</select><input name="entity_id" value="{{ entity_id or '' }}" placeholder="מזהה" inputmode="numeric" style="flex:0 1 120px"><button class="btn">סינון</button></form>
+{% if rows %}
+<div class="card"><div class="table-wrap"><table class="table table-cards small"><thead><tr><th>מתי</th><th>מי</th><th>ישות</th><th>פעולה</th><th>לפני</th><th>אחרי</th></tr></thead><tbody>
+{% for r in rows %}<tr><td class="td-title" data-label="מתי">{{ r.at|datetime }}</td><td data-label="מי">{{ r.user_name }}</td><td data-label="ישות">{{ r.entity }} #{{ r.entity_id }}</td><td data-label="פעולה"><span>{{ r.action }}{% if r.note %} <span class="muted">({{ r.note }})</span>{% endif %}</span></td><td data-label="לפני"><span class="json">{{ r.before|tojson if r.before else '' }}</span></td><td data-label="אחרי"><span class="json">{{ r.after|tojson if r.after else '' }}</span></td></tr>{% endfor %}
+</tbody></table></div></div>
+{% else %}<div class="card">{{ m.empty('אין רשומות', ic='clock') }}</div>{% endif %}
 {% endblock %}

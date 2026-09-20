@@ -1,4 +1,4 @@
-{% extends "base.html" %}{% block title %}{{ title }}{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% block title %}{{ title }}{% endblock %}
 {% block content %}
-<h1>{{ title }}</h1><p>{{ message }}</p><a class="btn" href="/">חזרה לדשבורד</a>
+<div class="card">{% call m.empty(title, message, '/', 'חזרה לדשבורד', 'warning') %}{% endcall %}</div>
 {% endblock %}

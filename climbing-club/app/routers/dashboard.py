@@ -27,6 +27,9 @@ def dashboard(request: Request, db: Session = Depends(get_db), user=Depends(requ
     held = [s for s in sessions if s.status.counts_as_held]
     charges = db.query(MonthlyCharge).filter_by(year=y, month=m).all()
     to_collect = sum(c.balance for c in charges if c.status != ChargeStatus.DRAFT)
+    charged = sum(float(c.amount) for c in charges)
+    paid = sum(c.paid for c in charges)
+    planned_count = sum(1 for s in sessions if s.status == SessionStatus.PLANNED)
     pending_receipts = rcpt_svc.pending(db)
     stale = cal_svc.past_sessions_needing_action(db)
     missing = [(s, missing_reports(db, s)) for s in stale if s.status == SessionStatus.PENDING_ATTENDANCE]
@@ -64,6 +67,10 @@ def dashboard(request: Request, db: Session = Depends(get_db), user=Depends(requ
         user,
         active_children=active,
         held=len(held),
+        planned=planned_count,
+        charged=charged,
+        paid=paid,
+        msgs_pending=len(msgs_pending),
         to_collect=to_collect,
         pending_receipts=len(pending_receipts),
         tasks=tasks,

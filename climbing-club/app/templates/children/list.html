@@ -1,22 +1,31 @@
-{% extends "base.html" %}{% set active = 'children' %}{% block title %}ילדים והורים{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'children' %}{% block title %}ילדים והורים{% endblock %}
+{% block appbar_actions %}{% if can(user, 'children.edit') %}<a class="btn btn-icon btn-primary" href="/children/new" aria-label="ילד חדש">{{ m.icon('plus') }}</a>{% endif %}{% endblock %}
 {% block content %}
 <div class="page-head"><h1>ילדים והורים</h1>
-  <div class="actions">{% if can(user, 'children.edit') %}<a class="btn btn-primary" href="/children/new">+ ילד חדש</a>{% endif %}<a class="btn" href="/groups">קבוצות</a><a class="btn" href="/intro">מפגשי היכרות</a></div></div>
-<form class="filters" method="get">
-  <input name="q" value="{{ q }}" placeholder="חיפוש לפי שם">
-  <select name="status"><option value="">כל הסטטוסים</option>{% for s in ChildStatus %}<option value="{{ s.value }}" {% if status == s.value %}selected{% endif %}>{{ s|label }}</option>{% endfor %}</select>
-  <select name="group_id"><option value="">כל הקבוצות</option>{% for g in groups %}<option value="{{ g.id }}" {% if group_id == g.id %}selected{% endif %}>{{ g.name }}</option>{% endfor %}</select>
-  <button class="btn">סינון</button>
+  <div class="actions">{% if can(user, 'children.edit') %}<a class="btn btn-primary" href="/children/new">{{ m.icon('plus') }} ילד חדש</a>{% endif %}<a class="btn" href="/groups">{{ m.icon('grid') }} קבוצות</a><a class="btn" href="/intro">{{ m.icon('sparkle') }} מפגשי היכרות</a></div></div>
+<form class="filters" method="get" role="search">
+  <div class="search">{{ m.icon('search') }}<input name="q" value="{{ q }}" placeholder="חיפוש לפי שם ילד" aria-label="חיפוש"></div>
+  <select name="status" aria-label="סטטוס" onchange="this.form.submit()"><option value="">כל הסטטוסים</option>{% for s in ChildStatus %}<option value="{{ s.value }}" {% if status == s.value %}selected{% endif %}>{{ s|label }}</option>{% endfor %}</select>
+  <select name="group_id" aria-label="קבוצה" onchange="this.form.submit()"><option value="">כל הקבוצות</option>{% for g in groups %}<option value="{{ g.id }}" {% if group_id == g.id %}selected{% endif %}>{{ g.name }}</option>{% endfor %}</select>
+  <button class="btn hide-mobile">סינון</button>
 </form>
-<div class="cards">
+<p class="muted small">{{ children|length }} ילדים</p>
+{% if children %}
+<div class="cards stagger">
 {% for c in children %}
-  {% set rule = c.current_rule() %}
+  {% set rule = c.current_rule() %}{% set bal = balances.get(c.id, 0) %}
   <a class="card card-link" href="/children/{{ c.id }}">
-    <div class="card-row"><strong>{{ c.full_name }}</strong><span class="badge {{ c.status|badge }}">{{ c.status|label }}</span></div>
-    <div class="muted small">{% for g in c.active_groups() %}{{ g.name }}{% if not loop.last %}, {% endif %}{% else %}ללא קבוצה{% endfor %}</div>
-    <div class="small">{% if rule %}{{ rule.method|label }} · {% if rule.method.value == 'fixed_monthly' %}{{ rule.fixed_monthly_amount|money }}/חודש{% else %}{{ rule.price_per_session|money }}/מפגש{% endif %}{% else %}<span class="text-red">ללא כלל חיוב</span>{% endif %}</div>
-    <div class="small muted">{% set ct = c.message_contact %}{% if ct %}{{ ct.full_name }} · {{ ct.phone }}{% else %}ללא איש קשר{% endif %} · {{ c.receipt_mode|label }}</div>
+    <div class="card-row"><strong style="font-size:var(--fs-lg)">{{ c.full_name }}</strong>{{ m.badge(c.status) }}</div>
+    <div class="muted small">{{ m.icon('users') }} {% set ct = c.message_contact %}{% if ct %}{{ ct.full_name }}{% if ct.phone %} · <span class="ltr">{{ ct.phone }}</span>{% endif %}{% else %}ללא איש קשר{% endif %}</div>
+    <div class="muted small">{{ m.icon('calendar') }} {% for g in c.active_groups() %}{{ g.name }}{% if not loop.last %}, {% endif %}{% else %}ללא קבוצה{% endfor %}</div>
+    <div class="card-row" style="margin-top:6px">
+      <span class="small">{% if rule %}{{ rule.method|label }} · <span class="money">{% if rule.method.value == 'fixed_monthly' %}{{ rule.fixed_monthly_amount|money }}/חודש{% else %}{{ rule.price_per_session|money }}/מפגש{% endif %}</span>{% else %}<span class="text-danger">{{ m.icon('warning') }} ללא כלל חיוב</span>{% endif %}</span>
+      {% if bal > 0 %}<span class="badge badge-red">יתרה {{ bal|money }}</span>{% elif bal < 0 %}<span class="badge badge-blue">זכות {{ (-bal)|money }}</span>{% endif %}
+    </div>
   </a>
-{% else %}<p class="muted">לא נמצאו ילדים.</p>{% endfor %}
+{% endfor %}
 </div>
+{% else %}
+<div class="card">{% call m.empty('לא נמצאו ילדים', 'נסי חיפוש אחר, או הוסיפי ילד חדש.', '/children/new' if can(user, 'children.edit') else '', 'ילד חדש', 'users') %}{% endcall %}</div>
+{% endif %}
 {% endblock %}

@@ -15,19 +15,37 @@ router = APIRouter(prefix="/billing")
 
 
 @router.get("")
-def billing_view(request: Request, year: int | None = None, month: int | None = None, db: Session = Depends(get_db), user=Depends(require_user)):
+def billing_view(request: Request, year: int | None = None, month: int | None = None, status: str = "", group_id: int | None = None, q: str = "", db: Session = Depends(get_db), user=Depends(require_user)):
+    from ..models import Group
+
     y, m = ym_from_query(year, month)
     charges = (
         db.query(MonthlyCharge).filter_by(year=y, month=m).join(Child).order_by(Child.full_name).all()
     )
+    all_charges = charges
+    if status == "open":
+        charges = [c for c in charges if c.balance > 0.004]
+    elif status == "paid":
+        charges = [c for c in charges if c.balance <= 0.004 and c.status != ChargeStatus.DRAFT]
+    elif status == "draft":
+        charges = [c for c in charges if c.status == ChargeStatus.DRAFT]
+    elif status == "warnings":
+        charges = [c for c in charges if c.warnings]
+    if group_id:
+        charges = [c for c in charges if any(mb.group_id == group_id for mb in c.child.memberships)]
+    if q:
+        charges = [c for c in charges if q in c.child.full_name]
+    groups = db.query(Group).order_by(Group.weekday).all()
     active = billing_svc.active_children_for_month(db, y, m)
     computed_ids = {c.child_id for c in charges}
     not_computed = [c for c in active if c.id not in computed_ids]
     totals = {
-        "amount": sum(float(c.amount) for c in charges),
-        "paid": sum(c.paid for c in charges),
-        "balance": sum(c.balance for c in charges),
-        "warnings": sum(1 for c in charges if c.warnings),
+        "amount": sum(float(c.amount) for c in all_charges),
+        "paid": sum(c.paid for c in all_charges),
+        "balance": sum(c.balance for c in all_charges),
+        "warnings": sum(1 for c in all_charges if c.warnings),
+        "open": sum(1 for c in all_charges if c.balance > 0.004),
+        "draft": sum(1 for c in all_charges if c.status == ChargeStatus.DRAFT),
     }
     return render(
         request,
@@ -38,6 +56,10 @@ def billing_view(request: Request, year: int | None = None, month: int | None = 
         charges=charges,
         not_computed=not_computed,
         totals=totals,
+        status=status,
+        group_id=group_id,
+        q=q,
+        groups=groups,
         closed=billing_svc.is_month_closed(db, y, m),
         prev_next=prev_next(y, m),
     )

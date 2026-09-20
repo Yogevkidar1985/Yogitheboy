@@ -15,8 +15,28 @@ router = APIRouter()
 
 
 @router.get("/calendar")
-def calendar_view(request: Request, year: int | None = None, month: int | None = None, db: Session = Depends(get_db), user=Depends(require_user)):
+def calendar_view(request: Request, year: int | None = None, month: int | None = None, view: str = "", week: str = "", db: Session = Depends(get_db), user=Depends(require_user)):
+    from datetime import date as _date, timedelta
+
     y, m = ym_from_query(year, month)
+    if view not in ("month", "week", "list"):
+        view = "week" if "Mobi" in (request.headers.get("user-agent") or "") else "month"
+    if view == "list":
+        today = _date.today()
+        upcoming = (
+            db.query(ClubSession).filter(ClubSession.date >= today, ClubSession.status != SessionStatus.MOVED).order_by(ClubSession.date, ClubSession.group_id).limit(30).all()
+        )
+        stale = cal_svc.past_sessions_needing_action(db)
+        groups = db.query(Group).order_by(Group.weekday).all()
+        return render(request, "calendar/list.html", user, view=view, year=y, month=m, upcoming=[(s, len(expected_children(db, s))) for s in upcoming], stale=stale, groups=groups)
+    if view == "week":
+        start = parse_date(week) or _date.today()
+        start = start - timedelta(days=(start.weekday() + 1) % 7)  # יום ראשון
+        days = [start + timedelta(days=i) for i in range(7)]
+        sess = db.query(ClubSession).filter(ClubSession.date >= days[0], ClubSession.date <= days[-1]).order_by(ClubSession.date, ClubSession.group_id).all()
+        by_day = {d: [s for s in sess if s.date == d] for d in days}
+        groups = db.query(Group).order_by(Group.weekday).all()
+        return render(request, "calendar/week.html", user, view=view, year=days[0].year, month=days[0].month, days=days, by_day=by_day, groups=groups, prev_week=(days[0] - timedelta(days=7)).isoformat(), next_week=(days[0] + timedelta(days=7)).isoformat(), today=_date.today(), missing={s.id: len(missing_reports(db, s)) for s in sess if s.status.counts_as_held})
     sessions = cal_svc.month_sessions(db, y, m, kind=None)
     groups = db.query(Group).order_by(Group.weekday).all()
     rows = []
@@ -27,6 +47,7 @@ def calendar_view(request: Request, year: int | None = None, month: int | None =
         request,
         "calendar/month.html",
         user,
+        view=view,
         year=y,
         month=m,
         rows=rows,

@@ -1,0 +1,24 @@
+{% import "_macros.html" as m %}
+{% if can(user, 'calendar.edit') %}
+<div class="toolbar">
+  <form method="post" action="/calendar/generate" class="inline"><input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}">{{ m.submit(m.icon('sparkle') ~ ' יצירת לוח ל' ~ MONTH_NAMES[month], 'btn btn-primary') }}</form>
+  <details class="menu"><summary class="btn">{{ m.icon('plus') }} מפגש בתאריך חריג</summary><div class="menu-body">
+    <h3>מפגש בתאריך חריג</h3>
+    <form method="post" action="/calendar/extra" class="form">
+      <label>קבוצה<select name="group_id">{% for g in groups if g.is_active %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}</select></label>
+      <label class="req">תאריך<input type="date" name="on" required value="{{ '%04d-%02d-01'|format(year, month) }}"></label>
+      <label>שעה<input type="time" name="start_time"></label>
+      <label>סיבה<input name="reason" placeholder="למשל: השלמה במקום חג"></label>
+      {{ m.submit('הוספה', 'btn btn-primary btn-sm') }}
+    </form></div></details>
+  <details class="menu"><summary class="btn">{{ m.icon('flag') }} ביטול לטווח תאריכים</summary><div class="menu-body">
+    <h3>ביטול מרוכז (למשל שבוע חג)</h3>
+    <form method="post" action="/calendar/cancel-range" class="form" data-confirm="לבטל את כל המפגשים המתוכננים בטווח? מפגשים שהתקיימו לא ייפגעו." data-confirm-title="ביטול מרוכז">
+      <label class="req">מתאריך<input type="date" name="start" required></label>
+      <label class="req">עד תאריך<input type="date" name="end" required></label>
+      <label>סוג ביטול<select name="status"><option value="cancelled_holiday">בוטל – חג</option><option value="cancelled_admin">בוטל – מנהלת</option><option value="cancelled_other">בוטל – סיבה אחרת</option></select></label>
+      <label>סיבה<input name="reason" placeholder="למשל: חופשת סוכות"></label>
+      <button class="btn btn-sm btn-danger">ביטול המפגשים בטווח</button>
+    </form></div></details>
+</div>
+{% endif %}

@@ -1,0 +1,8 @@
+{% import "_macros.html" as m %}
+<div class="page-head"><h1>לוח מפגשים</h1>
+  <div class="actions"><a class="btn hide-mobile" href="/groups">{{ m.icon('grid') }} קבוצות</a></div></div>
+<div class="tabs" role="tablist">
+  <a class="tab {% if view == 'month' %}active{% endif %}" href="/calendar?view=month&year={{ year }}&month={{ month }}">{{ m.icon('grid') }} חודש</a>
+  <a class="tab {% if view == 'week' %}active{% endif %}" href="/calendar?view=week">{{ m.icon('calendar') }} שבוע</a>
+  <a class="tab {% if view == 'list' %}active{% endif %}" href="/calendar?view=list">{{ m.icon('list') }} הקרובים</a>
+</div>

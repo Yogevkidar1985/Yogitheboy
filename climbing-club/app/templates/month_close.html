@@ -1,39 +1,40 @@
-{% extends "base.html" %}{% set active = 'month_close' %}{% block title %}סגירת חודש{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'month_close' %}{% block title %}סגירת חודש{% endblock %}
+{% set is_closed = s.closure and s.closure.is_closed %}
 {% block content %}
-<div class="page-head"><h1>סגירת חודש · {{ MONTH_NAMES[month] }} {{ year }}</h1>
-  <div class="actions"><a class="btn btn-ghost" href="/month-close?year={{ prev_next[0][0] }}&month={{ prev_next[0][1] }}">‹</a><a class="btn btn-ghost" href="/month-close?year={{ prev_next[1][0] }}&month={{ prev_next[1][1] }}">›</a></div></div>
-{% if s.closure and s.closure.is_closed %}<div class="flash flash-success">החודש סגור. נסגר ע"י {{ s.closure.closed_by }} ב-{{ s.closure.closed_at|datetime }}.</div>{% endif %}
+<div class="page-head"><h1>סגירת חודש</h1></div>
+<div class="card-row" style="margin-bottom:var(--sp-3)">{{ m.month_nav('/month-close?', year, month, prev_next) }}{% if is_closed %}{{ m.badge('closed', 'סגור') }}{% endif %}</div>
+{% if is_closed %}{{ m.alert('success', 'החודש סגור. נסגר ע"י ' ~ s.closure.closed_by ~ ' ב-' ~ (s.closure.closed_at|datetime) ~ '. החיובים קפואים.') }}{% endif %}
 <div class="grid-2">
 <section class="card">
-  <div class="card-row"><h2>התקדמות הסגירה</h2><strong>{{ s.done }}/{{ s.checks|length }}</strong></div>
-  <div class="progress"><div class="progress-bar" style="width: {{ (100 * s.done / s.checks|length)|int }}%"></div></div>
+  <div class="card-row"><h2 style="margin:0">התקדמות הסגירה</h2><strong class="num">{{ s.done }}/{{ s.checks|length }}</strong></div>
+  <div class="progress" role="progressbar" aria-valuenow="{{ s.done }}" aria-valuemax="{{ s.checks|length }}"><div class="progress-bar" style="width: {{ (100 * s.done / s.checks|length)|int }}%"></div></div>
   <ul class="checklist">
-  {% for c in s.checks %}<li class="{% if c.ok %}ok{% elif c.blocking %}bad{% else %}warn{% endif %}"><a href="{{ c.link }}"><span class="mark">{% if c.ok %}✔{% elif c.blocking %}✖{% else %}!{% endif %}</span><div><div>{{ c.label }}</div><div class="small muted">{{ c.detail }}{% if not c.blocking and not c.ok %} · אינו חוסם סגירה{% endif %}</div></div></a></li>{% endfor %}
+  {% for c in s.checks %}<li class="{% if c.ok %}ok{% elif c.blocking %}bad{% else %}warn{% endif %}"><a href="{{ c.link }}"><span class="mark">{% if c.ok %}{{ m.icon('check') }}{% elif c.blocking %}{{ m.icon('x') }}{% else %}!{% endif %}</span><div><div class="strong">{{ c.label }}</div><div class="small muted">{{ c.detail }}{% if not c.blocking and not c.ok %} · אינו חוסם סגירה{% endif %}</div></div><span class="chev">{{ m.icon('chev-left') }}</span></a></li>{% endfor %}
   </ul>
   {% if can(user, 'month.close') %}
-  {% if not (s.closure and s.closure.is_closed) %}
-  <form method="post" action="/month-close/close" class="form">
+  {% if not is_closed %}
+  <form method="post" action="/month-close/close" class="form" style="margin-top:var(--sp-4)" data-confirm="לסגור את החודש? החיובים יוקפאו ולא ישתנו." data-confirm-title="סגירת חודש">
     <input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}">
-    {% if s.can_close %}<p class="muted">כל שלבי הבדיקה החוסמים הושלמו.</p>{% else %}<p class="text-red">יש להשלים את שלבי הבדיקה החוסמים לפני סגירת החודש.</p><label class="check"><input type="checkbox" name="force" value="1"> אני מבינה ומבקשת לסגור בכל זאת</label>{% endif %}
-    <button class="btn btn-primary" onclick="return confirm('לסגור את החודש? החיובים יוקפאו.')">סגירת החודש</button>
+    {% if s.can_close %}{{ m.alert('success', 'כל שלבי הבדיקה החוסמים הושלמו. ניתן לסגור.') }}{% else %}{{ m.alert('error', 'יש להשלים את שלבי הבדיקה החוסמים לפני סגירת החודש.') }}<label class="check"><input type="checkbox" name="force" value="1"> אני מבינה ומבקשת לסגור בכל זאת</label>{% endif %}
+    {{ m.submit(m.icon('lock') ~ ' סגירת החודש', 'btn btn-primary btn-lg btn-block') }}
   </form>
   {% else %}
-  <form method="post" action="/month-close/reopen" class="form inline-form"><input type="hidden" name="year" value="{{ year }}"><input type="hidden" name="month" value="{{ month }}"><input name="reason" placeholder="סיבת הפתיחה מחדש" required><button class="btn btn-ghost">פתיחה מחדש</button></form>
+  <form method="post" action="/month-close/reopen" class="form sub-form"><label class="req">סיבת הפתיחה מחדש<input name="reason" required></label>{{ m.submit(m.icon('unlock') ~ ' פתיחה מחדש', 'btn') }}</form>
   {% endif %}{% endif %}
 </section>
 <section class="card">
   <h2>נתוני החודש</h2>
   <table class="table table-kv"><tbody>
-    <tr><th>ילדים פעילים</th><td><a href="/children?status=active">{{ s.active_children }}</a></td></tr>
-    <tr><th>מפגשים מתוכננים / התקיימו</th><td><a href="/calendar?year={{ year }}&month={{ month }}">{{ s.planned }} / {{ s.held }}</a></td></tr>
-    <tr><th>בוטלו / הועברו</th><td>{{ s.cancelled }} / {{ s.moved }}</td></tr>
-    <tr><th>דיווחי נוכחות חסרים</th><td>{% for sess, kids in s.missing_attendance %}<a href="/attendance?session_id={{ sess.id }}">{{ sess.date|date }} ({{ kids|length }})</a>{% if not loop.last %}, {% endif %}{% else %}אין{% endfor %}</td></tr>
-    <tr><th>סכום החיובים</th><td><a href="/billing?year={{ year }}&month={{ month }}">{{ s.total_charges|money }}</a></td></tr>
-    <tr><th>תשלומים שהתקבלו</th><td>{{ s.total_paid|money }}</td></tr>
-    <tr><th>יתרת חובות פתוחים</th><td class="{% if s.open_balance > 0 %}text-red{% endif %}">{{ s.open_balance|money }}</td></tr>
-    <tr><th>הודעות תשלום שטרם נשלחו</th><td><a href="/billing/messages/list?year={{ year }}&month={{ month }}">{{ s.messages_pending }}</a></td></tr>
-    <tr><th>קבלות שטרם הופקו / טרם נשלחו</th><td><a href="/receipts">{{ s.receipts_pending }} / {{ s.receipts_not_sent }}</a></td></tr>
-    <tr><th>תשלומים ללא ילד / לא משויכים</th><td><a href="/payments?filter=unassigned">{{ s.unassigned_payments }} / {{ s.unallocated_payments }}</a></td></tr>
+    <tr><th>ילדים פעילים</th><td><a href="/children?status=active" class="num">{{ s.active_children }}</a></td></tr>
+    <tr><th>מפגשים מתוכננים / התקיימו</th><td><a href="/calendar?view=month&year={{ year }}&month={{ month }}" class="num">{{ s.planned }} / {{ s.held }}</a></td></tr>
+    <tr><th>בוטלו / הועברו</th><td class="num">{{ s.cancelled }} / {{ s.moved }}</td></tr>
+    <tr><th>דיווחי נוכחות חסרים</th><td>{% for sess, kids in s.missing_attendance %}<a href="/attendance?session_id={{ sess.id }}">{{ sess.date|date }} ({{ kids|length }})</a>{% if not loop.last %}, {% endif %}{% else %}<span class="text-ok">{{ m.icon('check') }} אין</span>{% endfor %}</td></tr>
+    <tr><th>סכום החיובים</th><td><a href="/billing?year={{ year }}&month={{ month }}" class="money">{{ s.total_charges|money }}</a></td></tr>
+    <tr><th>תשלומים שהתקבלו</th><td class="money">{{ s.total_paid|money }}</td></tr>
+    <tr><th>יתרת חובות פתוחים</th><td class="money {% if s.open_balance > 0 %}text-danger strong{% endif %}">{{ s.open_balance|money }}</td></tr>
+    <tr><th>הודעות תשלום שטרם נשלחו</th><td><a href="/billing/messages/list?year={{ year }}&month={{ month }}" class="num">{{ s.messages_pending }}</a></td></tr>
+    <tr><th>קבלות שטרם הופקו / טרם נשלחו</th><td><a href="/receipts" class="num">{{ s.receipts_pending }} / {{ s.receipts_not_sent }}</a></td></tr>
+    <tr><th>תשלומים ללא ילד / לא משויכים</th><td><a href="/payments?filter=unassigned" class="num">{{ s.unassigned_payments }} / {{ s.unallocated_payments }}</a></td></tr>
   </tbody></table>
 </section>
 </div>

@@ -1,23 +1,26 @@
-{% extends "base.html" %}{% set active = 'payments' %}{% block title %}תשלומים{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'payments' %}{% block title %}תשלומים{% endblock %}
+{% block appbar_actions %}{% if can(user, 'payments.add') %}<a class="btn btn-icon btn-primary" href="/payments/new" aria-label="קליטת תשלום">{{ m.icon('plus') }}</a>{% endif %}{% endblock %}
 {% block content %}
 <div class="page-head"><h1>תשלומים</h1>
-  <div class="actions">{% if can(user, 'payments.add') %}<a class="btn btn-primary" href="/payments/new">+ קליטת תשלום</a><a class="btn" href="/payments/upload/screenshot">העלאת צילום מסך</a>{% endif %}<a class="btn" href="/intro">מפגשי היכרות</a></div></div>
+  <div class="actions">{% if can(user, 'payments.add') %}<a class="btn btn-primary" href="/payments/new">{{ m.icon('plus') }} קליטת תשלום</a><a class="btn" href="/payments/upload/screenshot">{{ m.icon('image') }} מצילום מסך</a>{% endif %}<a class="btn" href="/intro">{{ m.icon('sparkle') }} מפגשי היכרות</a></div></div>
 <form class="filters" method="get">
-  <select name="child_id"><option value="">כל הילדים</option>{% for c in children %}<option value="{{ c.id }}" {% if child_id == c.id %}selected{% endif %}>{{ c.full_name }}</option>{% endfor %}</select>
-  <select name="filter"><option value="">כל התשלומים</option><option value="unassigned" {% if filter == 'unassigned' %}selected{% endif %}>טרם שויכו במלואם</option></select>
-  <button class="btn">סינון</button>
+  <div class="chips" style="margin:0;flex:1 1 100%"><a class="chip {% if not filter %}active{% endif %}" href="/payments?child_id={{ child_id or '' }}">הכול</a><a class="chip {% if filter == 'unassigned' %}active{% endif %}" href="/payments?filter=unassigned&child_id={{ child_id or '' }}">{{ m.icon('warning') }} טרם שויכו במלואם</a></div>
+  <input type="hidden" name="filter" value="{{ filter }}">
+  <select name="child_id" aria-label="ילד" onchange="this.form.submit()"><option value="">כל הילדים</option>{% for c in children %}<option value="{{ c.id }}" {% if child_id == c.id %}selected{% endif %}>{{ c.full_name }}</option>{% endfor %}</select>
 </form>
-<div class="card"><table class="table">
+{% if payments %}
+<div class="card"><div class="table-wrap"><table class="table table-cards">
 <thead><tr><th>תאריך</th><th>ילד</th><th>סכום</th><th>אמצעי</th><th>משלם</th><th>אסמכתא</th><th>משויך</th><th>מקור</th><th>קבלות</th></tr></thead><tbody>
 {% for p in payments %}
 <tr class="{% if p.child_id is none or p.unallocated > 0.004 %}row-warn{% endif %}">
-  <td><a href="/payments/{{ p.id }}">{{ p.paid_on|date }}</a></td>
-  <td>{% if p.child %}<a href="/children/{{ p.child.id }}">{{ p.child.full_name }}</a>{% else %}<span class="text-red">לא שויך</span>{% endif %}</td>
-  <td>{{ p.amount|money }}</td><td>{{ p.method.value|label }}</td><td>{{ p.payer_name }}</td><td dir="ltr">{{ p.reference }}</td>
-  <td>{{ p.allocated|money }}{% if p.unallocated > 0.004 %} <span class="text-red small">(נותרו {{ p.unallocated|money }})</span>{% endif %}</td>
-  <td class="small">{{ 'צילום מסך' if p.source.value == 'screenshot' else 'ידני' }}</td>
-  <td>{% for r in p.receipts %}<a href="/receipts/{{ r.id }}" class="badge {{ r.status|badge }}">{{ r.status|label }}</a> {% endfor %}</td>
+  <td class="td-title" data-label="תאריך"><span><a href="/payments/{{ p.id }}">{{ p.paid_on|date }}</a> <span class="money show-mobile">· {{ p.amount|money }}</span></span></td>
+  <td data-label="ילד">{% if p.child %}<a href="/children/{{ p.child.id }}">{{ p.child.full_name }}</a>{% else %}<span class="text-danger">{{ m.icon('warning') }} לא שויך לילד</span>{% endif %}</td>
+  <td data-label="סכום" class="money strong hide-mobile">{{ p.amount|money }}</td><td data-label="אמצעי">{{ p.method.value|label }}</td><td data-label="משלם">{{ p.payer_name or '—' }}</td><td data-label="אסמכתא"><span class="ltr">{{ p.reference or '—' }}</span></td>
+  <td data-label="משויך"><span class="money">{{ p.allocated|money }}{% if p.unallocated > 0.004 %} <span class="text-danger xs">(נותרו {{ p.unallocated|money }})</span>{% endif %}</span></td>
+  <td data-label="מקור" class="small">{{ 'צילום מסך' if p.source.value == 'screenshot' else 'ידני' }}</td>
+  <td data-label="קבלות"><span class="pill-row">{% for r in p.receipts %}<a href="/receipts/{{ r.id }}">{{ m.badge(r.status) }}</a>{% else %}—{% endfor %}</span></td>
 </tr>
-{% else %}<tr><td colspan="9" class="muted">אין תשלומים</td></tr>{% endfor %}
-</tbody></table></div>
+{% endfor %}
+</tbody></table></div></div>
+{% else %}<div class="card">{% call m.empty('אין תשלומים', 'תשלומים שנקלטים יופיעו כאן עם השיוך שלהם לחיובים.', '/payments/new' if can(user, 'payments.add') else '', 'קליטת תשלום', 'coins') %}{% endcall %}</div>{% endif %}
 {% endblock %}

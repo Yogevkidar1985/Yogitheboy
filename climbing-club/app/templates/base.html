@@ -1,35 +1,76 @@
+{% import "_macros.html" as m %}
 <!DOCTYPE html>
 <html lang="he" dir="rtl">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
 <title>{% block title %}ניהול החוג{% endblock %} · חוג טיפוס</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800&display=swap">
 <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+{% include "_icons.html" %}
+<div class="nav-progress" id="nav-progress" aria-hidden="true"></div>
+{% set NAV_ICONS = {'dashboard':'home','children':'users','calendar':'calendar','attendance':'clipboard','billing':'coins','payments':'coins','receipts':'receipt','settings':'settings'} %}
 <div class="shell">
   <aside class="sidebar">
-    <div class="brand">
-      <div class="brand-title">ניהול החוג</div>
-      <div class="brand-sub">{% if user %}{{ user.display_name }} · {{ user.role|label }}{% else %}חוג טיפוס{% endif %}</div>
-    </div>
-    <nav class="nav">
+    <div class="brand"><div class="brand-title">ניהול החוג</div><div class="brand-sub">{% if user %}{{ user.display_name }} · {{ user.role|label }}{% else %}חוג טיפוס{% endif %}</div></div>
+    <nav class="nav" aria-label="ניווט ראשי">
       {% for key, url, title, num in NAV %}
-      <a href="{{ url }}" class="nav-item {% if active == key %}active{% endif %}"><span class="nav-num">{{ num }}</span><span>{{ title }}</span></a>
+      <a href="{{ url }}" class="nav-item {% if active == key %}active{% endif %}" {% if active == key %}aria-current="page"{% endif %}>{{ m.icon(NAV_ICONS[key]) }}<span>{{ title }}</span></a>
       {% endfor %}
-      <a href="/month-close" class="nav-item {% if active == 'month_close' %}active{% endif %}"><span class="nav-num">★</span><span>סגירת חודש</span></a>
+      <div class="nav-sep"></div>
+      <a href="/month-close" class="nav-item {% if active == 'month_close' %}active{% endif %}">{{ m.icon('star') }}<span>סגירת חודש</span></a>
     </nav>
-    {% if user %}
-    <form method="post" action="/logout" class="logout"><button class="btn btn-ghost btn-sm">יציאה</button></form>
-    {% endif %}
+    {% if user %}<form method="post" action="/logout" class="logout"><button class="btn btn-ghost btn-sm">{{ m.icon('logout') }} יציאה</button></form>{% endif %}
   </aside>
-  <main class="main">
-    {% for f in flash_messages %}
-    <div class="flash flash-{{ f.kind }}">{{ f.text }}</div>
-    {% endfor %}
+
+  <header class="appbar">
+    {% if back %}<a class="btn btn-icon btn-ghost" href="{{ back }}" aria-label="חזרה">{{ m.icon('back') }}</a>{% endif %}
+    <div class="appbar-title">{% block page_title %}{{ self.title() }}{% endblock %}</div>
+    {% block appbar_actions %}{% endblock %}
+  </header>
+
+  <main class="main" id="main">
+    <div class="toast-stack" id="toasts" aria-live="polite">
+      {% for f in flash_messages %}
+      <div class="toast toast-{{ f.kind }}" data-kind="{{ f.kind }}">{{ m.icon({'success':'check-circle','error':'x-circle','warning':'warning','info':'info'}[f.kind]) }}<div class="toast-text">{{ f.text }}</div><button class="close" aria-label="סגירה">{{ m.icon('x') }}</button></div>
+      {% endfor %}
+    </div>
     {% block content %}{% endblock %}
   </main>
+
+  {% if user %}
+  <nav class="bottomnav" aria-label="ניווט תחתון">
+    <a href="/" class="{% if active == 'dashboard' %}active{% endif %}">{{ m.icon('home') }}<span>דשבורד</span></a>
+    <a href="/attendance" class="{% if active == 'attendance' %}active{% endif %}">{{ m.icon('clipboard') }}<span>נוכחות</span></a>
+    <a href="/children" class="{% if active == 'children' %}active{% endif %}">{{ m.icon('users') }}<span>ילדים</span></a>
+    <a href="/billing" class="{% if active in ['billing','payments'] %}active{% endif %}">{{ m.icon('coins') }}<span>גבייה</span></a>
+    <button type="button" id="more-btn" class="{% if active in ['calendar','receipts','settings','month_close'] %}active{% endif %}" aria-expanded="false" aria-controls="more-sheet">{{ m.icon('more') }}<span>עוד</span></button>
+  </nav>
+  <div class="sheet-backdrop" id="sheet-backdrop"></div>
+  <div class="sheet" id="more-sheet" role="dialog" aria-label="תפריט נוסף">
+    <div class="sheet-handle"></div>
+    <div class="sheet-grid">
+      <a href="/calendar" class="{% if active == 'calendar' %}active{% endif %}">{{ m.icon('calendar') }}לוח מפגשים</a>
+      <a href="/payments" class="{% if active == 'payments' %}active{% endif %}">{{ m.icon('coins') }}תשלומים</a>
+      <a href="/receipts" class="{% if active == 'receipts' %}active{% endif %}">{{ m.icon('receipt') }}קבלות</a>
+      <a href="/month-close" class="{% if active == 'month_close' %}active{% endif %}">{{ m.icon('star') }}סגירת חודש</a>
+      <a href="/intro">{{ m.icon('sparkle') }}מפגשי היכרות</a>
+      <a href="/groups">{{ m.icon('grid') }}קבוצות</a>
+      <a href="/settings" class="{% if active == 'settings' %}active{% endif %}">{{ m.icon('settings') }}הגדרות ודוחות</a>
+      <form method="post" action="/logout" style="display:contents"><button type="submit">{{ m.icon('logout') }}יציאה</button></form>
+    </div>
+  </div>
+  {% endif %}
 </div>
+<dialog class="confirm" id="confirm-dialog">
+  <h2>{{ m.icon('warning') }}<span id="confirm-title">אישור פעולה</span></h2>
+  <p id="confirm-text" class="muted"></p>
+  <div class="actions"><button type="button" class="btn btn-primary" id="confirm-ok">אישור</button><button type="button" class="btn btn-ghost" id="confirm-cancel">ביטול</button></div>
+</dialog>
 <script src="/static/app.js"></script>
 {% block scripts %}{% endblock %}
 </body>

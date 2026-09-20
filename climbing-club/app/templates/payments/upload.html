@@ -1,12 +1,16 @@
-{% extends "base.html" %}{% set active = 'payments' %}{% block title %}העלאת צילום מסך{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'payments' %}{% set back = '/payments' %}{% block title %}תשלום מצילום מסך{% endblock %}
 {% block content %}
 <div class="page-head"><h1>קליטת תשלום מצילום מסך</h1></div>
 <div class="card form">
-  {% if not ocr_available %}<div class="flash flash-warning">פענוח אוטומטי אינו מוגדר במערכת. הקובץ יישמר כאסמכתא ותוצג טופס להזנה ידנית.</div>{% endif %}
-  <p class="muted">העלי צילום מסך של אישור ההעברה / ביט / פייבוקס. המערכת תנסה לחלץ תאריך, סכום, שם משלם ואסמכתא, ותציג טופס לבדיקה. שום תשלום לא נשמר בלי אישורך.</p>
+  {% if not ocr_available %}{{ m.alert('info', 'פענוח אוטומטי אינו מוגדר במערכת. הקובץ יישמר כאסמכתא ויוצג טופס להזנה ידנית.') }}{% endif %}
+  <div class="steps" style="margin-bottom:var(--sp-4)">
+    <div class="step current"><div class="step-h"><span class="step-n">1</span> העלאת תמונה</div><span class="small muted">צילום מסך של אישור העברה / ביט / פייבוקס</span></div>
+    <div class="step"><div class="step-h"><span class="step-n">2</span> בדיקת הפרטים שחולצו</div><span class="small muted">שדות שלא זוהו בוודאות מסומנים; ניתן לתקן הכול</span></div>
+    <div class="step"><div class="step-h"><span class="step-n">3</span> אישור מפורש ושמירה</div><span class="small muted">שום תשלום לא נשמר בלי אישורך</span></div>
+  </div>
   <form method="post" action="/payments/upload/screenshot" enctype="multipart/form-data" class="form">
-    <label>קובץ (PNG / JPG / WEBP / PDF, עד 8MB)<input type="file" name="file" accept="image/*,.pdf" required></label>
-    <button class="btn btn-primary">העלאה ופענוח</button>
+    <label class="req">קובץ (PNG / JPG / WEBP / PDF, עד 8MB)<input type="file" name="file" accept="image/*,.pdf" capture="environment" required></label>
+    <div class="form-actions">{{ m.submit(m.icon('upload') ~ ' העלאה ופענוח') }}<a class="btn btn-ghost" href="/payments/new">הזנה ידנית במקום</a></div>
   </form>
 </div>
 {% endblock %}

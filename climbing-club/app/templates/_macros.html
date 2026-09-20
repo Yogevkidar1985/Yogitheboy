@@ -1,0 +1,32 @@
+{% macro icon(name, cls='') -%}<svg class="icon {{ cls }}" aria-hidden="true"><use href="#i-{{ name }}"/></svg>{%- endmacro %}
+
+{% macro badge(value, text=None) -%}
+{% set v = value.value if value.value is defined else value %}
+{% set ic = {'held':'check','present':'check','sent':'send','issued':'receipt','approved':'check','active':'check',
+             'pending_attendance':'clock','planned':'calendar','draft':'edit','paused':'clock',
+             'absent':'x','failed':'x-circle','cancelled':'x','cancelled_holiday':'flag','cancelled_admin':'x','cancelled_other':'x','left':'x',
+             'moved':'move','unreported':'info','closed':'lock'}.get(v, '') %}
+<span class="badge {{ value|badge }}">{% if ic %}{{ icon(ic) }}{% endif %}{{ text if text else value|label }}</span>
+{%- endmacro %}
+
+{% macro empty(title, text='', cta_url='', cta_label='', ic='clipboard') -%}
+<div class="empty">{{ icon(ic) }}<strong>{{ title }}</strong>{% if text %}<div>{{ text }}</div>{% endif %}
+{% if cta_url %}<div class="actions"><a class="btn btn-primary" href="{{ cta_url }}">{{ cta_label }}</a></div>{% endif %}{{ caller() if caller }}</div>
+{%- endmacro %}
+
+{% macro alert(kind, text) -%}
+{% set ic = {'success':'check-circle','error':'x-circle','warning':'warning','info':'info'}[kind] %}
+<div class="alert alert-{{ kind }}" role="{{ 'alert' if kind == 'error' else 'status' }}">{{ icon(ic) }}<div>{{ text }}{{ caller() if caller }}</div></div>
+{%- endmacro %}
+
+{% macro month_nav(base, year, month, prev_next) -%}
+<div class="month-nav">
+  <a class="btn btn-icon btn-ghost" href="{{ base }}year={{ prev_next[0][0] }}&month={{ prev_next[0][1] }}" aria-label="חודש קודם">{{ icon('chev-right') }}</a>
+  <span>{{ MONTH_NAMES[month] }} {{ year }}</span>
+  <a class="btn btn-icon btn-ghost" href="{{ base }}year={{ prev_next[1][0] }}&month={{ prev_next[1][1] }}" aria-label="חודש הבא">{{ icon('chev-left') }}</a>
+</div>
+{%- endmacro %}
+
+{% macro submit(label, cls='btn btn-primary', extra='') -%}
+<button class="{{ cls }}" data-loading {{ extra }}>{{ label }}</button>
+{%- endmacro %}

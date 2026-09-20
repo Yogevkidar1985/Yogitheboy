@@ -37,6 +37,13 @@ docker build -t climbing-club . && docker run -p 8000:8000 -v $(pwd)/data:/app/d
 | `YPAY_API_BASE_URL`, `YPAY_API_KEY`, `YPAY_API_SECRET`, `YPAY_SANDBOX` | | ל-`ypay_api` בלבד |
 | `ANTHROPIC_API_KEY`, `CLUB_OCR_MODEL` | | פענוח צילומי מסך של אישורי תשלום (אופציונלי) |
 
+## עיצוב וממשק
+מובייל תחילה, RTL מלא, ניווט תחתון בטלפון וסרגל צד במחשב, טבלאות שהופכות לכרטיסים במסך צר, טוסטים, דיאלוגי אישור ותמיכה ב-Reduced Motion. מערכת העיצוב והמפרט למפתח: `docs/08-design-system.md`; סקירת הבעיות שתוקנו: `docs/07-design-review.md`.
+בדיקת רספונסיביות אוטומטית (מול שרת רץ עם נתוני הדגמה, דורש `pip install playwright`):
+```bash
+python scripts/ui_check.py http://127.0.0.1:8000 sapir demo1234 shots/
+```
+
 ## מבנה
 ```
 app/
@@ -47,9 +54,10 @@ app/
   services/ypay/       ספקי קבלות: mock / manual / ypay_api
   routers/             מסכי המערכת (FastAPI + Jinja2)
   templates/ static/   תבניות HTML בעברית, CSS ו-JS מקומיים (ללא תלות באינטרנט)
-docs/                  אפיון מפורט: זרימה, מודל, מסכים, חישוב, YPAY, תוכנית בדיקות
+docs/                  אפיון מפורט: זרימה, מודל, מסכים, חישוב, YPAY, תוכנית בדיקות, סקירת עיצוב, מערכת עיצוב
 scripts/seed_demo.py   נתוני הדגמה
 scripts/import_children.py  ייבוא ילדים והורים מ-CSV
+scripts/ui_check.py    בדיקת רספונסיביות וצילומי מסך
 tests/                 pytest (python -m pytest tests -q)
 ```
 

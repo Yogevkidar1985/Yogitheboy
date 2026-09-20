@@ -1,0 +1,15 @@
+{# תפריט פעולות למפגש – במובייל נפתח כמגירה תחתונה #}
+{% import "_macros.html" as m %}
+<details class="menu"><summary class="btn btn-sm btn-ghost">{{ m.icon('edit') }} שינוי</summary><div class="menu-body">
+  <h3>{{ s.date|hebdate }} · {{ s.group.name if s.group else '' }}</h3>
+  {% if s.status.value == 'planned' or s.status.counts_as_held %}
+  <form method="post" action="/calendar/{{ s.id }}/cancel" class="form" data-confirm="לבטל את המפגש? הילדים לא יחויבו עליו." data-confirm-title="ביטול מפגש">
+    <label>סוג ביטול<select name="status"><option value="cancelled_holiday">בוטל – חג</option><option value="cancelled_admin">בוטל – מנהלת</option><option value="cancelled_other">בוטל – סיבה אחרת</option></select></label>
+    <label>סיבה<input name="reason" placeholder="למשל: ראש השנה"></label><button class="btn btn-sm btn-danger">{{ m.icon('x') }} ביטול מפגש</button></form>
+  <form method="post" action="/calendar/{{ s.id }}/move" class="form" data-confirm="להעביר את המפגש? המקורי יסומן כ'הועבר' ולא יחויב." data-confirm-title="העברת מפגש">
+    <label>תאריך חדש<input type="date" name="new_date" required></label><label>סיבת ההעברה<input name="reason"></label><button class="btn btn-sm">{{ m.icon('move') }} העברה לתאריך אחר</button></form>
+  {% endif %}
+  {% if s.status.is_cancelled %}<form method="post" action="/calendar/{{ s.id }}/restore"><button class="btn btn-sm btn-soft">{{ m.icon('refresh') }} שחזור למתוכנן</button></form>{% endif %}
+  <form method="post" action="/calendar/{{ s.id }}/note" class="form"><label>הערה<input name="notes" value="{{ s.notes }}"></label><label>שעה<input type="time" name="start_time" value="{{ s.start_time }}"></label><button class="btn btn-sm btn-ghost">שמירת הערה</button></form>
+  {% if s.status.value == 'planned' or s.original_date %}<form method="post" action="/calendar/{{ s.id }}/delete" data-confirm="למחוק את המפגש לצמיתות?" data-confirm-title="מחיקה"><button class="btn btn-sm btn-ghost btn-danger">{{ m.icon('trash') }} מחיקה</button></form>{% endif %}
+</div></details>

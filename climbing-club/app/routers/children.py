@@ -47,7 +47,10 @@ def list_children(request: Request, q: str = "", status: str = "", group_id: int
     if group_id:
         children = [c for c in children if any(m.group_id == group_id for m in c.memberships)]
     groups = db.query(Group).order_by(Group.weekday).all()
-    return render(request, "children/list.html", user, children=children, groups=groups, q=q, status=status, group_id=group_id)
+    balances: dict[int, float] = {}
+    for ch in db.query(MonthlyCharge).filter(MonthlyCharge.status != "draft").all():
+        balances[ch.child_id] = round(balances.get(ch.child_id, 0) + ch.balance, 2)
+    return render(request, "children/list.html", user, children=children, groups=groups, q=q, status=status, group_id=group_id, balances=balances)
 
 
 @router.get("/new")
@@ -142,6 +145,7 @@ def child_card(request: Request, child_id: int, db: Session = Depends(get_db), u
         history=history,
         rule=c.current_rule(),
         methods=BillingMethod,
+        open_balance=round(sum(ch.balance for ch in charges if ch.status.value != "draft"), 2),
     )
 
 

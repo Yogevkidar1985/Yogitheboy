@@ -1,13 +1,15 @@
-{% extends "base.html" %}{% set active = 'settings' %}{% block title %}דוחות{% endblock %}
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'settings' %}{% set back = '/settings' %}{% block title %}דוחות {{ year }}{% endblock %}
 {% block content %}
-<div class="page-head"><h1>דוחות · {{ year }}</h1><div class="actions"><a class="btn btn-ghost" href="/settings/reports?year={{ year - 1 }}">‹ {{ year - 1 }}</a><a class="btn btn-ghost" href="/settings/reports?year={{ year + 1 }}">{{ year + 1 }} ›</a><a class="btn" href="/settings/reports/export.csv?year={{ year }}">ייצוא CSV</a></div></div>
+<div class="page-head"><h1>דוחות</h1><a class="btn" href="/settings/reports/export.csv?year={{ year }}">{{ m.icon('download') }} ייצוא CSV</a></div>
+<div class="card-row" style="margin-bottom:var(--sp-3)"><div class="month-nav"><a class="btn btn-icon btn-ghost" href="/settings/reports?year={{ year - 1 }}" aria-label="שנה קודמת">{{ m.icon('chev-right') }}</a><span>{{ year }}</span><a class="btn btn-icon btn-ghost" href="/settings/reports?year={{ year + 1 }}" aria-label="שנה הבאה">{{ m.icon('chev-left') }}</a></div></div>
 <section class="card"><h2>סיכום חודשי</h2>
-<table class="table"><thead><tr><th>חודש</th>{% for m in range(1, 13) %}<th>{{ MONTH_NAMES[m][:3] }}</th>{% endfor %}</tr></thead><tbody>
-<tr><th>חיובים</th>{% for m in range(1, 13) %}<td>{{ monthly[m]|money if monthly[m] else '—' }}</td>{% endfor %}</tr>
-<tr><th>התקבל</th>{% for m in range(1, 13) %}<td>{{ monthly_paid[m]|money if monthly_paid[m] else '—' }}</td>{% endfor %}</tr>
-</tbody></table></section>
+<div class="table-wrap"><table class="table table-cards"><thead><tr><th>חודש</th><th>חיובים</th><th>התקבל</th><th>יתרה</th></tr></thead><tbody>
+{% for mo in range(1, 13) if monthly[mo] %}<tr><td class="td-title" data-label="חודש">{{ MONTH_NAMES[mo] }}</td><td data-label="חיובים" class="money">{{ monthly[mo]|money }}</td><td data-label="התקבל" class="money">{{ monthly_paid[mo]|money }}</td><td data-label="יתרה" class="money {% if monthly[mo] - monthly_paid[mo] > 0 %}text-danger{% endif %}">{{ (monthly[mo] - monthly_paid[mo])|money }}</td></tr>{% else %}<tr><td colspan="4" class="muted">אין נתונים לשנה זו</td></tr>{% endfor %}
+</tbody></table></div></section>
 <section class="card"><h2>לפי ילד</h2>
-<table class="table"><thead><tr><th>ילד</th><th>מפגשים</th><th>נכח</th><th>חיובים</th><th>שולם</th><th>יתרה</th><th>חודשים</th></tr></thead><tbody>
-{% for r in rows %}<tr><td><a href="/children/{{ r.child.id }}">{{ r.child.full_name }}</a></td><td>{{ r.held }}</td><td>{{ r.attended }}</td><td>{{ r.amount|money }}</td><td>{{ r.paid|money }}</td><td class="{% if r.amount - r.paid > 0 %}text-red{% endif %}">{{ (r.amount - r.paid)|money }}</td><td class="small">{% for m, ch in r.months|dictsort %}<a href="/billing/{{ ch.id }}" class="badge {{ ch.status|badge }}">{{ m }}</a> {% endfor %}</td></tr>{% else %}<tr><td colspan="7" class="muted">אין נתונים</td></tr>{% endfor %}
-</tbody></table></section>
+{% if rows %}
+<div class="table-wrap"><table class="table table-cards"><thead><tr><th>ילד</th><th>מפגשים</th><th>נכח</th><th>חיובים</th><th>שולם</th><th>יתרה</th><th>חודשים</th></tr></thead><tbody>
+{% for r in rows %}<tr><td class="td-title" data-label="ילד"><a href="/children/{{ r.child.id }}">{{ r.child.full_name }}</a></td><td data-label="מפגשים" class="num">{{ r.held }}</td><td data-label="נכח" class="num">{{ r.attended }}</td><td data-label="חיובים" class="money">{{ r.amount|money }}</td><td data-label="שולם" class="money">{{ r.paid|money }}</td><td data-label="יתרה" class="money {% if r.amount - r.paid > 0 %}text-danger strong{% endif %}">{{ (r.amount - r.paid)|money }}</td><td data-label="חודשים"><span class="pill-row">{% for mo, ch in r.months|dictsort %}<a href="/billing/{{ ch.id }}" class="badge {{ ch.status|badge }}">{{ mo }}</a>{% endfor %}</span></td></tr>{% endfor %}
+</tbody></table></div>
+{% else %}{{ m.empty('אין נתונים', ic='coins') }}{% endif %}</section>
 {% endblock %}

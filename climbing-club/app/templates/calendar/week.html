@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% import "_macros.html" as m %}{% set active = 'calendar' %}{% block title %}לוח מפגשים{% endblock %}
+{% block content %}
+{% include "calendar/_head.html" %}
+<div class="card-row" style="margin-bottom:var(--sp-3)">
+  <div class="month-nav"><a class="btn btn-icon btn-ghost" href="/calendar?view=week&week={{ prev_week }}" aria-label="שבוע קודם">{{ m.icon('chev-right') }}</a><span>{{ days[0].strftime("%d/%m") }} – {{ days[-1]|date }}</span><a class="btn btn-icon btn-ghost" href="/calendar?view=week&week={{ next_week }}" aria-label="שבוע הבא">{{ m.icon('chev-left') }}</a></div>
+  <a class="btn btn-sm btn-ghost" href="/calendar?view=week">היום</a>
+</div>
+{% include "calendar/_tools.html" %}
+<div class="week">
+{% for d in days %}
+  <div class="day {% if d == today %}today{% endif %}">
+    <div class="day-h"><span>{{ d|weekday }}</span><b>{{ d.day }}</b></div>
+    {% for s in by_day[d] %}
+      {% if s.status.value in ['planned','held','pending_attendance'] %}<a class="sess sess-{{ s.status.value }}" href="/attendance?session_id={{ s.id }}">{% else %}<span class="sess sess-{{ s.status.value }}">{% endif %}
+        {{ s.start_time }} {{ s.group.name if s.group else 'היכרות' }}<br><span class="xs">{{ s.status|label }}{% if missing.get(s.id) %} · {{ missing[s.id] }} ללא דיווח{% endif %}{% if s.reason %} · {{ s.reason }}{% endif %}</span>
+      {% if s.status.value in ['planned','held','pending_attendance'] %}</a>{% else %}</span>{% endif %}
+      {% if can(user, 'calendar.edit') %}<div style="margin-top:2px">{% include "calendar/_session_menu.html" %}</div>{% endif %}
+    {% else %}<span class="xs faint">אין מפגש</span>{% endfor %}
+  </div>
+{% endfor %}
+</div>
+{% endblock %}

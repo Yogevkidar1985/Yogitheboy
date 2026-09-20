@@ -144,6 +144,15 @@ class Child(Base):
         lst = self.contacts_by_role(message=True)
         return lst[0] if lst else (self.contacts[0].contact if self.contacts else None)
 
+    def siblings(self) -> list[Child]:
+        """ילדים אחרים שחולקים איש קשר (הורה/משלם) עם ילד זה – לשיוך תשלום משפחתי."""
+        out: dict[int, Child] = {}
+        for cc in self.contacts:
+            for other in cc.contact.children:
+                if other.child_id != self.id:
+                    out[other.child_id] = other.child
+        return sorted(out.values(), key=lambda c: c.full_name)
+
     def active_groups(self, on: date | None = None) -> list[Group]:
         on = on or date.today()
         return [m.group for m in self.memberships if m.covers(on)]

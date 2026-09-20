@@ -28,10 +28,11 @@
   {% if p.child and p.unallocated > 0.004 and can(user, 'payments.add') %}
   <form method="post" action="/payments/{{ p.id }}/auto-allocate" class="inline"><button class="btn btn-sm">שיוך אוטומטי לחיובים הפתוחים</button></form>
   <form method="post" action="/payments/{{ p.id }}/allocate" class="form inline-form">
-    <select name="charge_id">{% for ch in open_charges %}<option value="{{ ch.id }}">{{ MONTH_NAMES[ch.month] }} {{ ch.year }} (יתרה {{ ch.balance|money }})</option>{% else %}<option value="">אין חיובים פתוחים</option>{% endfor %}</select>
+    <select name="charge_id">{% for ch in open_charges %}<option value="{{ ch.id }}">{{ MONTH_NAMES[ch.month] }} {{ ch.year }} (יתרה {{ ch.balance|money }})</option>{% else %}<option value="">אין חיובים פתוחים לילד</option>{% endfor %}
+    {% for c, ch in family_charges %}<option value="{{ ch.id }}">{{ c.full_name }} – {{ MONTH_NAMES[ch.month] }} {{ ch.year }} (יתרה {{ ch.balance|money }})</option>{% endfor %}</select>
     <input name="amount" inputmode="decimal" placeholder="סכום" value="{{ p.unallocated }}"><button class="btn btn-sm">שיוך ידני</button>
   </form>
-  <p class="small muted">תשלום עבור אח/ות נוסף/ת: ניתן לשייך חלק מהסכום לחיוב של ילד אחר דרך כרטיס החיוב שלו (הכנסת תשלום נפרד), או לפצל את התשלום לשניים.</p>
+  <p class="small muted">תשלום משפחתי: הרשימה כוללת גם חיובים פתוחים של אחים (ילדים עם אותו הורה/משלם). קבלה מוכנה לכל ילד בנפרד לפי השיוך.</p>
   {% endif %}
   <h2>קבלות</h2>
   <ul class="list">{% for r in p.receipts %}<li><a href="/receipts/{{ r.id }}">{{ r.kind|label }} · {{ r.amount|money }}</a> <span class="badge {{ r.status|badge }}">{{ r.status|label }}</span> {{ r.receipt_number }}</li>{% else %}<li class="muted">טרם הוכנו קבלות</li>{% endfor %}</ul>

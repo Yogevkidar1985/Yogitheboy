@@ -45,3 +45,19 @@ def test_extra_session_conflict(db, user, groups):
         cal.add_extra_session(db, sun, date(2026, 9, 6), "כפול", user)
     s = cal.add_extra_session(db, sun, date(2026, 9, 8), "השלמה", user)
     assert s.is_extra and s.date.weekday() == 1
+
+
+def test_cancel_range_skips_held_sessions(db, user, groups):
+    from app.models import AttendanceStatus
+    from app.services import attendance as att
+    from tests.conftest import make_child
+
+    child = make_child(db, "ילד", groups)
+    sessions = cal.generate_month(db, 2026, 9, user)
+    first = next(s for s in sessions if s.date == date(2026, 9, 2))
+    att.bulk_set(db, first, {child.id: AttendanceStatus.PRESENT}, user)
+    done = cal.cancel_range(db, date(2026, 9, 1), date(2026, 9, 13), SessionStatus.CANCELLED_HOLIDAY, "חגים", user)
+    assert {s.date for s in done} == {date(2026, 9, 6), date(2026, 9, 9), date(2026, 9, 13)}
+    assert first.status.counts_as_held
+    with pytest.raises(ValueError):
+        cal.cancel_range(db, date(2026, 9, 20), date(2026, 9, 10), SessionStatus.CANCELLED_ADMIN, "", user)

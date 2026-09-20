@@ -54,6 +54,14 @@ def open_charges_for_child(db: Session, child: Child) -> list[MonthlyCharge]:
     return [c for c in chs if c.balance > 0.004]
 
 
+def family_open_charges(db: Session, child: Child) -> list[tuple[Child, MonthlyCharge]]:
+    """חיובים פתוחים של הילד ושל אחיו (אותו הורה/משלם) – תשלום אחד שמכסה כמה ילדים."""
+    out = [(child, ch) for ch in open_charges_for_child(db, child)]
+    for sib in child.siblings():
+        out += [(sib, ch) for ch in open_charges_for_child(db, sib)]
+    return out
+
+
 def allocate(db: Session, payment: Payment, charge: MonthlyCharge, amount: float, user: User | None) -> PaymentAllocation:
     amount = q2(amount)
     if amount <= 0:

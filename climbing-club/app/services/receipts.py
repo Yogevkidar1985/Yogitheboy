@@ -99,6 +99,7 @@ def prepare_for_payment(db: Session, payment: Payment, user: User | None) -> lis
     if not payment.allocations:
         raise ValueError("התשלום טרם שויך לחיוב חודשי – יש לשייך אותו קודם")
     for alloc in payment.allocations:
+        child = alloc.charge.child  # שיוך לחיוב של אח – הקבלה על שם אותו ילד
         if child.receipt_mode == ReceiptMode.PER_SESSION:
             created += _prepare_per_session(db, child, payment, alloc, user)
         else:

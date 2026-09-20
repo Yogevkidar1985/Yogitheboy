@@ -14,7 +14,7 @@ from tests.conftest import make_child
 
 def _charged_child(db, user, groups, **kw):
     child = make_child(db, kw.pop("name", "נועה"), groups, kw.pop("method", BillingMethod.PER_ATTENDANCE), **kw)
-    sessions = cal.generate_month(db, 2026, 9, user)
+    sessions = cal.generate_month(db, 2026, 9, user) or cal.month_sessions(db, 2026, 9)
     for s in sessions[:3]:
         att.bulk_set(db, s, {child.id: AttendanceStatus.PRESENT}, user)
     ch = billing.save_charge(db, child, 2026, 9, user)
@@ -103,3 +103,24 @@ def test_payment_message_and_double_send_guard(db, user, groups):
     with pytest.raises(ValueError):
         msg.mark_sent(db, m, user)
     assert msg.whatsapp_link("052-1234567", "hi").startswith("https://wa.me/972521234567?text=")
+
+
+def test_family_payment_covers_siblings(db, user, groups):
+    from app.models import ChildContact, Contact
+
+    a, ch_a = _charged_child(db, user, groups, name="אח", price=100)   # 300
+    b, ch_b = _charged_child(db, user, groups, name="אחות", price=100)  # 300
+    shared = Contact(full_name="הורה משותף", email="fam@example.com")
+    db.add(shared)
+    db.flush()
+    db.add_all([ChildContact(child_id=a.id, contact_id=shared.id), ChildContact(child_id=b.id, contact_id=shared.id)])
+    db.flush()
+    db.refresh(a)
+    assert [c.id for c in a.siblings()] == [b.id]
+    fam = pay.family_open_charges(db, a)
+    assert [(c.id, ch.id) for c, ch in fam] == [(a.id, ch_a.id), (b.id, ch_b.id)]
+    p = pay.create_payment(db, user, child_id=a.id, paid_on=date(2026, 10, 1), amount=600)
+    pay.allocate(db, p, ch_a, 300, user)
+    pay.allocate(db, p, ch_b, 300, user)
+    receipts = rc.prepare_for_payment(db, p, user)
+    assert {r.child_id for r in receipts} == {a.id, b.id} and all(float(r.amount) == 300 for r in receipts)

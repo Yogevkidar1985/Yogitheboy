@@ -144,6 +144,21 @@ def move_session(db: Session, s: ClubSession, new_date: date, reason: str, user:
     return new
 
 
+def cancel_range(db: Session, start: date, end: date, status: SessionStatus, reason: str, user: User | None) -> list[ClubSession]:
+    """ביטול מרוכז של כל המפגשים המתוכננים בטווח תאריכים (למשל שבוע חג). מפגשים שהתקיימו אינם נוגעים."""
+    if end < start:
+        raise ValueError("תאריך הסיום קודם לתאריך ההתחלה")
+    out = []
+    for s in (
+        db.query(ClubSession)
+        .filter(ClubSession.date >= start, ClubSession.date <= end, ClubSession.status == SessionStatus.PLANNED, ClubSession.kind == SessionKind.REGULAR)
+        .all()
+    ):
+        cancel_session(db, s, status, reason, user)
+        out.append(s)
+    return out
+
+
 def restore_session(db: Session, s: ClubSession, user: User | None) -> None:
     """מחזיר מפגש שבוטל למצב מתוכנן."""
     if s.status == SessionStatus.MOVED:
@@ -166,14 +181,9 @@ def refresh_status(db: Session, s: ClubSession) -> None:
     """מעדכן בין 'ממתין להשלמת נוכחות' ל'התקיים' לפי מצב הדיווח."""
     if not s.status.counts_as_held:
         return
-    from .attendance import expected_children, missing_reports
+    from .attendance import missing_reports
 
-    if missing_reports(db, s):
-        s.status = SessionStatus.PENDING_ATTENDANCE
-    elif expected_children(db, s):
-        s.status = SessionStatus.HELD
-    else:
-        s.status = SessionStatus.HELD
+    s.status = SessionStatus.PENDING_ATTENDANCE if missing_reports(db, s) else SessionStatus.HELD
 
 
 def delete_session(db: Session, s: ClubSession, user: User | None) -> None:

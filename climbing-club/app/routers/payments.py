@@ -121,7 +121,8 @@ def _payment(db: Session, pid: int) -> Payment:
 def payment_detail(request: Request, pid: int, db: Session = Depends(get_db), user=Depends(require_user)):
     p = _payment(db, pid)
     open_charges = pay_svc.open_charges_for_child(db, p.child) if p.child else []
-    return render(request, "payments/detail.html", user, p=p, children=_children(db), open_charges=open_charges, show_bank=can(user, "payments.bank_details"))
+    family = [(c, ch) for c, ch in pay_svc.family_open_charges(db, p.child) if c.id != p.child_id] if p.child else []
+    return render(request, "payments/detail.html", user, p=p, children=_children(db), open_charges=open_charges, family_charges=family, show_bank=can(user, "payments.bank_details"))
 
 
 @router.post("/{pid}")

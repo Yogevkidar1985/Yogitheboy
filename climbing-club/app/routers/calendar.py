@@ -62,6 +62,22 @@ def extra(request: Request, group_id: int = Form(...), on: str = Form(...), reas
     return redirect(f"/calendar?year={d.year}&month={d.month}")
 
 
+@router.post("/calendar/cancel-range")
+def cancel_range(request: Request, start: str = Form(...), end: str = Form(...), status: str = Form("cancelled_holiday"), reason: str = Form(""), db: Session = Depends(get_db), user=Depends(require("calendar.edit"))):
+    a, b = parse_date(start), parse_date(end)
+    if not a or not b:
+        flash(request, "תאריכים לא תקינים", "error")
+        return redirect("/calendar")
+    try:
+        done = cal_svc.cancel_range(db, a, b, SessionStatus(status), reason, user)
+        db.commit()
+        flash(request, f"בוטלו {len(done)} מפגשים מתוכננים בין {a.strftime('%d/%m')} ל-{b.strftime('%d/%m')}")
+    except ValueError as e:
+        db.rollback()
+        flash(request, str(e), "error")
+    return redirect(f"/calendar?year={a.year}&month={a.month}")
+
+
 def _session(db: Session, sid: int) -> ClubSession:
     s = db.get(ClubSession, sid)
     if not s:

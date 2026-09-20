@@ -20,6 +20,15 @@
         <label>סיבה<input name="reason" placeholder="למשל: השלמה במקום חג"></label>
       </div><button class="btn btn-sm">הוספה</button>
     </form></details>
+  <details class="inline-details"><summary class="btn">ביטול מרוכז לטווח תאריכים</summary>
+    <form method="post" action="/calendar/cancel-range" class="form sub-form">
+      <div class="form-grid">
+        <label>מתאריך<input type="date" name="start" required></label>
+        <label>עד תאריך<input type="date" name="end" required></label>
+        <label>סוג ביטול<select name="status"><option value="cancelled_holiday">בוטל – חג</option><option value="cancelled_admin">בוטל – מנהלת</option><option value="cancelled_other">בוטל – סיבה אחרת</option></select></label>
+        <label>סיבה<input name="reason" placeholder="למשל: חופשת סוכות"></label>
+      </div><button class="btn btn-sm btn-danger" onclick="return confirm('לבטל את כל המפגשים המתוכננים בטווח?')">ביטול המפגשים בטווח</button>
+    </form></details>
 </div>
 {% endif %}
 {% if dups %}<div class="flash flash-error">זוהו כפילויות: {% for a, b in dups %}{{ a.date|date }} ({{ a.group.name }}){% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}

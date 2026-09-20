@@ -1,0 +1,25 @@
+{% extends "base.html" %}{% set active = 'receipts' %}{% block title %}קבלות{% endblock %}
+{% block content %}
+<div class="page-head"><h1>קבלות</h1><span class="muted">ספק: {{ provider.name }}{% if provider.error %} · <span class="text-red">{{ provider.error }}</span>{% endif %}</span></div>
+{% if pending %}
+<section class="card">
+  <h2>ממתינות לבדיקה ולאישור ({{ pending|length }})</h2>
+  <form method="post" action="/receipts/approve-all">
+  <table class="table"><thead><tr><th></th><th>ילד</th><th>סוג</th><th>משלם</th><th>מייל</th><th>סכום</th><th>תיאור</th><th>סטטוס</th><th></th></tr></thead><tbody>
+  {% for r in pending %}<tr class="{% if r.missing_fields %}row-warn{% endif %}">
+    <td>{% if r.status.value != 'approved' and not r.missing_fields %}<input type="checkbox" name="ids" value="{{ r.id }}">{% endif %}</td>
+    <td>{{ r.child.full_name if r.child else '—' }}</td><td class="small">{{ r.kind|label }}</td><td>{{ r.payer_name }}</td><td dir="ltr" class="small">{{ r.email or '—' }}</td><td>{{ r.amount|money }}</td><td class="small">{{ r.description }}</td>
+    <td><span class="badge {{ r.status|badge }}">{{ r.status|label }}</span>{% if r.missing_fields %}<div class="small text-red">חסר: {{ r.missing_fields|join(', ') }}</div>{% endif %}{% if r.error %}<div class="small text-red">{{ r.error }}</div>{% endif %}</td>
+    <td><a class="btn btn-sm" href="/receipts/{{ r.id }}">תצוגה מקדימה</a></td></tr>{% endfor %}
+  </tbody></table>
+  {% if can(user, 'receipts.approve') %}<div class="actions"><label class="check"><input type="checkbox" name="confirm" value="1"> בדקתי את כל הקבלות המסומנות</label><button class="btn">אישור מרוכז של המסומנות</button><span class="small muted">ההפקה עצמה מתבצעת מתוך כל קבלה בנפרד.</span></div>{% endif %}
+  </form>
+</section>
+{% endif %}
+<section class="card">
+  <form class="filters" method="get"><select name="status"><option value="">כל הסטטוסים</option>{% for s in ReceiptStatus %}<option value="{{ s.value }}" {% if status == s.value %}selected{% endif %}>{{ s|label }}</option>{% endfor %}</select><button class="btn">סינון</button></form>
+  <table class="table"><thead><tr><th>נוצרה</th><th>ילד</th><th>סוג</th><th>סכום</th><th>מספר קבלה</th><th>סטטוס</th><th>נשלחה</th></tr></thead><tbody>
+  {% for r in receipts %}<tr><td><a href="/receipts/{{ r.id }}">{{ r.created_at|date }}</a></td><td>{{ r.child.full_name if r.child else '—' }}</td><td class="small">{{ r.kind|label }}</td><td>{{ r.amount|money }}</td><td dir="ltr">{{ r.receipt_number or '—' }}</td><td><span class="badge {{ r.status|badge }}">{{ r.status|label }}</span></td><td class="small">{{ r.sent_at|datetime }}</td></tr>{% else %}<tr><td colspan="7" class="muted">אין קבלות</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+{% endblock %}

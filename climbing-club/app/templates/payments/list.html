@@ -1,0 +1,23 @@
+{% extends "base.html" %}{% set active = 'payments' %}{% block title %}תשלומים{% endblock %}
+{% block content %}
+<div class="page-head"><h1>תשלומים</h1>
+  <div class="actions">{% if can(user, 'payments.add') %}<a class="btn btn-primary" href="/payments/new">+ קליטת תשלום</a><a class="btn" href="/payments/upload/screenshot">העלאת צילום מסך</a>{% endif %}<a class="btn" href="/intro">מפגשי היכרות</a></div></div>
+<form class="filters" method="get">
+  <select name="child_id"><option value="">כל הילדים</option>{% for c in children %}<option value="{{ c.id }}" {% if child_id == c.id %}selected{% endif %}>{{ c.full_name }}</option>{% endfor %}</select>
+  <select name="filter"><option value="">כל התשלומים</option><option value="unassigned" {% if filter == 'unassigned' %}selected{% endif %}>טרם שויכו במלואם</option></select>
+  <button class="btn">סינון</button>
+</form>
+<div class="card"><table class="table">
+<thead><tr><th>תאריך</th><th>ילד</th><th>סכום</th><th>אמצעי</th><th>משלם</th><th>אסמכתא</th><th>משויך</th><th>מקור</th><th>קבלות</th></tr></thead><tbody>
+{% for p in payments %}
+<tr class="{% if p.child_id is none or p.unallocated > 0.004 %}row-warn{% endif %}">
+  <td><a href="/payments/{{ p.id }}">{{ p.paid_on|date }}</a></td>
+  <td>{% if p.child %}<a href="/children/{{ p.child.id }}">{{ p.child.full_name }}</a>{% else %}<span class="text-red">לא שויך</span>{% endif %}</td>
+  <td>{{ p.amount|money }}</td><td>{{ p.method.value|label }}</td><td>{{ p.payer_name }}</td><td dir="ltr">{{ p.reference }}</td>
+  <td>{{ p.allocated|money }}{% if p.unallocated > 0.004 %} <span class="text-red small">(נותרו {{ p.unallocated|money }})</span>{% endif %}</td>
+  <td class="small">{{ 'צילום מסך' if p.source.value == 'screenshot' else 'ידני' }}</td>
+  <td>{% for r in p.receipts %}<a href="/receipts/{{ r.id }}" class="badge {{ r.status|badge }}">{{ r.status|label }}</a> {% endfor %}</td>
+</tr>
+{% else %}<tr><td colspan="9" class="muted">אין תשלומים</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

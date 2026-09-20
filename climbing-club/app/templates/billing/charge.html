@@ -1,0 +1,60 @@
+{% extends "base.html" %}{% set active = 'billing' %}{% block title %}חיוב {{ ch.child.full_name }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ ch.child.full_name }} · {{ MONTH_NAMES[ch.month] }} {{ ch.year }} <span class="badge {{ ch.status|badge }}">{{ ch.status|label }}</span></h1>
+  <div class="actions"><a class="btn btn-ghost" href="/billing?year={{ ch.year }}&month={{ ch.month }}">חזרה לחודש</a><a class="btn" href="/children/{{ ch.child.id }}">כרטיס ילד</a><a class="btn" href="/payments/new?child_id={{ ch.child.id }}">קליטת תשלום</a></div></div>
+{% for w in ch.warnings %}<div class="flash flash-warning">⚠ {{ w }}</div>{% endfor %}
+<div class="grid-2">
+<section class="card">
+  <h2>סיכום</h2>
+  <table class="table table-kv"><tbody>
+    <tr><th>שיטת חיוב</th><td>{{ ch.method|label }}{% if ch.detail.rule.description %} – {{ ch.detail.rule.description }}{% endif %}</td></tr>
+    <tr><th>מפגשים שהתקיימו</th><td>{{ ch.sessions_held }}</td></tr>
+    <tr><th>מפגשים שבהם נכח</th><td>{{ ch.sessions_attended }}</td></tr>
+    <tr><th>היעדרויות</th><td>{{ ch.sessions_absent }}</td></tr>
+    <tr><th>ללא דיווח</th><td class="{% if ch.sessions_unreported %}text-red{% endif %}">{{ ch.sessions_unreported }}</td></tr>
+    <tr><th>מפגשים שבוטלו</th><td>{{ ch.sessions_cancelled }}</td></tr>
+    <tr><th>מחיר למפגש</th><td>{{ ch.price_per_session|money }}</td></tr>
+    {% if ch.method.value == 'fixed_monthly' %}<tr><th>סכום חודשי קבוע</th><td>{{ ch.detail.rule.fixed_monthly_amount|money }}</td></tr>{% endif %}
+    {% if ch.method.value == 'custom' %}<tr><th>סכום ההסדר (ידני)</th><td>{{ ch.custom_amount|money }}</td></tr>{% endif %}
+    <tr><th>סכום בסיס</th><td>{{ ch.base_amount|money }}</td></tr>
+    <tr><th>זיכויים והתאמות</th><td>{{ ch.adjustments_total|money }}</td></tr>
+    <tr class="row-hl"><th>סכום לחיוב</th><td><strong>{{ ch.amount|money }}</strong></td></tr>
+    <tr><th>תשלומים שהתקבלו</th><td>{{ ch.paid|money }}</td></tr>
+    <tr><th>יתרה לתשלום</th><td class="{% if ch.balance > 0 %}text-red{% endif %}"><strong>{{ ch.balance|money }}</strong></td></tr>
+    {% if prev_balance > 0 %}<tr><th>יתרת חוב מחודשים קודמים</th><td class="text-red">{{ prev_balance|money }}</td></tr>{% endif %}
+    <tr><th>חושב</th><td class="small muted">{{ ch.computed_at|datetime }}{% if ch.approved_at %} · אושר {{ ch.approved_by }} {{ ch.approved_at|datetime }}{% endif %}</td></tr>
+  </tbody></table>
+  {% if can(user, 'billing') and not closed %}
+  <form method="post" action="/billing/{{ ch.id }}/recompute" class="form inline-form">
+    {% if ch.method.value == 'custom' %}<label>סכום ההסדר לחודש<input name="custom_amount" inputmode="decimal" value="{{ ch.custom_amount or '' }}"></label>{% endif %}
+    <button class="btn">חישוב מחדש</button>
+    {% if ch.status.value == 'draft' %}<button class="btn btn-primary" formaction="/billing/{{ ch.id }}/approve">אישור החיוב</button>{% endif %}
+  </form>
+  {% endif %}
+  <h2>תשלומים משויכים</h2>
+  <ul class="list">{% for a in ch.allocations %}<li><a href="/payments/{{ a.payment_id }}">{{ a.payment.paid_on|date }}</a> · {{ a.amount|money }} ({{ a.payment.method.value|label }})</li>{% else %}<li class="muted">אין</li>{% endfor %}</ul>
+</section>
+<section class="card">
+  <h2>פירוט מפגשים</h2>
+  <table class="table"><thead><tr><th>תאריך</th><th>קבוצה</th><th>מפגש</th><th>נוכחות</th><th>מחיר</th><th>מחויב</th><th></th></tr></thead><tbody>
+  {% for l in lines %}
+  <tr><td>{{ l.date|date }}</td><td>{{ l.group }}</td><td><span class="badge {{ l.session_status|badge }}">{{ l.session_status|label }}</span></td><td>{% if l.attendance != '-' %}<span class="badge {{ l.attendance|badge }}">{{ l.attendance|label }}</span>{% endif %}</td><td>{{ l.price|money }}</td><td>{% if l.charged %}✔{% endif %} <span class="small muted">{{ l.note }}</span></td>
+    <td>{% if can(user, 'billing') and not closed and l.session_status in ['held','pending_attendance'] %}<details class="menu"><summary class="btn btn-sm btn-ghost">חריג</summary><div class="menu-body">
+      <form method="post" action="/attendance/{{ l.session_id }}/child/{{ ch.child_id }}/override" class="form"><input type="hidden" name="back" value="/billing/{{ ch.id }}">
+      <select name="charge_override"><option value="default">לפי הכלל</option><option value="charge">לחייב</option><option value="no_charge">לא לחייב</option></select><input name="price_override" placeholder="מחיר חריג" inputmode="decimal"><input name="note" placeholder="הערה"><button class="btn btn-sm">שמירה</button></form></div></details>{% endif %}</td></tr>
+  {% else %}<tr><td colspan="7" class="muted">אין מפגשים</td></tr>{% endfor %}
+  </tbody></table>
+  <h2>זיכויים והתאמות</h2>
+  <ul class="list">{% for a in ch.detail.adjustments %}<li>{{ a.amount|money }} – {{ a.reason }} {% if can(user, 'billing') and not closed %}<form method="post" action="/billing/adjustments/{{ a.id }}/delete" class="inline"><input type="hidden" name="back" value="/billing/{{ ch.id }}"><button class="btn btn-sm btn-ghost">מחיקה</button></form>{% endif %}</li>{% else %}<li class="muted">אין</li>{% endfor %}</ul>
+  {% if can(user, 'billing') and not closed %}
+  <form method="post" action="/billing/adjustments" class="form inline-form">
+    <input type="hidden" name="child_id" value="{{ ch.child_id }}"><input type="hidden" name="year" value="{{ ch.year }}"><input type="hidden" name="month" value="{{ ch.month }}"><input type="hidden" name="back" value="/billing/{{ ch.id }}">
+    <input name="amount" placeholder="סכום (שלילי = זיכוי)" inputmode="decimal" required><input name="reason" placeholder="סיבה" required>
+    <select name="session_id"><option value="">ללא מפגש ספציפי</option>{% for l in lines %}<option value="{{ l.session_id }}">{{ l.date|date }}</option>{% endfor %}</select>
+    <button class="btn btn-sm">הוספת התאמה</button>
+  </form>
+  {% endif %}
+  {% if ch.message %}<h2>הודעת תשלום</h2><p><span class="badge {{ ch.message.status|badge }}">{{ ch.message.status|label }}</span> <a href="/billing/messages/list?year={{ ch.year }}&month={{ ch.month }}">לניהול ההודעות</a></p>{% endif %}
+</section>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% set active = 'payments' %}{% block title %}קליטת תשלום{% endblock %}
+{% block content %}
+<div class="page-head"><h1>קליטת תשלום</h1>{% if extraction %}<span class="muted">בדיקת נתונים שפוענחו מצילום מסך</span>{% endif %}</div>
+{% if extraction and extraction.ok %}<div class="flash flash-{{ 'warning' if extraction.unclear or extraction.confidence == 'low' else 'success' }}">הנתונים חולצו אוטומטית (רמת ביטחון: {{ extraction.confidence }}). יש לבדוק כל שדה לפני השמירה – התשלום לא נחשב מאומת עד לאישורך.</div>{% endif %}
+{% if duplicates %}<div class="flash flash-error">חשד לכפילות: {% for d in duplicates %}<a href="/payments/{{ d.id }}">{{ d.paid_on|date }} · {{ d.amount|money }} · {{ d.child.full_name if d.child else 'ללא ילד' }}</a>{% if not loop.last %}, {% endif %}{% endfor %}</div>{% endif %}
+<div class="grid-2">
+<form method="post" action="/payments" class="form card">
+  <input type="hidden" name="attachment" value="{{ attachment }}"><input type="hidden" name="source" value="{{ source or 'manual' }}">
+  <div class="form-grid">
+    <label>ילד<select name="child_id" id="child-select"><option value="">— טרם ידוע / לשיוך מאוחר יותר —</option>{% for c in children %}<option value="{{ c.id }}" {% if child and c.id == child.id %}selected{% endif %}>{{ c.full_name }}</option>{% endfor %}</select></label>
+    <label>תאריך קבלת התשלום<input type="date" name="paid_on" required value="{{ prefill.paid_on or today().isoformat() }}"></label>
+    <label>סכום (₪)<input name="amount" inputmode="decimal" required value="{{ prefill.amount or '' }}"></label>
+    <label>אופן התשלום<select name="method">{% for k, v in PAYMENT_METHODS.items() %}<option value="{{ k }}" {% if prefill.method == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+    <label>שם המשלם<input name="payer_name" value="{{ prefill.payer_name or (child.billing_contact.full_name if child and child.billing_contact else '') }}"></label>
+    <label>מספר אסמכתא<input name="reference" dir="ltr" value="{{ prefill.reference or '' }}"></label>
+    {% if can(user, 'payments.bank_details') %}<label>פרטי חשבון בנק (להתאמה)<input name="bank_details" dir="ltr" value="{{ prefill.bank_details or '' }}"></label>{% endif %}
+  </div>
+  <label>הערות<textarea name="notes" rows="2">{{ prefill.notes or '' }}</textarea></label>
+  <div class="checks">
+    <label class="check"><input type="checkbox" name="auto_alloc" value="1" checked> שיוך אוטומטי לחיובים הפתוחים של הילד (מהישן לחדש)</label>
+    {% if duplicates %}<label class="check"><input type="checkbox" name="force" value="1"> בדקתי – זו אינה כפילות, לשמור בכל זאת</label>{% endif %}
+  </div>
+  <div class="actions"><button class="btn btn-primary">{{ 'אישור ושמירת התשלום' if extraction else 'שמירת התשלום' }}</button><a class="btn btn-ghost" href="/payments">ביטול</a></div>
+</form>
+<section class="card">
+  {% if attachment %}<h2>האסמכתא שהועלתה</h2>{% if can(user, 'payments.bank_details') %}<img src="/payments/attachment/{{ attachment }}" class="preview-img" alt="אסמכתא">{% else %}<p class="muted">הקובץ נשמר. הצגה למורשים בלבד.</p>{% endif %}{% endif %}
+  {% if child %}<h2>חיובים פתוחים של {{ child.full_name }}</h2>
+  <table class="table"><tbody>{% for ch in open_charges %}<tr><td>{{ MONTH_NAMES[ch.month] }} {{ ch.year }}</td><td>{{ ch.amount|money }}</td><td class="text-red">יתרה {{ ch.balance|money }}</td></tr>{% else %}<tr><td class="muted">אין חיובים פתוחים (או שטרם אושרו)</td></tr>{% endfor %}</tbody></table>
+  {% else %}<p class="muted">בחרי ילד כדי לראות את החיובים הפתוחים שלו.</p>{% endif %}
+</section>
+</div>
+{% endblock %}
+{% block scripts %}<script>document.getElementById('child-select').addEventListener('change',function(){var u=new URL(location.href);if(u.pathname==='/payments/new'){u.searchParams.set('child_id',this.value);location.href=u;}});</script>{% endblock %}

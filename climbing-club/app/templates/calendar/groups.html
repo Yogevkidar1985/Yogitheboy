@@ -1,0 +1,32 @@
+{% extends "base.html" %}{% set active = 'calendar' %}{% block title %}קבוצות{% endblock %}
+{% block content %}
+<div class="page-head"><h1>קבוצות</h1><a class="btn" href="/calendar">ללוח המפגשים</a></div>
+<div class="cards">
+{% for g in groups %}
+<form method="post" action="/groups/{{ g.id }}" class="card form">
+  <fieldset {% if not can(user, 'calendar.edit') %}disabled{% endif %}>
+  <div class="form-grid">
+    <label>שם<input name="name" value="{{ g.name }}" required></label>
+    <label>יום פעילות<select name="weekday">{% for wd in [6,0,1,2,3,4,5] %}<option value="{{ wd }}" {% if g.weekday == wd %}selected{% endif %}>{{ WEEKDAY_NAMES[wd] }}</option>{% endfor %}</select></label>
+    <label>שעה<input name="start_time" type="time" value="{{ g.start_time }}"></label>
+    <label class="check"><input type="checkbox" name="is_active" value="1" {% if g.is_active %}checked{% endif %}> פעילה</label>
+  </div>
+  <label>הערות<input name="notes" value="{{ g.notes }}"></label>
+  <div class="muted small">{{ g.memberships|selectattr('to_date', 'none')|list|length }} ילדים משויכים</div>
+  {% if can(user, 'calendar.edit') %}<button class="btn btn-sm">שמירה</button>{% endif %}
+  </fieldset>
+</form>
+{% endfor %}
+{% if can(user, 'calendar.edit') %}
+<form method="post" action="/groups" class="card form">
+  <h2>קבוצה חדשה</h2>
+  <div class="form-grid">
+    <label>שם<input name="name" required placeholder="קבוצת ראשון"></label>
+    <label>יום פעילות<select name="weekday">{% for wd in [6,0,1,2,3,4,5] %}<option value="{{ wd }}">{{ WEEKDAY_NAMES[wd] }}</option>{% endfor %}</select></label>
+    <label>שעה<input name="start_time" type="time" value="16:00"></label>
+  </div>
+  <button class="btn btn-primary btn-sm">יצירה</button>
+</form>
+{% endif %}
+</div>
+{% endblock %}

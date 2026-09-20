@@ -1,0 +1,24 @@
+{% extends "base.html" %}{% set active = 'billing' %}{% block title %}הודעות תשלום{% endblock %}
+{% block content %}
+<div class="page-head"><h1>הודעות תשלום · {{ MONTH_NAMES[month] }} {{ year }}</h1>
+  <div class="actions"><a class="btn btn-ghost" href="/billing/messages/list?year={{ prev_next[0][0] }}&month={{ prev_next[0][1] }}">‹</a><a class="btn btn-ghost" href="/billing/messages/list?year={{ prev_next[1][0] }}&month={{ prev_next[1][1] }}">›</a><a class="btn" href="/billing?year={{ year }}&month={{ month }}">לחיובים</a></div></div>
+<p class="muted">ההודעות נוצרות מהתבנית שבהגדרות. בשלב זה השליחה ידנית: "פתיחה בוואטסאפ" או העתקה, ואז סימון כנשלחה כדי למנוע שליחה כפולה.</p>
+<div class="cards">
+{% for ch, msg, wa in items %}
+<div class="card">
+  <div class="card-row"><strong>{{ ch.child.full_name }}</strong> <span class="badge {{ msg.status|badge }}">{{ msg.status|label }}</span></div>
+  <div class="small muted">אל: {{ msg.recipient_name or '—' }} · {{ msg.recipient_phone or 'ללא טלפון' }} · {{ ch.amount|money }}{% if msg.sent_at %} · נשלח {{ msg.sent_by }} {{ msg.sent_at|datetime }}{% endif %}</div>
+  <form method="post" action="/billing/messages/{{ msg.id }}/approve" class="form">
+    <textarea name="body" rows="9" class="msg-body" {% if msg.status.value == 'sent' or not can(user, 'billing') %}readonly{% endif %}>{{ msg.body }}</textarea>
+    <div class="actions">
+      {% if msg.status.value != 'sent' and can(user, 'billing') %}<button class="btn btn-primary btn-sm">{{ 'עדכון ואישור' if msg.status.value == 'approved' else 'אישור ההודעה' }}</button>
+      <button class="btn btn-sm btn-ghost" formaction="/billing/messages/{{ msg.id }}/regenerate" onclick="return confirm('ליצור מחדש מהתבנית? העריכה תאבד.')">יצירה מחדש מהתבנית</button>{% endif %}
+      <button type="button" class="btn btn-sm copy-btn" data-copy>העתקת ההודעה</button>
+      {% if msg.status.value == 'approved' %}<a class="btn btn-sm" href="{{ wa }}" target="_blank" rel="noopener">פתיחה בוואטסאפ</a>
+      <button class="btn btn-sm" formaction="/billing/messages/{{ msg.id }}/sent" onclick="return confirm('לסמן שההודעה נשלחה?')">סימון כנשלחה</button>{% endif %}
+    </div>
+  </form>
+</div>
+{% else %}<p class="muted">אין חיובים מאושרים לחודש זה. יש לחשב ולאשר חיובים תחילה.</p>{% endfor %}
+</div>
+{% endblock %}

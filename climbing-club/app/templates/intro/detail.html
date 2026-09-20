@@ -1,0 +1,26 @@
+{% extends "base.html" %}{% set active = 'children' %}{% block title %}מפגש היכרות{% endblock %}
+{% block content %}
+<div class="page-head"><h1>מפגש היכרות · {{ intro.child.full_name }} · {{ intro.session.date|date }}</h1><a class="btn btn-ghost" href="/intro">לרשימה</a></div>
+<div class="grid-2">
+<section class="card">
+  <table class="table table-kv"><tbody>
+    <tr><th>ילד</th><td><a href="/children/{{ intro.child_id }}">{{ intro.child.full_name }}</a></td></tr>
+    <tr><th>הורה</th><td>{% set ct = intro.child.message_contact %}{% if ct %}{{ ct.full_name }} · {{ ct.phone }} · {{ ct.email }}{% else %}—{% endif %}</td></tr>
+    <tr><th>תאריך</th><td>{{ intro.session.date|hebdate }}</td></tr>
+    <tr><th>סכום</th><td>{{ intro.amount|money }}</td></tr>
+    <tr><th>תשלום</th><td>{% if intro.payment %}<a href="/payments/{{ intro.payment_id }}">{{ intro.payment.paid_on|date }} · {{ intro.payment.method.value|label }}</a>{% else %}<span class="text-red">טרם נקלט</span>{% endif %}</td></tr>
+    <tr><th>הערות</th><td>{{ intro.notes }}</td></tr>
+  </tbody></table>
+  {% if not intro.payment and can(user, 'payments.add') %}
+  <h2>קליטת התשלום</h2>
+  <form method="post" action="/intro/{{ intro.id }}/pay" class="form">
+    <div class="form-grid"><label>תאריך<input type="date" name="paid_on" value="{{ today().isoformat() }}"></label><label>אמצעי<select name="method">{% for k, v in PAYMENT_METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label><label>שם המשלם<input name="payer_name" value="{{ ct.full_name if ct else '' }}"></label><label>אסמכתא<input name="reference" dir="ltr"></label></div>
+    <button class="btn btn-primary">רישום התשלום והכנת קבלה</button>
+  </form>
+  {% endif %}
+</section>
+<section class="card"><h2>קבלות</h2>
+  <ul class="list">{% for r in receipts %}<li><a href="/receipts/{{ r.id }}">{{ r.kind|label }} · {{ r.amount|money }}</a> <span class="badge {{ r.status|badge }}">{{ r.status|label }}</span></li>{% else %}<li class="muted">אין</li>{% endfor %}</ul>
+</section>
+</div>
+{% endblock %}

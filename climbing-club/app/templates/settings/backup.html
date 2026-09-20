@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% set active = 'settings' %}{% block title %}גיבוי ושחזור{% endblock %}
+{% block content %}
+<div class="page-head"><h1>גיבוי ושחזור</h1><a class="btn btn-ghost" href="/settings">להגדרות</a></div>
+<div class="card"><form method="post" action="/settings/backup"><button class="btn btn-primary">יצירת גיבוי עכשיו</button></form>
+<p class="small muted">הגיבויים נשמרים בתיקיית data/backups בשרת. מומלץ להעתיק אותם למקום נוסף (למשל ענן) באופן קבוע.</p>
+<table class="table"><thead><tr><th>קובץ</th><th></th></tr></thead><tbody>
+{% for b in backups %}<tr><td dir="ltr">{{ b }}</td><td><form method="post" action="/settings/restore" class="inline-form"><input type="hidden" name="name" value="{{ b }}"><label class="check"><input type="checkbox" name="confirm" value="1"> אישור</label><button class="btn btn-sm btn-danger" onclick="return confirm('לשחזר את המסד מגיבוי זה? המצב הנוכחי יגובה קודם.')">שחזור</button></form></td></tr>{% else %}<tr><td colspan="2" class="muted">אין גיבויים</td></tr>{% endfor %}
+</tbody></table></div>
+{% endblock %}

@@ -1,0 +1,109 @@
+{% extends "base.html" %}{% set active = 'children' %}{% block title %}{{ child.full_name }}{% endblock %}
+{% block content %}
+<div class="page-head"><h1>{{ child.full_name }} <span class="badge {{ child.status|badge }}">{{ child.status|label }}</span></h1>
+  <div class="actions">{% if can(user, 'children.edit') %}<a class="btn" href="/children/new?copy_from={{ child.id }}">שכפול הגדרות לילד חדש</a>{% endif %}<a class="btn" href="/payments/new?child_id={{ child.id }}">קליטת תשלום</a></div></div>
+<div class="grid-2">
+<section class="card">
+  <h2>כרטיס ילד</h2>
+  <form method="post" action="/children/{{ child.id }}" class="form">
+    <fieldset {% if not can(user, 'children.edit') %}disabled{% endif %}>
+    <div class="form-grid">
+      <label>שם מלא<input name="full_name" value="{{ child.full_name }}" required></label>
+      <label>תעודת זהות<input name="national_id" value="{{ child.national_id }}"></label>
+      <label>סטטוס<select name="status">{% for s in ChildStatus %}<option value="{{ s.value }}" {% if child.status == s %}selected{% endif %}>{{ s|label }}</option>{% endfor %}</select></label>
+      <label>תאריך לידה<input name="birth_date" type="date" value="{{ child.birth_date.isoformat() if child.birth_date else '' }}"></label>
+      <label>תאריך הצטרפות<input name="joined_on" type="date" value="{{ child.joined_on.isoformat() if child.joined_on else '' }}"></label>
+      <label>תאריך סיום<input name="left_on" type="date" value="{{ child.left_on.isoformat() if child.left_on else '' }}"></label>
+      <label>אופן הפקת הקבלה<select name="receipt_mode">{% for r in ReceiptMode %}<option value="{{ r.value }}" {% if child.receipt_mode == r %}selected{% endif %}>{{ r|label }}</option>{% endfor %}</select></label>
+      <label>קופת חולים / גורם מממן<input name="hmo" value="{{ child.hmo }}"></label>
+      <label>שדות חובה בקבלה<input name="receipt_required_fields" value="{{ child.receipt_required_fields }}" placeholder="תעודת זהות, קופת חולים"></label>
+    </div>
+    <label>הערות קבועות לקבלה<textarea name="receipt_notes" rows="2">{{ child.receipt_notes }}</textarea></label>
+    <label>הערות והנחיות מיוחדות<textarea name="notes" rows="2">{{ child.notes }}</textarea></label>
+    {% if can(user, 'children.edit') %}<button class="btn btn-primary">שמירת פרטים</button>{% endif %}
+    </fieldset>
+  </form>
+</section>
+<section class="card">
+  <h2>הורים ומשלמים</h2>
+  {% for cc in child.contacts %}
+  <form method="post" action="/children/{{ child.id }}/contacts/{{ cc.id }}" class="form sub-form">
+    <fieldset {% if not can(user, 'children.edit') %}disabled{% endif %}>
+    <div class="form-grid">
+      <label>שם<input name="full_name" value="{{ cc.contact.full_name }}"></label>
+      <label>קשר<select name="relation">{% for r in ['הורה','משלם','אחר'] %}<option {% if cc.relation == r %}selected{% endif %}>{{ r }}</option>{% endfor %}</select></label>
+      <label>טלפון לוואטסאפ<input name="phone" value="{{ cc.contact.phone }}" dir="ltr"></label>
+      <label>מייל<input name="email" value="{{ cc.contact.email }}" dir="ltr"></label>
+      <label>ת.ז. (לקבלה)<input name="national_id" value="{{ cc.contact.national_id }}"></label>
+    </div>
+    <div class="checks"><label class="check"><input type="checkbox" name="is_message_contact" value="1" {% if cc.is_message_contact %}checked{% endif %}> מקבל/ת הודעות תשלום</label>
+    <label class="check"><input type="checkbox" name="is_billing_contact" value="1" {% if cc.is_billing_contact %}checked{% endif %}> משלם/ת (שמו/ה בקבלה)</label></div>
+    {% if can(user, 'children.edit') %}<div class="actions"><button class="btn btn-sm">עדכון</button><button class="btn btn-sm btn-danger" name="delete" value="1" onclick="return confirm('להסיר את השיוך?')">הסרת שיוך</button></div>{% endif %}
+    </fieldset>
+  </form>
+  {% else %}<p class="muted">לא הוגדרו אנשי קשר.</p>{% endfor %}
+  {% if can(user, 'children.edit') %}
+  <details><summary>+ הוספת הורה / משלם</summary>
+  <form method="post" action="/children/{{ child.id }}/contacts" class="form sub-form">
+    <div class="form-grid">
+      <label>שם<input name="full_name" required></label>
+      <label>קשר<select name="relation"><option>הורה</option><option>משלם</option><option>אחר</option></select></label>
+      <label>טלפון<input name="phone" dir="ltr"></label><label>מייל<input name="email" dir="ltr"></label><label>ת.ז.<input name="national_id"></label>
+    </div>
+    <div class="checks"><label class="check"><input type="checkbox" name="is_message_contact" value="1" checked> מקבל/ת הודעות</label><label class="check"><input type="checkbox" name="is_billing_contact" value="1" checked> משלם/ת</label></div>
+    <button class="btn btn-sm">הוספה</button>
+  </form></details>
+  {% endif %}
+
+  <h2>קבוצות</h2>
+  <ul class="list">{% for m in child.memberships %}<li>{{ m.group.name }} (יום {{ WEEKDAY_NAMES[m.group.weekday] }}) · מ-{{ m.from_date|date }}{% if m.to_date %} עד {{ m.to_date|date }}{% elif can(user, 'children.edit') %} <form method="post" action="/children/{{ child.id }}/memberships/{{ m.id }}/end" class="inline"><input type="hidden" name="to_date" value="{{ today().isoformat() }}"><button class="btn btn-sm btn-ghost" onclick="return confirm('לסיים את השיוך לקבוצה מהיום?')">סיום שיוך</button></form>{% endif %}</li>{% else %}<li class="muted">ללא קבוצה</li>{% endfor %}</ul>
+  {% if can(user, 'children.edit') %}
+  <form method="post" action="/children/{{ child.id }}/memberships" class="form inline-form">
+    <select name="group_id">{% for g in groups if g.is_active %}<option value="{{ g.id }}">{{ g.name }}</option>{% endfor %}</select>
+    <input type="date" name="from_date" value="{{ today().isoformat() }}"><button class="btn btn-sm">שיוך לקבוצה</button>
+  </form>
+  {% endif %}
+
+  <h2>כללי חיוב (היסטוריה)</h2>
+  <table class="table"><thead><tr><th>מתאריך</th><th>עד</th><th>שיטה</th><th>למפגש</th><th>חודשי</th><th>הסדר</th></tr></thead><tbody>
+  {% for r in child.billing_rules|reverse %}<tr {% if r == rule %}class="row-hl"{% endif %}><td>{{ r.effective_from|date }}</td><td>{{ r.effective_to|date if r.effective_to else '—' }}</td><td>{{ r.method|label }}</td><td>{{ r.price_per_session|money }}</td><td>{{ r.fixed_monthly_amount|money }}</td><td>{{ r.description }}</td></tr>{% else %}<tr><td colspan="6" class="text-red">לא הוגדר כלל חיוב – החיוב יהיה 0</td></tr>{% endfor %}
+  </tbody></table>
+  {% if can(user, 'children.edit') %}
+  <details><summary>+ כלל חיוב חדש (שינוי תעריף מתאריך)</summary>
+  <form method="post" action="/children/{{ child.id }}/rules" class="form sub-form">
+    <div class="form-grid">
+      <label>בתוקף מתאריך<input type="date" name="effective_from" required value="{{ today().replace(day=1).isoformat() }}"></label>
+      <label>שיטת חיוב<select name="method">{% for m in BillingMethod %}<option value="{{ m.value }}" {% if rule and rule.method == m %}selected{% endif %}>{{ m|label }}</option>{% endfor %}</select></label>
+      <label>מחיר למפגש<input name="price_per_session" inputmode="decimal" value="{{ rule.price_per_session if rule else '' }}"></label>
+      <label>סכום חודשי קבוע<input name="fixed_monthly_amount" inputmode="decimal" value="{{ rule.fixed_monthly_amount if rule else '' }}"></label>
+      <label>תיאור ההסדר<input name="description" value="{{ rule.description if rule else '' }}"></label>
+    </div><button class="btn btn-sm">שמירת כלל</button>
+  </form></details>
+  {% endif %}
+</section>
+</div>
+
+<div class="grid-2">
+<section class="card">
+  <h2>חיובים</h2>
+  <table class="table"><thead><tr><th>חודש</th><th>התקיימו/נכח</th><th>סכום</th><th>שולם</th><th>יתרה</th><th>סטטוס</th></tr></thead><tbody>
+  {% for ch in charges %}<tr><td><a href="/billing/{{ ch.id }}">{{ MONTH_NAMES[ch.month] }} {{ ch.year }}</a></td><td>{{ ch.sessions_held }}/{{ ch.sessions_attended }}</td><td>{{ ch.amount|money }}</td><td>{{ ch.paid|money }}</td><td class="{% if ch.balance > 0 %}text-red{% endif %}">{{ ch.balance|money }}</td><td><span class="badge {{ ch.status|badge }}">{{ ch.status|label }}</span></td></tr>{% else %}<tr><td colspan="6" class="muted">אין חיובים</td></tr>{% endfor %}
+  </tbody></table>
+  <h2>תשלומים</h2>
+  <table class="table"><thead><tr><th>תאריך</th><th>סכום</th><th>אמצעי</th><th>אסמכתא</th><th>לא משויך</th></tr></thead><tbody>
+  {% for p in payments %}<tr><td><a href="/payments/{{ p.id }}">{{ p.paid_on|date }}</a></td><td>{{ p.amount|money }}</td><td>{{ p.method.value|label }}</td><td>{{ p.reference }}</td><td>{% if p.unallocated > 0 %}<span class="text-red">{{ p.unallocated|money }}</span>{% endif %}</td></tr>{% else %}<tr><td colspan="5" class="muted">אין תשלומים</td></tr>{% endfor %}
+  </tbody></table>
+  <h2>קבלות</h2>
+  <table class="table"><thead><tr><th>סוג</th><th>סכום</th><th>מספר</th><th>סטטוס</th></tr></thead><tbody>
+  {% for r in receipts %}<tr><td><a href="/receipts/{{ r.id }}">{{ r.kind|label }}</a></td><td>{{ r.amount|money }}</td><td>{{ r.receipt_number or '—' }}</td><td><span class="badge {{ r.status|badge }}">{{ r.status|label }}</span></td></tr>{% else %}<tr><td colspan="4" class="muted">אין קבלות</td></tr>{% endfor %}
+  </tbody></table>
+</section>
+<section class="card">
+  <h2>היסטוריית נוכחות</h2>
+  <table class="table"><thead><tr><th>תאריך</th><th>קבוצה</th><th>מפגש</th><th>נוכחות</th><th>חריג חיוב</th></tr></thead><tbody>
+  {% for a in history %}<tr><td><a href="/attendance?session_id={{ a.session_id }}">{{ a.session.date|date }}</a></td><td>{{ a.session.group.name if a.session.group else 'היכרות' }}</td><td><span class="badge {{ a.session.status|badge }}">{{ a.session.status|label }}</span></td><td><span class="badge {{ a.status|badge }}">{{ a.status|label }}</span></td><td class="small">{% if a.charge_override.value != 'default' %}{{ 'לחייב' if a.charge_override.value == 'charge' else 'לא לחייב' }}{% endif %}{% if a.price_override is not none %} {{ a.price_override|money }}{% endif %} {{ a.note }}</td></tr>{% else %}<tr><td colspan="5" class="muted">אין דיווחים</td></tr>{% endfor %}
+  </tbody></table>
+  {% if can(user, 'audit') %}<a class="btn btn-sm btn-ghost" href="/settings/audit?entity=child&entity_id={{ child.id }}">היסטוריית שינויים בכרטיס</a>{% endif %}
+</section>
+</div>
+{% endblock %}

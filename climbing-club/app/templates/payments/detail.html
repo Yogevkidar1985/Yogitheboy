@@ -1,0 +1,40 @@
+{% extends "base.html" %}{% set active = 'payments' %}{% block title %}תשלום{% endblock %}
+{% block content %}
+<div class="page-head"><h1>תשלום מ-{{ p.paid_on|date }} · {{ p.amount|money }}</h1>
+  <div class="actions"><a class="btn btn-ghost" href="/payments">לרשימה</a>{% if p.child and can(user, 'receipts.approve') %}<form method="post" action="/payments/{{ p.id }}/prepare-receipts" class="inline"><button class="btn btn-primary">הכנת קבלה לבדיקה</button></form>{% endif %}</div></div>
+{% if p.child_id is none %}<div class="flash flash-warning">התשלום טרם שויך לילד. בחרי ילד ושמרי.</div>{% endif %}
+<div class="grid-2">
+<form method="post" action="/payments/{{ p.id }}" class="form card">
+  <h2>פרטי התשלום</h2>
+  <fieldset {% if not can(user, 'payments.add') %}disabled{% endif %}>
+  <div class="form-grid">
+    <label>ילד<select name="child_id"><option value="">— לא שויך —</option>{% for c in children %}<option value="{{ c.id }}" {% if p.child_id == c.id %}selected{% endif %}>{{ c.full_name }}</option>{% endfor %}</select></label>
+    <label>תאריך<input type="date" name="paid_on" value="{{ p.paid_on.isoformat() }}"></label>
+    <label>סכום<input name="amount" inputmode="decimal" value="{{ p.amount }}"></label>
+    <label>אמצעי<select name="method">{% for k, v in PAYMENT_METHODS.items() %}<option value="{{ k }}" {% if p.method.value == k %}selected{% endif %}>{{ v }}</option>{% endfor %}</select></label>
+    <label>שם המשלם<input name="payer_name" value="{{ p.payer_name }}"></label>
+    <label>אסמכתא<input name="reference" dir="ltr" value="{{ p.reference }}"></label>
+    {% if show_bank %}<label>פרטי בנק<input name="bank_details" dir="ltr" value="{{ p.bank_details }}"></label>{% endif %}
+  </div>
+  <label>הערות<textarea name="notes" rows="2">{{ p.notes }}</textarea></label>
+  <div class="small muted">נקלט ע"י {{ p.created_by }} {{ p.created_at|datetime }} · מקור: {{ 'צילום מסך' if p.source.value == 'screenshot' else 'ידני' }}{% if p.attachment_path and show_bank %} · <a href="/payments/attachment/{{ p.attachment_path }}" target="_blank">צפייה באסמכתא</a>{% endif %}</div>
+  <div class="actions"><button class="btn btn-primary">שמירה</button>{% if can(user, 'billing') and not p.receipts %}<button class="btn btn-danger btn-ghost" formaction="/payments/{{ p.id }}/delete" onclick="return confirm('למחוק את התשלום?')">מחיקה</button>{% endif %}</div>
+  </fieldset>
+</form>
+<section class="card">
+  <h2>שיוך לחיובים</h2>
+  <p>משויך: <strong>{{ p.allocated|money }}</strong> מתוך {{ p.amount|money }}{% if p.unallocated > 0.004 %} · <span class="text-red">לא משויך: {{ p.unallocated|money }}</span>{% endif %}</p>
+  <ul class="list">{% for a in p.allocations %}<li><a href="/billing/{{ a.charge_id }}">{{ MONTH_NAMES[a.charge.month] }} {{ a.charge.year }} – {{ a.charge.child.full_name }}</a> · {{ a.amount|money }} {% if can(user, 'payments.add') %}<form method="post" action="/payments/allocations/{{ a.id }}/delete" class="inline"><button class="btn btn-sm btn-ghost">ביטול שיוך</button></form>{% endif %}</li>{% else %}<li class="muted">אין שיוכים</li>{% endfor %}</ul>
+  {% if p.child and p.unallocated > 0.004 and can(user, 'payments.add') %}
+  <form method="post" action="/payments/{{ p.id }}/auto-allocate" class="inline"><button class="btn btn-sm">שיוך אוטומטי לחיובים הפתוחים</button></form>
+  <form method="post" action="/payments/{{ p.id }}/allocate" class="form inline-form">
+    <select name="charge_id">{% for ch in open_charges %}<option value="{{ ch.id }}">{{ MONTH_NAMES[ch.month] }} {{ ch.year }} (יתרה {{ ch.balance|money }})</option>{% else %}<option value="">אין חיובים פתוחים</option>{% endfor %}</select>
+    <input name="amount" inputmode="decimal" placeholder="סכום" value="{{ p.unallocated }}"><button class="btn btn-sm">שיוך ידני</button>
+  </form>
+  <p class="small muted">תשלום עבור אח/ות נוסף/ת: ניתן לשייך חלק מהסכום לחיוב של ילד אחר דרך כרטיס החיוב שלו (הכנסת תשלום נפרד), או לפצל את התשלום לשניים.</p>
+  {% endif %}
+  <h2>קבלות</h2>
+  <ul class="list">{% for r in p.receipts %}<li><a href="/receipts/{{ r.id }}">{{ r.kind|label }} · {{ r.amount|money }}</a> <span class="badge {{ r.status|badge }}">{{ r.status|label }}</span> {{ r.receipt_number }}</li>{% else %}<li class="muted">טרם הוכנו קבלות</li>{% endfor %}</ul>
+</section>
+</div>
+{% endblock %}

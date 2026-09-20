@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% set active = 'dashboard' %}{% block title %}דשבורד{% endblock %}
+{% block content %}
+<div class="page-head"><h1>ניהול החוג</h1><span class="muted">תצוגת מנהלת · {{ MONTH_NAMES[month] }} {{ year }}</span></div>
+<div class="stats">
+  <a class="stat" href="/children?status=active"><div class="stat-num">{{ active_children }}</div><div class="stat-label">ילדים פעילים</div></a>
+  <a class="stat" href="/calendar?year={{ year }}&month={{ month }}"><div class="stat-num">{{ held }}</div><div class="stat-label">מפגשים שהתקיימו החודש</div></a>
+  <a class="stat" href="/billing?year={{ year }}&month={{ month }}"><div class="stat-num">{{ to_collect|money }}</div><div class="stat-label">סכום לגבייה</div></a>
+  <a class="stat" href="/receipts"><div class="stat-num">{{ pending_receipts }}</div><div class="stat-label">קבלות שממתינות לאישור</div></a>
+</div>
+<div class="grid-2">
+  <section class="card">
+    <h2>משימות לביצוע</h2>
+    {% if tasks %}
+    <ul class="tasks">
+      {% for title, detail, url, kind in tasks %}
+      <li><a href="{{ url }}"><div><strong>{{ title }}</strong><div class="muted small">{{ detail }}</div></div><span class="badge {% if kind == 'action' %}badge-red{% else %}badge-orange{% endif %}">{% if kind == 'action' %}פעולה נדרשת{% else %}ממתין{% endif %}</span></a></li>
+      {% endfor %}
+    </ul>
+    {% else %}<p class="muted">אין משימות פתוחות. כל הכבוד!</p>{% endif %}
+  </section>
+  <section class="card">
+    <h2>המפגשים הקרובים</h2>
+    {% if upcoming %}
+    <table class="table"><tbody>
+      {% for s in upcoming %}<tr><td>{{ s.date|hebdate }}</td><td>{{ s.group.name if s.group else 'מפגש היכרות' }}</td><td><a class="btn btn-sm" href="/attendance?session_id={{ s.id }}">נוכחות</a></td></tr>{% endfor %}
+    </tbody></table>
+    {% else %}<p class="muted">אין מפגשים מתוכננים. <a href="/calendar">צרי לוח לחודש</a>.</p>{% endif %}
+    <div class="actions"><a class="btn" href="/attendance">דיווח נוכחות היום</a><a class="btn" href="/payments/new">קליטת תשלום</a><a class="btn" href="/month-close?year={{ year }}&month={{ month }}">סגירת חודש</a></div>
+  </section>
+</div>
+{% endblock %}

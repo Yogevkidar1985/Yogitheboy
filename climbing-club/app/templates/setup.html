@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>הקמה ראשונית</title><link rel="stylesheet" href="/static/style.css"></head>
+<body class="auth-body">
+<div class="auth-card">
+  <h1>ברוכות הבאות</h1>
+  <p class="muted">זו הכניסה הראשונה למערכת. צרי את משתמש מנהל המערכת.</p>
+  {% for f in flash_messages %}<div class="flash flash-{{ f.kind }}">{{ f.text }}</div>{% endfor %}
+  <form method="post" action="/setup" class="form">
+    <label>שם מלא<input name="display_name" required></label>
+    <label>שם משתמש<input name="username" required></label>
+    <label>סיסמה (לפחות 8 תווים)<input name="password" type="password" required minlength="8"></label>
+    <label>אימות סיסמה<input name="password2" type="password" required minlength="8"></label>
+    <button class="btn btn-primary btn-block">הקמת המערכת</button>
+  </form>
+</div></body></html>

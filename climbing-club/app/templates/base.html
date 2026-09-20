@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}ניהול החוג{% endblock %} · חוג טיפוס</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-title">ניהול החוג</div>
+      <div class="brand-sub">{% if user %}{{ user.display_name }} · {{ user.role|label }}{% else %}חוג טיפוס{% endif %}</div>
+    </div>
+    <nav class="nav">
+      {% for key, url, title, num in NAV %}
+      <a href="{{ url }}" class="nav-item {% if active == key %}active{% endif %}"><span class="nav-num">{{ num }}</span><span>{{ title }}</span></a>
+      {% endfor %}
+      <a href="/month-close" class="nav-item {% if active == 'month_close' %}active{% endif %}"><span class="nav-num">★</span><span>סגירת חודש</span></a>
+    </nav>
+    {% if user %}
+    <form method="post" action="/logout" class="logout"><button class="btn btn-ghost btn-sm">יציאה</button></form>
+    {% endif %}
+  </aside>
+  <main class="main">
+    {% for f in flash_messages %}
+    <div class="flash flash-{{ f.kind }}">{{ f.text }}</div>
+    {% endfor %}
+    {% block content %}{% endblock %}
+  </main>
+</div>
+<script src="/static/app.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

@@ -1,0 +1,30 @@
+{% extends "base.html" %}{% set active = 'children' %}{% block title %}מפגש היכרות{% endblock %}
+{% block content %}
+<div class="page-head"><h1>מפגש היכרות חדש</h1></div>
+<form method="post" action="/intro" class="form card">
+  <h2>הילד</h2>
+  <div class="form-grid">
+    <label>ילד קיים מהמאגר<select name="child_id"><option value="">— ילד חדש —</option>{% for c in children %}<option value="{{ c.id }}">{{ c.full_name }}</option>{% endfor %}</select></label>
+    <label>או שם ילד חדש<input name="child_name"></label>
+    <label>תעודת זהות<input name="child_national_id"></label>
+  </div>
+  <h2>ההורה (לילד חדש)</h2>
+  <div class="form-grid">
+    <label>שם ההורה<input name="parent_name"></label><label>טלפון<input name="parent_phone" dir="ltr"></label><label>מייל לקבלה<input name="parent_email" dir="ltr" type="email"></label>
+  </div>
+  <h2>המפגש</h2>
+  <div class="form-grid">
+    <label>תאריך המפגש<input type="date" name="session_date" required value="{{ today().isoformat() }}"></label>
+    <label>סכום החיוב (₪)<input name="amount" inputmode="decimal" required value="{{ default_price }}"></label>
+  </div>
+  <label>הערות<input name="notes"></label>
+  <h2>תשלום</h2>
+  <div class="checks"><label class="check"><input type="checkbox" name="paid" value="1"> התשלום התקבל – לרשום אותו ולהכין קבלה לבדיקה</label></div>
+  <div class="form-grid">
+    <label>תאריך התשלום<input type="date" name="paid_on" value="{{ today().isoformat() }}"></label>
+    <label>אמצעי<select name="method">{% for k, v in PAYMENT_METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
+    <label>אסמכתא<input name="reference" dir="ltr"></label>
+  </div>
+  <div class="actions"><button class="btn btn-primary">שמירה</button><a class="btn btn-ghost" href="/intro">ביטול</a></div>
+</form>
+{% endblock %}

@@ -1,0 +1,78 @@
+{% extends "base.html" %}{% set active = 'attendance' %}{% block title %}דיווח נוכחות{% endblock %}
+{% block content %}
+<div class="page-head"><h1>דיווח נוכחות</h1><span class="muted">מסך עבודה יומי</span></div>
+<div class="card">
+  <form method="get" action="/attendance" class="form inline-form">
+    <label>תאריך המפגש<input type="date" name="on" value="{{ on.isoformat() }}" onchange="this.form.submit()"></label>
+    <span class="day-title">{{ on|hebdate }}</span>
+  </form>
+  {% if day_sessions|length > 1 %}
+  <div class="tabs">{% for s in day_sessions %}<a class="tab {% if current and s.id == current.id %}active{% endif %}" href="/attendance?session_id={{ s.id }}">{{ s.group.name if s.group else 'היכרות' }} <span class="badge {{ s.status|badge }}">{{ s.status|label }}</span></a>{% endfor %}</div>
+  {% endif %}
+</div>
+
+{% if current %}
+<div class="card">
+  <div class="card-row"><h2>{{ current.group.name if current.group else 'מפגש היכרות' }} · <span class="badge {{ current.status|badge }}">{{ current.status|label }}</span></h2>
+    <span class="muted" id="counter">0 מתוך {{ rows|length }} סומנו</span></div>
+  {% if closed %}<div class="flash flash-warning">החודש סגור – לא ניתן לשנות דיווחים בלי לפתוח אותו מחדש.</div>{% endif %}
+  {% if current.status.is_cancelled or current.status.value == 'moved' %}
+    <p class="muted">המפגש {{ current.status|label }}{% if current.reason %} ({{ current.reason }}){% endif %} – אין דיווח נוכחות.</p>
+  {% elif not rows %}
+    <p class="muted">אין ילדים משויכים לקבוצה בתאריך זה.</p>
+  {% else %}
+  <form method="post" action="/attendance/{{ current.id }}" id="att-form" class="form">
+    <div class="actions">
+      <button type="button" class="btn" id="mark-all">סמן את כולם כנוכחים</button>
+      <span class="muted small">ילד שלא סומן נשאר "לא דווח" ואינו נחשב כמי שהחסיר.</span>
+    </div>
+    <ul class="att-list">
+    {% for r in rows %}{% set st = r.rec.status.value if r.rec else 'unreported' %}
+      <li class="att-row">
+        <div class="att-name"><a href="/children/{{ r.child.id }}">{{ r.child.full_name }}</a>
+          {% if r.rec and r.rec.reported_at %}<div class="small muted">דווח: {{ r.rec.reported_by }} {{ r.rec.reported_at|datetime }}</div>{% endif %}
+          {% if r.rec and (r.rec.charge_override.value != 'default' or r.rec.price_override is not none) %}<div class="small text-blue">חריג חיוב: {{ 'לחייב' if r.rec.charge_override.value == 'charge' else ('לא לחייב' if r.rec.charge_override.value == 'no_charge' else '') }} {% if r.rec.price_override is not none %}{{ r.rec.price_override|money }}{% endif %}</div>{% endif %}
+        </div>
+        <div class="seg" data-child="{{ r.child.id }}">
+          <label class="seg-opt seg-green"><input type="radio" name="status_{{ r.child.id }}" value="present" {% if st == 'present' %}checked{% endif %}><span>נכח</span></label>
+          <label class="seg-opt seg-red"><input type="radio" name="status_{{ r.child.id }}" value="absent" {% if st == 'absent' %}checked{% endif %}><span>החסיר</span></label>
+          <label class="seg-opt seg-gray"><input type="radio" name="status_{{ r.child.id }}" value="unreported" {% if st == 'unreported' %}checked{% endif %}><span>לא דווח</span></label>
+        </div>
+        {% if can(user, 'billing') %}
+        <details class="menu"><summary class="btn btn-sm btn-ghost">חריג</summary><div class="menu-body">
+          <form method="post" action="/attendance/{{ current.id }}/child/{{ r.child.id }}/override" class="form">
+            <input type="hidden" name="back" value="/attendance?session_id={{ current.id }}">
+            <select name="charge_override"><option value="default" {% if r.rec and r.rec.charge_override.value == 'default' %}selected{% endif %}>לפי כלל החיוב</option><option value="charge" {% if r.rec and r.rec.charge_override.value == 'charge' %}selected{% endif %}>לחייב בכל מקרה</option><option value="no_charge" {% if r.rec and r.rec.charge_override.value == 'no_charge' %}selected{% endif %}>לא לחייב</option></select>
+            <input name="price_override" placeholder="מחיר חריג" inputmode="decimal" value="{{ r.rec.price_override if r.rec and r.rec.price_override is not none else '' }}">
+            <input name="note" placeholder="הערה" value="{{ r.rec.note if r.rec else '' }}">
+            <button class="btn btn-sm">שמירת חריג</button>
+          </form></div></details>
+        {% endif %}
+      </li>
+    {% endfor %}
+    </ul>
+    {% if not closed %}<div class="actions sticky-actions"><button class="btn btn-primary btn-lg">שמירת הדיווח</button><span class="muted small" id="save-hint"></span></div>{% endif %}
+  </form>
+  {% endif %}
+</div>
+{% else %}
+<div class="card"><p class="muted">אין מפגש בתאריך זה.</p>
+{% if can(user, 'calendar.edit') %}<p>ניתן <a href="/calendar?year={{ on.year }}&month={{ on.month }}">להוסיף מפגש חריג בלוח המפגשים</a>.</p>{% endif %}</div>
+{% endif %}
+
+{% if pending %}
+<section class="card"><h2>מפגשים שממתינים לעדכון</h2>
+<table class="table"><tbody>{% for s in pending %}<tr><td>{{ s.date|hebdate }}</td><td>{{ s.group.name if s.group else '' }}</td><td><span class="badge {{ s.status|badge }}">{{ s.status|label }}</span></td><td><a class="btn btn-sm" href="/attendance?session_id={{ s.id }}">דיווח</a></td></tr>{% endfor %}</tbody></table>
+</section>
+{% endif %}
+{% endblock %}
+{% block scripts %}<script>
+(function(){
+  var form=document.getElementById('att-form'); if(!form) return;
+  var total={{ rows|length }};
+  function count(){var n=0;form.querySelectorAll('.seg').forEach(function(s){var c=s.querySelector('input:checked');if(c&&c.value!=='unreported')n++;});document.getElementById('counter').textContent=n+' מתוך '+total+' סומנו';}
+  form.addEventListener('change',function(){count();document.getElementById('save-hint').textContent='יש שינויים שלא נשמרו';});
+  document.getElementById('mark-all').addEventListener('click',function(){form.querySelectorAll('input[value=present]').forEach(function(i){i.checked=true;});count();document.getElementById('save-hint').textContent='יש שינויים שלא נשמרו';});
+  count();
+})();
+</script>{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% set active = 'children' %}{% block title %}ילדים והורים{% endblock %}
+{% block content %}
+<div class="page-head"><h1>ילדים והורים</h1>
+  <div class="actions">{% if can(user, 'children.edit') %}<a class="btn btn-primary" href="/children/new">+ ילד חדש</a>{% endif %}<a class="btn" href="/groups">קבוצות</a><a class="btn" href="/intro">מפגשי היכרות</a></div></div>
+<form class="filters" method="get">
+  <input name="q" value="{{ q }}" placeholder="חיפוש לפי שם">
+  <select name="status"><option value="">כל הסטטוסים</option>{% for s in ChildStatus %}<option value="{{ s.value }}" {% if status == s.value %}selected{% endif %}>{{ s|label }}</option>{% endfor %}</select>
+  <select name="group_id"><option value="">כל הקבוצות</option>{% for g in groups %}<option value="{{ g.id }}" {% if group_id == g.id %}selected{% endif %}>{{ g.name }}</option>{% endfor %}</select>
+  <button class="btn">סינון</button>
+</form>
+<div class="cards">
+{% for c in children %}
+  {% set rule = c.current_rule() %}
+  <a class="card card-link" href="/children/{{ c.id }}">
+    <div class="card-row"><strong>{{ c.full_name }}</strong><span class="badge {{ c.status|badge }}">{{ c.status|label }}</span></div>
+    <div class="muted small">{% for g in c.active_groups() %}{{ g.name }}{% if not loop.last %}, {% endif %}{% else %}ללא קבוצה{% endfor %}</div>
+    <div class="small">{% if rule %}{{ rule.method|label }} · {% if rule.method.value == 'fixed_monthly' %}{{ rule.fixed_monthly_amount|money }}/חודש{% else %}{{ rule.price_per_session|money }}/מפגש{% endif %}{% else %}<span class="text-red">ללא כלל חיוב</span>{% endif %}</div>
+    <div class="small muted">{% set ct = c.message_contact %}{% if ct %}{{ ct.full_name }} · {{ ct.phone }}{% else %}ללא איש קשר{% endif %} · {{ c.receipt_mode|label }}</div>
+  </a>
+{% else %}<p class="muted">לא נמצאו ילדים.</p>{% endfor %}
+</div>
+{% endblock %}

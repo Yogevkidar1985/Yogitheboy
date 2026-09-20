@@ -1,0 +1,39 @@
+{% extends "base.html" %}{% set active = 'settings' %}{% block title %}הגדרות{% endblock %}
+{% block content %}
+<div class="page-head"><h1>הגדרות ודוחות</h1>
+  <div class="actions"><a class="btn" href="/settings/reports">דוחות</a>{% if can(user, 'users') %}<a class="btn" href="/settings/users">משתמשים והרשאות</a><a class="btn" href="/settings/backup">גיבוי ושחזור</a>{% endif %}{% if can(user, 'audit') %}<a class="btn" href="/settings/audit">היסטוריית שינויים</a>{% endif %}<a class="btn" href="/groups">קבוצות</a></div></div>
+<form method="post" action="/settings" class="form card">
+  <fieldset {% if not can(user, 'settings') %}disabled{% endif %}>
+  <h2>כללי</h2>
+  <div class="form-grid">
+    <label>{{ labels.club_name }}<input name="club_name" value="{{ values.club_name }}"></label>
+    <label>{{ labels.signature }}<input name="signature" value="{{ values.signature }}"></label>
+    <label>{{ labels.default_price_per_session }}<input name="default_price_per_session" inputmode="decimal" value="{{ values.default_price_per_session }}"></label>
+    <label>{{ labels.intro_session_price }}<input name="intro_session_price" inputmode="decimal" value="{{ values.intro_session_price }}"></label>
+  </div>
+  <h2>כללי חיוב</h2>
+  <label>{{ labels.cancel_policy_fixed_monthly }}
+    <select name="cancel_policy_fixed_monthly">
+      <option value="unset" {% if values.cancel_policy_fixed_monthly == 'unset' %}selected{% endif %}>טרם הוחלט – המערכת תציג אזהרה ולא תניח כלל</option>
+      <option value="no_change" {% if values.cancel_policy_fixed_monthly == 'no_change' %}selected{% endif %}>ביטול (חג/מנהלת) אינו משנה את התשלום החודשי</option>
+      <option value="credit_per_session" {% if values.cancel_policy_fixed_monthly == 'credit_per_session' %}selected{% endif %}>זיכוי בגובה מחיר מפגש על כל מפגש שבוטל</option>
+    </select></label>
+  <label>{{ labels.block_close_on_missing_attendance }}<select name="block_close_on_missing_attendance"><option value="1" {% if values.block_close_on_missing_attendance == '1' %}selected{% endif %}>חסימה</option><option value="0" {% if values.block_close_on_missing_attendance == '0' %}selected{% endif %}>אזהרה בלבד</option></select></label>
+  <p class="small muted">ילדים בחיוב לפי נוכחות / לפי מפגשים שהתקיימו אינם מחויבים על מפגש שבוטל בכל מקרה. זיכויים נקודתיים מוסיפים במסך החיוב של הילד.</p>
+  <h2>תבנית הודעת תשלום</h2>
+  <label>{{ labels.message_template }}<textarea name="message_template" rows="12" class="msg-body">{{ values.message_template }}</textarea></label>
+  <p class="small muted">שדות זמינים: {parent_name} {child_name} {month_name} {year} {sessions_held} {sessions_attended} {sessions_absent} {sessions_cancelled} {amount} {previous_balance} {previous_balance_line} {total_due} {signature} {club_name}</p>
+  <h2>תבניות קבלה</h2>
+  <label>{{ labels.receipt_description_monthly }}<input name="receipt_description_monthly" value="{{ values.receipt_description_monthly }}"></label>
+  <label>{{ labels.receipt_description_session }}<input name="receipt_description_session" value="{{ values.receipt_description_session }}"></label>
+  <label>{{ labels.receipt_description_intro }}<input name="receipt_description_intro" value="{{ values.receipt_description_intro }}"></label>
+  <label>{{ labels.receipt_footer }}<input name="receipt_footer" value="{{ values.receipt_footer }}"></label>
+  <p class="small muted">שדות: {child_name} {month_name} {year} {session_dates} {sessions_count} {session_date}</p>
+  {% if can(user, 'settings') %}<button class="btn btn-primary">שמירת ההגדרות</button>{% endif %}
+  </fieldset>
+</form>
+<section class="card"><h2>חיבורים</h2>
+  <p>ספק קבלות: <strong>{{ provider }}</strong> · פענוח צילומי מסך: <strong>{{ 'מופעל' if ocr else 'לא מוגדר' }}</strong></p>
+  <p class="small muted">מפתחות וסודות מוגדרים בקובץ .env בשרת בלבד ואינם נשמרים במסד הנתונים.</p>
+</section>
+{% endblock %}

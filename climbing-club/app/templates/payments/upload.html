@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% set active = 'payments' %}{% block title %}העלאת צילום מסך{% endblock %}
+{% block content %}
+<div class="page-head"><h1>קליטת תשלום מצילום מסך</h1></div>
+<div class="card form">
+  {% if not ocr_available %}<div class="flash flash-warning">פענוח אוטומטי אינו מוגדר במערכת. הקובץ יישמר כאסמכתא ותוצג טופס להזנה ידנית.</div>{% endif %}
+  <p class="muted">העלי צילום מסך של אישור ההעברה / ביט / פייבוקס. המערכת תנסה לחלץ תאריך, סכום, שם משלם ואסמכתא, ותציג טופס לבדיקה. שום תשלום לא נשמר בלי אישורך.</p>
+  <form method="post" action="/payments/upload/screenshot" enctype="multipart/form-data" class="form">
+    <label>קובץ (PNG / JPG / WEBP / PDF, עד 8MB)<input type="file" name="file" accept="image/*,.pdf" required></label>
+    <button class="btn btn-primary">העלאה ופענוח</button>
+  </form>
+</div>
+{% endblock %}

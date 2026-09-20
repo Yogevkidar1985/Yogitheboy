@@ -1,0 +1,37 @@
+{% extends "base.html" %}{% set active = 'children' %}{% block title %}ילד חדש{% endblock %}
+{% block content %}
+<div class="page-head"><h1>ילד חדש</h1>{% if source %}<span class="muted">שכפול הגדרות מ-{{ source.full_name }}</span>{% endif %}</div>
+<form method="post" action="/children" class="form card">
+  <h2>פרטי הילד</h2>
+  <div class="form-grid">
+    <label>שם מלא של הילד<input name="full_name" required></label>
+    <label>תעודת זהות<input name="national_id"></label>
+    <label>סטטוס<select name="status">{% for s in ChildStatus %}<option value="{{ s.value }}">{{ s|label }}</option>{% endfor %}</select></label>
+    <label>תאריך הצטרפות<input name="joined_on" type="date" value="{{ today().isoformat() }}"></label>
+  </div>
+  <label>קבוצה קבועה (ניתן לבחור כמה)
+    <div class="checks">{% for g in groups %}<label class="check"><input type="checkbox" name="group_ids" value="{{ g.id }}" {% if source and g in source.active_groups() %}checked{% endif %}> {{ g.name }} (יום {{ WEEKDAY_NAMES[g.weekday] }})</label>{% endfor %}</div>
+  </label>
+  <h2>פרטי הורה / משלם</h2>
+  <div class="form-grid">
+    <label>שם ההורה או המשלם<input name="contact_name"></label>
+    <label>טלפון לוואטסאפ<input name="contact_phone" inputmode="tel" dir="ltr"></label>
+    <label>כתובת מייל (לקבלות)<input name="contact_email" type="email" dir="ltr"></label>
+    <label>קשר<select name="contact_relation"><option>הורה</option><option>משלם</option><option>אחר</option></select></label>
+  </div>
+  <p class="muted small">ניתן להוסיף הורים ומשלמים נוספים מכרטיס הילד לאחר השמירה.</p>
+  <h2>הגדרות חיוב וקבלות</h2>
+  <div class="form-grid">
+    <label>שיטת חיוב<select name="method">{% for m in BillingMethod %}<option value="{{ m.value }}" {% if source and source.current_rule() and source.current_rule().method == m %}selected{% endif %}>{{ m|label }}</option>{% endfor %}</select></label>
+    <label>מחיר למפגש (₪)<input name="price_per_session" inputmode="decimal" value="{{ source.current_rule().price_per_session if source and source.current_rule() else default_price }}"></label>
+    <label>סכום חודשי קבוע (₪)<input name="fixed_monthly_amount" inputmode="decimal" value="{{ source.current_rule().fixed_monthly_amount if source and source.current_rule() else '' }}"></label>
+    <label>תיאור ההסדר האישי<input name="rule_description" value="{{ source.current_rule().description if source and source.current_rule() else '' }}"></label>
+    <label>אופן הפקת הקבלה<select name="receipt_mode">{% for r in ReceiptMode %}<option value="{{ r.value }}" {% if source and source.receipt_mode == r %}selected{% endif %}>{{ r|label }}</option>{% endfor %}</select></label>
+    <label>קופת חולים / גורם מממן<input name="hmo" value="{{ source.hmo if source else '' }}"></label>
+    <label>שדות חובה בקבלה (מופרדים בפסיק)<input name="receipt_required_fields" value="{{ source.receipt_required_fields if source else '' }}" placeholder="תעודת זהות, קופת חולים"></label>
+  </div>
+  <label>הערות קבועות לקבלה<textarea name="receipt_notes" rows="2">{{ source.receipt_notes if source else '' }}</textarea></label>
+  <label>הערות והנחיות מיוחדות<textarea name="notes" rows="2">{{ source.notes if source else '' }}</textarea></label>
+  <div class="actions"><button class="btn btn-primary">שמירה</button><a class="btn btn-ghost" href="/children">ביטול</a></div>
+</form>
+{% endblock %}

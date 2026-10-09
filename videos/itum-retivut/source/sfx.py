@@ -69,10 +69,10 @@ place(sfx, 0.09 * lp(rain, 5000) * env / np.abs(rain).max() * 0.55, r0)
 L = int(3.0 * SR); n = rng.standard_normal(L); tt = np.arange(L) / SR
 th = lp(n, 180, 4) * (np.exp(-tt * 1.4)) * (1 + 0.5 * np.sin(2 * np.pi * 3 * tt))
 crack = hp(n, 1500) * np.exp(-tt * 18)
-thunder = th / np.abs(th).max() * 0.55 + crack / np.abs(crack).max() * 0.18
+thunder = th / np.abs(th).max() * 0.30 + crack / np.abs(crack).max() * 0.10
 place(sfx, thunder, S['now']['start'] - 0.15)
 # second distant rumble for "after the storm"
-place(sfx, 0.5 * thunder, S['now']['words'][-3]['s'])
+place(sfx, 0.25 * thunder, S['now']['words'][-3]['s'])
 # ticks on list numbers
 def tick(f=1200, amp=0.25):
     L = int(0.18 * SR); tt = np.arange(L) / SR

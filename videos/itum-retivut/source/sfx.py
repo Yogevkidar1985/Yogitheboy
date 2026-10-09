@@ -64,7 +64,7 @@ drops = np.zeros(L); idx = rng.integers(0, L, int((r1 - r0) * 60)); drops[idx] =
 rain += hp(drops, 2000) * 1.2
 tt = np.arange(L) / SR; env = np.minimum(1, tt / 1.2) * np.minimum(1, (L / SR - tt) / 1.5)
 env *= np.where(tt > (S['stain']['start'] - r0), 0.45, 1.0)
-place(sfx, 0.09 * rain * env / np.abs(rain).max() * 3, r0)
+place(sfx, 0.09 * lp(rain, 5000) * env / np.abs(rain).max() * 0.55, r0)
 # thunder at 'now'
 L = int(3.0 * SR); n = rng.standard_normal(L); tt = np.arange(L) / SR
 th = lp(n, 180, 4) * (np.exp(-tt * 1.4)) * (1 + 0.5 * np.sin(2 * np.pi * 3 * tt))
@@ -86,8 +86,23 @@ def drip(amp=0.3):
     return amp * np.sin(2 * np.pi * np.cumsum(fr) / SR) * np.exp(-tt * 22)
 w = S['stain']['words']
 place(sfx, drip(), w[0]['s']); place(sfx, drip(0.25), w[5]['s']); place(sfx, drip(0.32), w[-2]['s'])
-# roller swish on paint
-place(sfx, whoosh(1.1, 0.12), S['paint']['words'][3]['s'])
+# roller: one soft swish per painted band (matches the 5 bands in the animation)
+p0 = S['paint']['start'] - 0.15; p1 = S['paint']['words'][5]['s'] - 0.05; bd = (p1 - p0) / 5
+def roll(d, amp=0.10):
+    L = int(d * SR); n = rng.standard_normal(L); tt = np.arange(L) / L
+    y = bp(n, 250, 2500) * (np.sin(np.pi * tt) ** 1.5) * (1 + 0.35 * np.sin(2 * np.pi * 14 * tt * d))
+    return amp * y / np.abs(y).max()
+for k in range(5):
+    place(sfx, roll(bd * 0.95), p0 + k * bd)
+# paint bubbles: small pops
+def pop(amp=0.22):
+    L = int(0.07 * SR); tt = np.arange(L) / SR
+    return amp * np.sin(2 * np.pi * (900 - 4000 * tt) * tt) * np.exp(-tt * 70)
+for i in range(4):
+    place(sfx, pop(), S['paint']['words'][6]['s'] + i * 0.12 + 0.12)
+# stamp thud
+L = int(0.35 * SR); tt = np.arange(L) / SR
+place(sfx, 0.5 * np.sin(2 * np.pi * (70 + 80 * np.exp(-tt * 25)) * tt) * np.exp(-tt * 12), S['paint']['words'][7]['s'] + 0.3)
 # CTA chime
 def chime(amp=0.2):
     L = int(2.0 * SR); tt = np.arange(L) / SR

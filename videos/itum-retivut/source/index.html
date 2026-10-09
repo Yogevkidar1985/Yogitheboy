@@ -70,7 +70,7 @@ const eo=x=>1-Math.pow(1-x,3);
 const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
 const back=x=>{const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
 const lerp=(a,b,x)=>a+(b-a)*x;
-let TL, S={}, VIS=[];
+let TL, S={}, VIS=[], VI={};
 
 // ---------- reusable drawings ----------
 function house(id){ // line drawing of a villa, viewBox 1080x980
@@ -135,31 +135,41 @@ function build(){
    </svg>
  </div>
 
- <div class="scene" id="v-stain">
-   <svg width="1080" height="1100" viewBox="0 0 1080 1100" style="position:absolute;left:0;top:130px">
-     ${wall("a")}
-     <g id="st1" transform="translate(620,520) scale(0)"><g filter="url(#asoft)">${blob('url(#astg)')}</g></g>
-     <g id="stTarget" opacity="0"><circle id="stCirc" cx="620" cy="520" r="190" fill="none" stroke="#a90b0c" stroke-width="8" stroke-dasharray="22 16"/>
-       <path d="M480 650 L330 800" stroke="#a90b0c" stroke-width="6"/>
-       <rect x="130" y="790" width="330" height="80" rx="8" fill="#a90b0c"/><text x="295" y="845" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="46" fill="#fff">אותה נקודה</text></g>
-   </svg>
-   <div id="steps" style="position:absolute;left:120px;right:120px;top:1080px;display:flex;justify-content:space-between;direction:rtl">
-     <div class="lbl stp" style="font-size:40px">01 מופיע</div><div class="lbl stp" style="font-size:40px">02 מתייבש</div><div class="lbl stp" style="font-size:40px">03 חוזר</div>
+ <div class="scene" id="v-wall">
+   <div id="wcam" style="position:absolute;left:0;top:170px;width:1080px;height:1000px;overflow:hidden">
+    <div id="wroom" style="position:absolute;left:0;top:0;width:1080px;height:1000px;transform-origin:520px 400px">
+     <img src="room.jpg" style="position:absolute;left:0;top:0;width:1080px;height:1000px">
+     <div id="warm" style="position:absolute;inset:0;background:radial-gradient(ellipse at 95% 40%,rgba(255,214,140,.55),rgba(255,200,120,.18) 45%,transparent 70%);mix-blend-mode:screen;opacity:0"></div>
+     <div id="wclip" style="position:absolute;left:0;top:184px;width:800px;height:642px;overflow:hidden">
+       <img id="sdry" src="stain_dry.png" style="position:absolute;left:200px;top:-34px;width:640px;height:640px;opacity:0;transform-origin:320px 230px">
+       <img id="swet" src="stain_wet.png" style="position:absolute;left:200px;top:-34px;width:640px;height:640px;transform-origin:320px 230px">
+       <div id="bands">${[0,1,2,3,4].map(k=>{const x=684-k*116;return `<div class="band" style="position:absolute;left:${x}px;top:0;width:118px;height:642px;background:url(room.jpg) -${x}px -184px;filter:brightness(1.035) contrast(.97);clip-path:inset(100% 0 0 0)"></div>`}).join('')}</div>
+       <img id="sbleed" src="stain_bleed.png" style="position:absolute;left:200px;top:-34px;width:640px;height:640px;opacity:0;mix-blend-mode:multiply">
+       <div id="bubbles">${[[455,250,34],[600,300,26],[520,380,20],[660,200,18]].map(([x,y,r])=>`<div class="bub" style="position:absolute;left:${x-r}px;top:${y-r}px;width:${2*r}px;height:${2*r}px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff 0 18%,#f1eee6 40%,#d9d2c0 100%);box-shadow:2px 5px 8px rgba(80,60,30,.35);transform:scale(0)"></div>`).join('')}</div>
+       <div id="drops">${[0,1,2,3,4,5].map(()=>`<div class="drp" style="position:absolute;width:14px;height:22px;border-radius:50% 50% 50% 50%/60% 60% 40% 40%;background:radial-gradient(circle at 40% 35%,#e9f3f8,#8fb6c8 55%,#5d8aa0);opacity:0"></div>`).join('')}</div>
+     </div>
+     <svg width="1080" height="1000" style="position:absolute;left:0;top:0">
+       <g id="wtarget" opacity="0"><circle id="wcirc" cx="520" cy="400" r="270" fill="none" stroke="#a90b0c" stroke-width="9" stroke-dasharray="24 16"/>
+         <path d="M330 590 L210 760" stroke="#a90b0c" stroke-width="7"/>
+         <rect x="40" y="750" width="360" height="92" rx="10" fill="#a90b0c"/><text x="220" y="813" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="52" fill="#fff">אותה נקודה</text></g>
+       <g id="wsrc" opacity="0"><path id="wsrcp" d="M520 -40 C520 60 540 110 525 200" fill="none" stroke="#105572" stroke-width="12" stroke-dasharray="26 18" stroke-linecap="round"/>
+         <path d="M500 182 L525 225 L552 186" fill="none" stroke="#105572" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+         <rect x="560" y="40" width="250" height="84" rx="10" fill="#07293a"/><text x="685" y="98" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="48" fill="#fff">המקור</text></g>
+       <g id="roller2" opacity="0">
+         <path d="M0 0 V-10 H90 V120" fill="none" stroke="#56636c" stroke-width="10" stroke-linejoin="round"/>
+         <rect x="78" y="118" width="26" height="170" rx="12" fill="#a90b0c"/><rect x="82" y="120" width="8" height="160" rx="4" fill="#d9393a" opacity=".6"/>
+         <rect x="-70" y="-48" width="140" height="64" rx="26" fill="#fbfbf8" stroke="#c9c9c2" stroke-width="3"/>
+         <g stroke="#e2e1da" stroke-width="3">${[...Array(9)].map((_,i)=>`<line x1="${-60+i*15}" y1="-40" x2="${-60+i*15}" y2="8"/>`).join('')}</g>
+       </g>
+       <g id="wstamp" opacity="0"><g transform="rotate(-7)">
+         <rect x="-310" y="-74" width="620" height="148" rx="12" fill="rgba(255,255,255,.85)" stroke="#a90b0c" stroke-width="11"/>
+         <text x="0" y="26" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="78" fill="#a90b0c">המקור לא טופל</text></g></g>
+     </svg>
+    </div>
    </div>
- </div>
-
- <div class="scene" id="v-paint">
-   <svg width="1080" height="1100" viewBox="0 0 1080 1100" style="position:absolute;left:0;top:130px">
-     ${wall("b")}
-     <defs><clipPath id="coatclip"><rect id="coatrect" x="960" y="300" width="0" height="610"/></clipPath></defs>
-     <g transform="translate(620,520)"><g filter="url(#bsoft)">${blob('url(#bstg)')}</g></g>
-     <rect x="120" y="300" width="840" height="610" fill="#fbfcfd" clip-path="url(#coatclip)"/>
-     <g id="ghost" opacity="0" transform="translate(620,520) scale(.9)"><g filter="url(#bsoft)">${blob('url(#bstg)')}</g></g>
-     <g id="roller" transform="translate(1100,380)">${roller()}</g>
-     <g id="stamp" opacity="0" transform="translate(540,760) rotate(-7)">
-       <rect x="-300" y="-70" width="600" height="140" rx="10" fill="none" stroke="#a90b0c" stroke-width="10"/>
-       <text x="0" y="22" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="72" fill="#a90b0c">המקור לא טופל</text></g>
-   </svg>
+   <div id="steps" style="position:absolute;left:70px;right:70px;top:1060px;display:flex;justify-content:space-between;direction:rtl;gap:20px">
+     <div class="lbl stp" style="font-size:40px;padding:12px 26px 8px;border-radius:40px;background:rgba(7,41,58,.85)">01 מופיע</div><div class="lbl stp" style="font-size:40px;padding:12px 26px 8px;border-radius:40px;background:rgba(7,41,58,.85)">02 מתייבש</div><div class="lbl stp" style="font-size:40px;padding:12px 26px 8px;border-radius:40px;background:rgba(7,41,58,.85)">03 חוזר</div>
+   </div>
  </div>
 
  <div class="scene" id="v-where">
@@ -276,12 +286,13 @@ function build(){
  $('#prog').innerHTML=VIS.map(()=>'<div><i></i></div>').join('');
 }
 
-const CHIP={hook:'איטום',rain:'רטיבות',stain:'כתם חוזר',paint:'צבע זה לא פתרון',where:'רשימת בדיקה',list:'רשימת בדיקה',now:'לפני החורף',article:'הכתבה המלאה',save:'שמרו ושתפו',cta:'קבוצת קורקוס'};
+const CHIP={hook:'איטום',rain:'רטיבות',wall:'כתם חוזר',where:'רשימת בדיקה',list:'רשימת בדיקה',now:'לפני החורף',article:'הכתבה המלאה',save:'שמרו ושתפו',cta:'קבוצת קורקוס'};
 
 function setup(tl){
  TL=tl; tl.scenes.forEach(s=>S[s.id]=s);
- const groups=[['hook',['hook']],['rain',['rain']],['stain',['stain']],['paint',['paint']],['where',['where']],['list',['one','two','three']],['now',['now']],['article',['article']],['save',['save']],['cta',['cta']]];
+ const groups=[['hook',['hook']],['rain',['rain']],['wall',['stain','paint']],['where',['where']],['list',['one','two','three']],['now',['now']],['article',['article']],['save',['save']],['cta',['cta']]];
  VIS=groups.map(([id,ids],i)=>({id,a:i?S[ids[0]].start-0.35:0,b:i<groups.length-1?S[groups[i+1][1][0]].start-0.35:tl.total,ids}));
+ VI={}; VIS.forEach(v=>VI[v.id]=v);
  build();
 }
 const w=(sid,i)=>S[sid].words[i<0?S[sid].words.length+i:i].s;
@@ -299,7 +310,7 @@ function render(t){
   el.style.transform=`translateY(${(1-inn)*70-out*50}px) scale(${1+out*0.03})`;
  });
  const V=VIS[cur];
- $('#chip').textContent=CHIP[V.id];
+ $('#chip').textContent=V.id==='wall'&&t>=S.paint.start-0.3?'צבע זה לא פתרון':CHIP[V.id];
  $('#counter').textContent=String(cur+1).padStart(2,'0')+' / '+String(VIS.length).padStart(2,'0');
  [...$('#prog').children].forEach((d,i)=>{const v=VIS[i];d.firstChild.style.width=(seg(t,v.a,v.b)*100)+'%';});
 
@@ -348,7 +359,7 @@ function render(t){
    $('#hookbar').style.width=(190*eo(seg(t,0.8,1.4)))+'px';
    const sun=back(seg(t,0.2,0.9)); $('#sun').style.transform=`scale(${sun})`; }
  // rain
- if(t>VIS[1].a-0.2&&t<VIS[1].b+0.4){ const a=VIS[1].a;
+ if(t>VI.rain.a-0.2&&t<VI.rain.b+0.4){ const a=VI.rain.a;
    document.querySelectorAll('#h1 .dr').forEach((p,i)=>{const L=p.getTotalLength?p.getTotalLength():2000;p.style.strokeDasharray=L;p.style.strokeDashoffset=L*(1-eio(seg(t,a+i*0.08,a+0.9+i*0.08)));});
    const c=eo(seg(t,w('rain',2)-0.5,w('rain',5)));
    $('#cl1').setAttribute('transform',`translate(${lerp(-420,120,c)},${170}) scale(1.4)`);
@@ -357,31 +368,56 @@ function render(t){
    updRain('rain1',t,0.75*seg(t,w('rain',5)-0.3,w('rain',6)));
    const s=back(seg(t,w('rain',3),w('rain',3)+0.5)); $('#rstain').setAttribute('transform',`translate(700,700) scale(${0.45*s})`);
  }
- // stain
- if(t>VIS[2].a-0.2&&t<VIS[2].b+0.4){
-   const g=eo(seg(t,w('stain',1)-0.3,w('stain',1)+0.4)), d=eio(seg(t,w('stain',2),w('stain',2)+0.6)), r=back(seg(t,w('stain',5),w('stain',5)+0.6));
-   const sc=g*(1-0.6*d)+0.6*d*0+ (r>0? (r*1.05 - (1-0.6)*0) : 0);
-   let scale=g*(1-0.62*d); if(r>0)scale=lerp(scale,1.08,clamp(r,0,1.2));
-   const op= (1-0.75*d) + 0.75*clamp(r);
-   const st=$('#st1'); st.setAttribute('transform',`translate(620,520) scale(${scale})`); st.setAttribute('opacity',clamp(op));
-   const tg=seg(t,w('stain',-1)-0.2,w('stain',-1)+0.3); $('#stTarget').setAttribute('opacity',eo(tg));
-   $('#stCirc').setAttribute('r',lerp(260,190,eo(tg)));
+ // wall (stain + paint, one continuous shot)
+ if(t>VI.wall.a-0.2&&t<VI.wall.b+0.4){ const a=VI.wall.a, pa=S.paint.start;
+   // camera: push in on the stain, small pull back for the stamp
+   const push=eio(seg(t,a,pa))*0.14, pull=eio(seg(t,w('paint',7)-0.1,w('paint',7)+0.6))*0.08;
+   $('#wroom').style.transform=`scale(${1+push-pull}) translateY(${push*60}px)`;
+   const g=seg(t,w('stain',0)+0.1,w('stain',1)+0.7);           // spreads
+   const dry=eio(seg(t,w('stain',2)-0.05,w('stain',2)+0.8));    // dries
+   const ret=seg(t,w('stain',5)-0.1,w('stain',5)+0.7);         // returns
+   let R=lerp(0,560,eo(g)); if(ret>0)R=lerp(120,600,eo(ret));
+   const wet=$('#swet');
+   wet.style.webkitMaskImage=wet.style.maskImage=`radial-gradient(circle at 50% 36%,#000 ${R}px,transparent ${R+90}px)`;
+   const wetOp=g>0?(1-dry)+(ret>0?eo(ret):0):0; wet.style.opacity=clamp(wetOp);
+   wet.style.transform=`scale(${ret>0?1+0.06*eo(ret):1})`;
+   $('#sdry').style.opacity=clamp(dry*1.2)*(1-0.7*clamp(ret*2));
+   $('#warm').style.opacity=Math.sin(Math.PI*seg(t,w('stain',2)-0.2,w('stain',4)))*0.9;
+   // drops: from the ceiling while it spreads, down the drip lobes when it returns
+   const lob=[[430,406],[560,456],[640,356]];
+   document.querySelectorAll('#v-wall .drp').forEach((d,i)=>{
+     let st, x, y0, y1;
+     if(i<3){ st=w('stain',0)+0.25*i; x=500+i*30; y0=-20; y1=200; }
+     else { const L=lob[i-3]; st=w('stain',5)+0.15+(i-3)*0.22; x=L[0]; y0=L[1]; y1=630; }
+     const p=seg(t,st,st+0.9); d.style.left=x+'px'; d.style.top=lerp(y0,y1,p*p)+'px';
+     d.style.opacity=p>0&&p<1?Math.min(1,(1-p)*4):0; });
+   // target ring + label
+   const tg=seg(t,w('stain',8)-0.25,w('stain',8)+0.3);
+   $('#wtarget').setAttribute('opacity',eo(tg)*(1-seg(t,pa-0.3,pa)));
+   $('#wcirc').setAttribute('r',lerp(380,270,eo(tg))); $('#wcirc').setAttribute('stroke-dashoffset',-t*50);
+   // steps chips
    const marks=[w('stain',1),w('stain',2),w('stain',5)];
-   document.querySelectorAll('#v-stain .stp').forEach((e,i)=>{const on=t>=marks[i]-0.1; const nx=i<2?t>=marks[i+1]-0.1:false;
-     e.style.opacity=on?(nx?0.45:1):0.2; e.style.color=on&&!nx?'#fff':'#8fb6c8'; e.style.borderBottom=on&&!nx?'8px solid #a90b0c':'8px solid transparent';});
- }
- // paint
- if(t>VIS[3].a-0.2&&t<VIS[3].b+0.4){
-   const p=eio(seg(t,w('paint',3)-0.1,w('paint',4)+0.25));
-   const x=lerp(1060,60,p); $('#roller').setAttribute('transform',`translate(${x},${520+Math.sin(p*Math.PI*3)*90}) rotate(${-4+Math.sin(t*6)*2})`);
-   $('#coatrect').setAttribute('x',x); $('#coatrect').setAttribute('width',Math.max(0,960-x));
-   const rollerOut=seg(t,w('paint',4)+0.25,w('paint',4)+0.6); if(rollerOut>0)$('#roller').setAttribute('transform',`translate(${lerp(60,-300,eio(rollerOut))},520)`);
-   $('#ghost').setAttribute('opacity',0.85*eio(seg(t,w('paint',5),w('paint',7)+0.2)));
-   const s=seg(t,w('paint',7)-0.05,w('paint',7)+0.3); $('#stamp').setAttribute('opacity',clamp(s*3));
-   $('#stamp').setAttribute('transform',`translate(540,780) rotate(-7) scale(${lerp(1.6,1,eo(s))})`);
+   document.querySelectorAll('#v-wall .stp').forEach((e,i)=>{const on=t>=marks[i]-0.1; const nx=i<2?t>=marks[i+1]-0.1:false;
+     e.style.opacity=(on?(nx?0.55:1):0.25)*(1-seg(t,pa-0.3,pa)); e.style.color=on&&!nx?'#fff':'#8fb6c8';
+     e.style.background=on&&!nx?'#a90b0c':'rgba(7,41,58,.85)';});
+   // roller paints 5 vertical bands (each bottom -> top)
+   const p0=pa-0.15, p1=w('paint',5)-0.05, bd=(p1-p0)/5;
+   let rx=900, ry=700, rv=0;
+   document.querySelectorAll('#v-wall .band').forEach((b,k)=>{const q=eio(seg(t,p0+k*bd,p0+(k+1)*bd));
+     b.style.clipPath=`inset(${(1-q)*100}% 0 0 0)`;
+     if(t>=p0+k*bd&&t<p0+(k+1)*bd){ rx=684-k*116+59; ry=184+642*(1-q); rv=1; } });
+   if(t>=p1){ const o=seg(t,p1,p1+0.4); rx=lerp(220,-200,eio(o)); ry=300; rv=1-o; }
+   if(t<p0){ const o=seg(t,p0-0.4,p0); rx=lerp(1200,743,eo(o)); ry=lerp(900,826,eo(o)); rv=o; }
+   $('#roller2').setAttribute('transform',`translate(${rx},${ry}) rotate(${-6+Math.sin(t*9)*3})`); $('#roller2').setAttribute('opacity',rv);
+   // hide stain layers under fresh paint once painted (paint is opaque anyway)
+   const bl=eio(seg(t,w('paint',5),w('paint',7)+0.3)); $('#sbleed').style.opacity=bl*0.95;
+   document.querySelectorAll('#v-wall .bub').forEach((b,i)=>{const q=back(seg(t,w('paint',6)+i*0.12,w('paint',6)+0.35+i*0.12)); b.style.transform=`scale(${q})`;});
+   const sr=seg(t,w('paint',7)-0.15,w('paint',7)+0.35); $('#wsrc').setAttribute('opacity',eo(sr)); $('#wsrcp').setAttribute('stroke-dashoffset',-t*80);
+   const s=seg(t,w('paint',7)+0.15,w('paint',7)+0.45); $('#wstamp').setAttribute('opacity',clamp(s*3));
+   $('#wstamp').setAttribute('transform',`translate(520,640) scale(${lerp(1.7,1,eo(s))})`);
  }
  // where
- if(t>VIS[4].a-0.2&&t<VIS[4].b+0.4){ const a=VIS[4].a;
+ if(t>VI.where.a-0.2&&t<VI.where.b+0.4){ const a=VI.where.a;
    document.querySelectorAll('#h2 .dr').forEach(p=>{p.style.strokeDasharray='none';});
    const wt=eo(seg(t,a+0.2,a+0.7)); $('#wtitle').style.opacity=wt; $('#wtitle').style.transform=`translateY(${(1-wt)*40}px)`;
    const m=seg(t,a+0.3,S.where.end); const pts=[[900,300],[230,640],[540,485],[700,780]];
@@ -392,13 +428,13 @@ function render(t){
      const [x,y]=pts[j+1]; d.setAttribute('opacity',on); d.setAttribute('transform',`translate(${x},${y}) scale(${0.6+0.4*back(on)+0.06*Math.sin(t*6+j)})`);});
  }
  // list
- if(t>VIS[5].a-0.2&&t<VIS[5].b+0.4){
+ if(t>VI.list.a-0.2&&t<VI.list.b+0.4){
    const st=[S.one.start,S.two.start,S.three.start];
    document.querySelectorAll('#v-list .row').forEach((r,i)=>{const on=eo(seg(t,st[i]-0.1,st[i]+0.35)); const curi=t>=st[i]&&(i===2||t<st[i+1]);
      r.style.opacity=on*(curi?1:0.55); r.style.transform=`translateX(${(1-on)*-60}px)`; r.style.background=curi?'rgba(169,11,12,.07)':'transparent';
      r.style.boxShadow=curi?'inset -12px 0 0 #a90b0c':'none';});
    const ci=t<st[1]-0.15?0:t<st[2]-0.15?1:2;
-   ['#ill1','#ill2','#ill3'].forEach((id,i)=>{const a=i?st[i]-0.2:VIS[5].a, b=i<2?st[i+1]-0.2:1e9; const o=Math.min(seg(t,a,a+0.3),1-seg(t,b,b+0.3)); $(id).style.opacity=i===0&&t<a+0.3?seg(t,VIS[5].a,VIS[5].a+0.3):o; $(id).style.transform=`scale(${0.96+0.04*o})`;});
+   ['#ill1','#ill2','#ill3'].forEach((id,i)=>{const a=i?st[i]-0.2:VI.list.a, b=i<2?st[i+1]-0.2:1e9; const o=Math.min(seg(t,a,a+0.3),1-seg(t,b,b+0.3)); $(id).style.opacity=i===0&&t<a+0.3?seg(t,VI.list.a,VI.list.a+0.3):o; $(id).style.transform=`scale(${0.96+0.04*o})`;});
    // ill1 drops travelling into gap
    document.querySelectorAll('#p1d .drop').forEach((d,i)=>{const ph=((t*0.9+i*0.25)%1); d.setAttribute('transform',`translate(${lerp(140,370,ph)},${190+Math.sin(ph*9)*4}) scale(${1-ph*0.5})`); d.setAttribute('opacity',ph<0.9?1:0);});
    $('#p1c').setAttribute('stroke-dashoffset',-t*60);
@@ -409,7 +445,7 @@ function render(t){
  }
  // now
  let shake=0;
- if(t>VIS[6].a-0.2&&t<VIS[6].b+0.4){ const a=S.now.start;
+ if(t>VI.now.a-0.2&&t<VI.now.b+0.4){ const a=S.now.start;
    const fl=Math.max(0,1-Math.abs(t-(a-0.05))/0.12)*0.85 + Math.max(0,1-Math.abs(t-(a+0.18))/0.08)*0.6;
    const f2=w('now',-3); const fl2=Math.max(0,1-Math.abs(t-(f2+0.05))/0.1)*0.45;
    $('#flash').style.opacity=fl+fl2; $('#bolt').setAttribute('opacity',clamp((fl+fl2)*1.5));
@@ -424,14 +460,14 @@ function render(t){
  } else { $('#flash').style.opacity=0; }
  $('#stage').style.transform=shake?`translate(${Math.sin(t*90)*shake}px,${Math.cos(t*70)*shake}px)`:'none';
  // article
- if(t>VIS[7].a-0.2&&t<VIS[7].b+0.4){ const a=VIS[7].a;
+ if(t>VI.article.a-0.2&&t<VI.article.b+0.4){ const a=VI.article.a;
    const c=eo(seg(t,a,a+0.8)); $('#acard').style.transform=`translateY(${(1-c)*400}px) rotate(${(1-c)*-4}deg)`;
    $('#ainner').style.transform=`translateY(${-eio(seg(t,a+1.5,S.article.end))*60}px)`;
    const ta=back(seg(t,w('article',4)-0.1,w('article',4)+0.35)); $('#tagA').style.opacity=clamp(ta); $('#tagA').style.transform=`scale(${0.7+0.3*ta}) rotate(-3deg)`;
    const tb=back(seg(t,w('article',6)-0.1,w('article',6)+0.35)); $('#tagB').style.opacity=clamp(tb); $('#tagB').style.transform=`scale(${0.7+0.3*tb}) rotate(2deg)`;
  }
  // save
- if(t>VIS[8].a-0.2&&t<VIS[8].b+0.4){ const a=VIS[8].a;
+ if(t>VI.save.a-0.2&&t<VI.save.b+0.4){ const a=VI.save.a;
    const m=eo(seg(t,a,a+0.6)); $('#minilist').style.transform=`scale(${0.9+0.1*m})`;
    const b=seg(t,w('save',0)-0.1,w('save',0)+0.45); $('#bm').style.transform=`translateY(${(1-back(b))*-160}px)`; $('#bm').style.opacity=clamp(b*3);
    const sp=seg(t,w('save',3),w('save',3)+1.6);
@@ -443,7 +479,7 @@ function render(t){
    if(ps>0&&ps<1){const pt=path.getPointAtLength(L*eio(ps)); const p2=path.getPointAtLength(Math.min(L,L*eio(ps)+2)); const ang=Math.atan2(p2.y-pt.y,p2.x-pt.x)*180/Math.PI; pl.setAttribute('transform',`translate(${pt.x},${pt.y}) rotate(${ang})`); pl.setAttribute('opacity',1);} else pl.setAttribute('opacity',0);
  }
  // cta
- if(t>VIS[9].a-0.2){ const a=VIS[9].a;
+ if(t>VI.cta.a-0.2){ const a=VI.cta.a;
    const k=eo(seg(t,a,a+0.5)); $('#ctak').style.opacity=k; $('#ctak').style.transform=`translateY(${(1-k)*-30}px)`;
    const q=back(seg(t,a+0.3,a+0.8)); $('#qrcard').style.opacity=clamp(q); $('#qrcard').style.transform=`scale(${(0.6+0.4*q)*(1+0.02*Math.sin(t*4))})`;
    const u=eo(seg(t,w('cta',2)-0.1,w('cta',2)+0.4)); $('#urlpill').style.opacity=u; $('#urlpill').style.transform=`translateY(${(1-u)*40}px)`;

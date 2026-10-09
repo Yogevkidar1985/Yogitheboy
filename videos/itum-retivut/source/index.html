@@ -1,0 +1,456 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Kurkoos itum video</title>
+<style>
+@font-face{font-family:Heebo;font-weight:900;src:url(heebo-hebrew-900-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:Heebo;font-weight:900;src:url(heebo-latin-900-normal.woff2) format('woff2')}
+@font-face{font-family:Heebo;font-weight:700;src:url(heebo-hebrew-700-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:Heebo;font-weight:700;src:url(heebo-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:Almoni;font-weight:400;src:url(almoni-400.woff2) format('woff2')}
+@font-face{font-family:Almoni;font-weight:700;src:url(almoni-700.woff2) format('woff2')}
+:root{--night:#07293a;--teal:#105572;--mist:#8fb6c8;--paper:#f7f8fa;--red:#a90b0c;--gold:#ffd47a}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--night)}
+body{font-family:Almoni,Heebo,sans-serif;color:#fff}
+#stage{position:absolute;inset:0;overflow:hidden;background:var(--night)}
+#redbg{position:absolute;inset:0;background:var(--red);opacity:0}
+.grid{position:absolute;inset:0;background-image:linear-gradient(rgba(143,182,200,.075) 2px,transparent 2px),linear-gradient(90deg,rgba(143,182,200,.075) 2px,transparent 2px);background-size:60px 60px;background-position:-1px -1px}
+.h{font-family:Heebo;font-weight:900;letter-spacing:-.02em;line-height:1.04}
+.crop{position:absolute;width:44px;height:44px;border-color:rgba(255,255,255,.55);border-style:solid;border-width:0}
+.scene{position:absolute;left:0;top:0;width:1080px;height:1920px;opacity:0;will-change:transform,opacity}
+#header{position:absolute;top:0;left:0;right:0;height:200px;z-index:20}
+#logo{position:absolute;left:70px;top:78px;width:300px}
+#chip{position:absolute;right:70px;top:84px;background:var(--red);color:#fff;font-family:Almoni;font-weight:700;font-size:34px;padding:10px 26px 8px;border-radius:6px;white-space:nowrap}
+#caps{position:absolute;left:60px;right:60px;top:1225px;height:400px;z-index:15;display:flex;align-items:center;justify-content:center;text-align:center}
+#capline{font-family:Heebo;font-weight:900;font-size:76px;line-height:1.22;letter-spacing:-.01em;text-shadow:0 4px 18px rgba(0,0,0,.35)}
+#capline span{display:inline-block;padding:0 12px;margin:2px 0;border-radius:12px;transform-origin:50% 60%}
+#endlogo{position:absolute;left:0;right:0;top:1240px;text-align:center;opacity:0;z-index:16}
+#bottom{position:absolute;left:70px;right:70px;top:1680px;height:200px;z-index:20}
+#prog{position:absolute;top:0;left:0;right:0;height:10px;display:flex;gap:8px;direction:rtl}
+#prog div{flex:1;background:rgba(255,255,255,.18);position:relative;overflow:hidden;border-radius:2px}
+#prog div i{position:absolute;top:0;bottom:0;right:0;background:var(--red)}
+#ticks{position:absolute;top:22px;left:0;right:0;height:14px;background-image:linear-gradient(90deg,rgba(255,255,255,.4) 2px,transparent 2px);background-size:40px 14px}
+#brand{position:absolute;right:0;top:62px;text-align:right}
+#brand .n{font-family:Heebo;font-weight:900;font-size:44px;letter-spacing:-.02em}
+#brand .t{font-family:Almoni;font-size:30px;color:var(--mist);margin-top:4px}
+#site{position:absolute;left:0;top:78px;font-family:Heebo;font-weight:700;font-size:32px;direction:ltr;color:#fff}
+#counter{position:absolute;left:0;top:124px;font-family:Heebo;font-weight:700;font-size:26px;direction:ltr;color:var(--mist)}
+#flash{position:absolute;inset:0;background:#fff;opacity:0;z-index:30;pointer-events:none}
+#vignette{position:absolute;inset:0;z-index:14;pointer-events:none;background:radial-gradient(ellipse at 50% 40%,transparent 55%,rgba(0,0,0,.35) 100%)}
+.paper{background:var(--paper);color:var(--night);border-radius:8px}
+.lbl{font-family:Almoni;font-weight:700}
+svg{overflow:visible}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="redbg"></div>
+  <div class="grid"></div>
+  <div id="scenes"></div>
+  <div id="vignette"></div>
+  <div id="header"><img id="logo" src="kurkoos-logo-h-white.svg"><div id="chip">איטום</div></div>
+  <div id="caps"><div id="capline"></div></div>
+  <div id="endlogo"><img src="kurkoos-logo-h-white.svg" style="width:640px"><div class="lbl" style="font-size:46px;margin-top:22px">מקרקע ועד מסירת מפתח</div></div>
+  <div id="bottom"><div id="prog"></div><div id="ticks"></div>
+    <div id="brand"><div class="n">קבוצת קורקוס</div><div class="t">מקרקע ועד מסירת מפתח</div></div>
+    <div id="site">kurkoos-group.co.il</div><div id="counter">01 / 10</div></div>
+  <div class="crop" style="left:30px;top:30px;border-left-width:3px;border-top-width:3px"></div>
+  <div class="crop" style="right:30px;top:30px;border-right-width:3px;border-top-width:3px"></div>
+  <div class="crop" style="left:30px;bottom:30px;border-left-width:3px;border-bottom-width:3px"></div>
+  <div class="crop" style="right:30px;bottom:30px;border-right-width:3px;border-bottom-width:3px"></div>
+  <div id="flash"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const seg=(t,a,b)=>clamp((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3);
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const back=x=>{const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+let TL, S={}, VIS=[];
+
+// ---------- reusable drawings ----------
+function house(id){ // line drawing of a villa, viewBox 1080x980
+ return `<g id="${id}" fill="none" stroke="#8fb6c8" stroke-width="5" stroke-linejoin="round" stroke-linecap="round">
+  <path class="dr" d="M120 860 H960"/>
+  <path class="dr" d="M230 860 V500 H850 V860"/>
+  <path class="dr" d="M200 500 H880 V470 H200 Z"/>
+  <path class="dr" d="M330 470 V300 H750 V470"/>
+  <path class="dr" d="M305 300 H775 V272 H305 Z"/>
+  <path class="dr" d="M300 600 h140 v110 h-140 Z M640 600 h140 v110 h-140 Z M490 700 h100 v160 h-100 Z"/>
+  <path class="dr" d="M400 340 h120 v90 h-120 Z M570 340 h110 v90 h-110 Z"/>
+  <path class="dr" d="M230 920 V940 M850 920 V940 M230 930 H850" stroke-width="3"/>
+ </g>`;}
+function blob(fill, id){return `<path id="${id||''}" d="M0,-120 C60,-125 115,-80 118,-20 C122,40 95,60 110,100 C120,135 60,150 10,128 C-30,110 -60,140 -100,110 C-140,80 -110,30 -125,-10 C-140,-60 -60,-118 0,-120 Z" fill="${fill}"/>`;}
+function wall(P){
+ return `<defs>
+   <radialGradient id="${P}stg" cx="50%" cy="45%" r="55%"><stop offset="0" stop-color="#7a6a4c" stop-opacity=".55"/><stop offset=".7" stop-color="#8a7552" stop-opacity=".45"/><stop offset=".92" stop-color="#5c4b33" stop-opacity=".75"/><stop offset="1" stop-color="#5c4b33" stop-opacity="0"/></radialGradient>
+   <filter id="${P}soft"><feGaussianBlur stdDeviation="6"/></filter>
+   <linearGradient id="${P}wallg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eef1f4"/><stop offset="1" stop-color="#dfe4e9"/></linearGradient>
+  </defs>
+  <rect x="120" y="230" width="840" height="680" fill="url(#${P}wallg)"/>
+  <path d="M120 230 L200 300 H880 L960 230" fill="#cfd7de"/>
+  <path d="M200 300 H880" stroke="#b7c2cc" stroke-width="3"/>
+  <rect x="120" y="230" width="840" height="680" fill="none" stroke="#8fb6c8" stroke-width="4"/>`;
+}
+function roller(){return `<g><rect x="-110" y="-46" width="220" height="92" rx="22" fill="#f7f8fa" stroke="#07293a" stroke-width="6"/>
+ <path d="M0 46 V120 H150 V250" fill="none" stroke="#07293a" stroke-width="10" stroke-linejoin="round"/>
+ <rect x="132" y="250" width="36" height="140" rx="14" fill="#a90b0c"/></g>`;}
+function rainLines(n,id){let s=`<g id="${id}" stroke="#8fb6c8" stroke-width="4" stroke-linecap="round" opacity="0">`;
+ for(let i=0;i<n;i++)s+=`<line x1="0" y1="0" x2="-12" y2="56"/>`;return s+'</g>';}
+function updRain(id,t,amt){const g=document.getElementById(id); if(!g)return; g.setAttribute('opacity',amt);
+ [...g.children].forEach((l,i)=>{const x=(i*137.3)%1180-50, sp=1300+(i%7)*90, y=((t*sp+i*233)%1150)-120;
+  l.setAttribute('transform',`translate(${x+ y*0.2},${y})`);});}
+function cloud(id,x,y,s){return `<g id="${id}" transform="translate(${x},${y}) scale(${s})" fill="#105572"><circle cx="0" cy="0" r="70"/><circle cx="80" cy="-30" r="90"/><circle cx="170" cy="0" r="70"/><rect x="0" y="0" width="170" height="70"/></g>`;}
+
+// ---------- build scenes ----------
+function build(){
+ const sc=$('#scenes');
+ sc.innerHTML=`
+ <div class="scene" id="v-hook">
+   <div style="position:absolute;left:0;top:0;width:1080px;height:1200px;overflow:hidden">
+     <img id="hookimg" src="site.jpg" style="position:absolute;left:-160px;top:0;height:1200px;transform-origin:50% 40%">
+     <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,41,58,.55) 0%,rgba(7,41,58,.25) 35%,rgba(7,41,58,.7) 75%,#07293a 100%)"></div>
+   </div>
+   <svg id="sun" width="240" height="240" viewBox="-120 -120 240 240" style="position:absolute;left:110px;top:250px">
+     <circle r="46" fill="none" stroke="#fff" stroke-width="7"/>
+     <g id="rays" stroke="#fff" stroke-width="7" stroke-linecap="round">${[...Array(12)].map((_,i)=>`<line x1="0" y1="-70" x2="0" y2="-96" transform="rotate(${i*30})"/>`).join('')}</g>
+   </svg>
+   <div id="hooktitle" style="position:absolute;right:80px;top:820px;text-align:right">
+     <div class="h" style="font-size:132px">בודקים איטום</div>
+     <div class="h" style="font-size:132px;color:#8fb6c8">לפני הגשם</div>
+     <div id="hookbar" style="width:190px;height:14px;background:var(--red);margin:26px 0 0 auto"></div>
+   </div>
+ </div>
+
+ <div class="scene" id="v-rain">
+   <svg width="1080" height="1200" viewBox="0 0 1080 1200" style="position:absolute;left:0;top:120px">
+     <g id="rainhouse">${house('h1')}</g>
+     <g id="rstain" transform="translate(720,540) scale(0)" opacity=".9">${blob('#a90b0c')}</g>
+     ${cloud('cl1',-400,180,1.4)}${cloud('cl2',1200,120,1.1)}${cloud('cl3',1300,230,0.9)}
+     ${rainLines(110,'rain1')}
+   </svg>
+ </div>
+
+ <div class="scene" id="v-stain">
+   <svg width="1080" height="1100" viewBox="0 0 1080 1100" style="position:absolute;left:0;top:130px">
+     ${wall("a")}
+     <g id="st1" transform="translate(620,520) scale(0)"><g filter="url(#asoft)">${blob('url(#astg)')}</g></g>
+     <g id="stTarget" opacity="0"><circle id="stCirc" cx="620" cy="520" r="190" fill="none" stroke="#a90b0c" stroke-width="8" stroke-dasharray="22 16"/>
+       <path d="M480 650 L330 800" stroke="#a90b0c" stroke-width="6"/>
+       <rect x="130" y="790" width="330" height="80" rx="8" fill="#a90b0c"/><text x="295" y="845" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="46" fill="#fff">אותה נקודה</text></g>
+   </svg>
+   <div id="steps" style="position:absolute;left:120px;right:120px;top:1080px;display:flex;justify-content:space-between;direction:rtl">
+     <div class="lbl stp" style="font-size:40px">01 מופיע</div><div class="lbl stp" style="font-size:40px">02 מתייבש</div><div class="lbl stp" style="font-size:40px">03 חוזר</div>
+   </div>
+ </div>
+
+ <div class="scene" id="v-paint">
+   <svg width="1080" height="1100" viewBox="0 0 1080 1100" style="position:absolute;left:0;top:130px">
+     ${wall("b")}
+     <defs><clipPath id="coatclip"><rect id="coatrect" x="960" y="300" width="0" height="610"/></clipPath></defs>
+     <g transform="translate(620,520)"><g filter="url(#bsoft)">${blob('url(#bstg)')}</g></g>
+     <rect x="120" y="300" width="840" height="610" fill="#fbfcfd" clip-path="url(#coatclip)"/>
+     <g id="ghost" opacity="0" transform="translate(620,520) scale(.9)"><g filter="url(#bsoft)">${blob('url(#bstg)')}</g></g>
+     <g id="roller" transform="translate(1100,380)">${roller()}</g>
+     <g id="stamp" opacity="0" transform="translate(540,760) rotate(-7)">
+       <rect x="-300" y="-70" width="600" height="140" rx="10" fill="none" stroke="#a90b0c" stroke-width="10"/>
+       <text x="0" y="22" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="72" fill="#a90b0c">המקור לא טופל</text></g>
+   </svg>
+ </div>
+
+ <div class="scene" id="v-where">
+   <div id="wtitle" style="position:absolute;right:80px;top:230px;text-align:right"><span class="h" style="font-size:150px;color:var(--gold)">3</span> <span class="h" style="font-size:84px">מקומות לבדוק</span></div>
+   <svg width="1080" height="1100" viewBox="0 0 1080 1100" style="position:absolute;left:0;top:240px">
+     ${house('h2')}
+     <g id="dots">${[[230,640],[540,485],[700,780]].map(([x,y],i)=>`<g class="dot" transform="translate(${x},${y})" opacity="0"><circle r="40" fill="#a90b0c" opacity=".25"/><circle r="18" fill="#a90b0c"/><text y="-56" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="40" fill="#fff">0${i+1}</text></g>`).join('')}</g>
+     <g id="mag" transform="translate(900,300)"><circle r="95" fill="rgba(143,182,200,.12)" stroke="#fff" stroke-width="12"/><path d="M68 68 L150 150" stroke="#fff" stroke-width="24" stroke-linecap="round"/></g>
+   </svg>
+ </div>
+
+ <div class="scene" id="v-list">
+   <div class="paper" style="position:absolute;left:80px;right:80px;top:230px;height:470px;overflow:hidden">
+     <div id="ill1" class="ill" style="position:absolute;inset:0">
+       <svg width="920" height="470" viewBox="0 0 920 470">
+         <rect x="380" y="20" width="160" height="370" fill="#cfd7de"/>
+         <g stroke="#9aa8b4" stroke-width="3">${[...Array(12)].map((_,i)=>`<path d="M380 ${40+i*30} l160 -30"/>`).join('')}</g>
+         <rect x="120" y="205" width="680" height="60" rx="6" fill="#105572"/>
+         <circle id="p1c" cx="380" cy="235" r="80" fill="none" stroke="#a90b0c" stroke-width="8" stroke-dasharray="20 14"/>
+         <g id="p1d" fill="#105572">${[0,1,2,3].map(i=>`<path class="drop" d="M0 -18 C10 -4 14 4 14 10 A14 14 0 1 1 -14 10 C-14 4 -10 -4 0 -18Z"/>`).join('')}</g>
+         <text x="460" y="440" text-anchor="middle" font-family="Almoni" font-weight="700" font-size="34" fill="#105572">צנרת · מזגנים · פתחים</text>
+       </svg>
+     </div>
+     <div id="ill2" class="ill" style="position:absolute;inset:0;opacity:0">
+       <svg width="920" height="470" viewBox="0 0 920 470">
+         <rect x="160" y="150" width="620" height="70" fill="#cfd7de" stroke="#07293a" stroke-width="4"/>
+         <rect x="160" y="226" width="90" height="230" fill="#cfd7de" stroke="#07293a" stroke-width="4"/>
+         <path d="M250 222 V456" stroke="#a90b0c" stroke-width="0"/>
+         <path id="jline" d="M160 223 H250" stroke="#a90b0c" stroke-width="10" stroke-linecap="round"/>
+         <circle id="p2c" cx="205" cy="223" r="70" fill="none" stroke="#a90b0c" stroke-width="8" stroke-dasharray="20 14"/>
+         <path id="flow" d="M760 120 C600 120 420 120 300 130 C260 135 240 170 230 215" fill="none" stroke="#105572" stroke-width="10" stroke-dasharray="24 18" stroke-linecap="round"/>
+         <text x="460" y="440" text-anchor="middle" font-family="Almoni" font-weight="700" font-size="34" fill="#105572">קיר וגג · מרפסת וקיר</text>
+       </svg>
+     </div>
+     <div id="ill3" class="ill" style="position:absolute;inset:0;opacity:0">
+       <svg width="920" height="470" viewBox="0 0 920 470">
+         <rect x="120" y="30" width="680" height="410" fill="#e4e9ee" stroke="#8fb6c8" stroke-width="4"/>
+         <path id="crack" d="M520 40 L500 110 L540 150 L470 230 L505 270 L450 350 L470 400 L440 440" fill="none" stroke="#07293a" stroke-width="7" stroke-linejoin="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+         <path id="crack2" d="M540 150 L600 170 L640 230" fill="none" stroke="#07293a" stroke-width="5" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+         <circle id="p3c" cx="490" cy="240" r="120" fill="none" stroke="#a90b0c" stroke-width="8" stroke-dasharray="20 14" opacity="0"/>
+         <text x="460" y="440" text-anchor="middle" font-family="Almoni" font-weight="700" font-size="34" fill="#105572">בטיח · בבטון · סביב פתחים</text>
+       </svg>
+     </div>
+   </div>
+   <div class="paper" style="position:absolute;left:80px;right:80px;top:730px;height:430px;overflow:hidden">
+     <div style="background:var(--night);color:#fff;padding:20px 36px 16px" class="h"><span style="font-size:44px">איפה מחפשים את המקור</span></div>
+     ${['חדירות במעטפת הבית','חיבורים בין חלקי המבנה','סדקים'].map((x,i)=>`<div class="row" style="display:flex;align-items:center;gap:28px;padding:0 36px;height:113px;${i?'border-top:3px dashed #b7c2cc;':''}opacity:0">
+        <span class="h" style="font-size:64px;color:var(--red);width:90px">0${i+1}</span><span class="h" style="font-size:52px;color:var(--night)">${x}</span></div>`).join('')}
+   </div>
+ </div>
+
+ <div class="scene" id="v-now">
+   <div style="position:absolute;left:0;top:0;width:1080px;height:1200px;overflow:hidden">
+     <img id="nowimg" src="site.jpg" style="position:absolute;left:-160px;top:0;height:1200px;filter:grayscale(.6) brightness(.38) contrast(1.1)">
+     <div style="position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,41,58,.5),rgba(7,41,58,.6) 60%,#07293a)"></div>
+   </div>
+   <svg width="1080" height="1200" style="position:absolute;left:0;top:0">${rainLines(90,'rain2')}
+     <path id="bolt" d="M640 170 L560 380 L640 380 L540 600 L700 330 L615 330 L690 170 Z" fill="#fff" opacity="0"/></svg>
+   <div id="nowtitle" style="position:absolute;right:80px;top:260px;text-align:right;opacity:0">
+     <div class="h" style="font-size:100px">הזמן לבדוק:</div><div class="h" style="font-size:150px;color:var(--gold)">עכשיו</div></div>
+   <div id="cardA" style="position:absolute;right:80px;top:640px;width:440px;height:300px;background:var(--teal);border-radius:10px;padding:34px;opacity:0">
+     <svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="42" fill="#fff"/><path d="M24 47 L39 61 L66 30" fill="none" stroke="#105572" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg>
+     <div class="h" style="font-size:56px;margin-top:22px">עכשיו,<br>לפני החורף</div></div>
+   <div id="cardB" style="position:absolute;left:80px;top:640px;width:440px;height:300px;background:rgba(255,255,255,.08);border:3px solid rgba(255,255,255,.3);border-radius:10px;padding:34px;opacity:0">
+     <svg width="90" height="90" viewBox="0 0 90 90"><circle cx="45" cy="45" r="42" fill="#a90b0c"/><path d="M28 28 L62 62 M62 28 L28 62" stroke="#fff" stroke-width="10" stroke-linecap="round"/></svg>
+     <div class="h" style="font-size:56px;margin-top:22px;color:#cfd7de">אחרי הסערה<br>הראשונה</div>
+     <div id="strike" style="position:absolute;right:20px;top:170px;height:9px;background:var(--red);width:0"></div></div>
+ </div>
+
+ <div class="scene" id="v-article">
+   <div id="acard" class="paper" style="position:absolute;left:90px;right:90px;top:240px;height:900px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.45)">
+     <div style="height:74px;background:#e4e9ee;display:flex;align-items:center;gap:14px;padding:0 26px;direction:ltr">
+       <i style="width:18px;height:18px;border-radius:50%;background:#a90b0c"></i><i style="width:18px;height:18px;border-radius:50%;background:#8fb6c8"></i><i style="width:18px;height:18px;border-radius:50%;background:#8fb6c8"></i>
+       <div style="flex:1;margin-left:18px;background:#fff;border-radius:22px;height:44px;line-height:44px;padding:0 22px;font-family:Heebo;font-weight:700;font-size:24px;color:#105572;white-space:nowrap;overflow:hidden">kurkoos-group.co.il/constructions/itum-retivut…</div></div>
+     <div id="ainner" style="padding:44px 54px">
+       <div style="display:inline-block;background:var(--red);color:#fff;font-family:Almoni;font-weight:700;font-size:30px;padding:8px 20px 6px;border-radius:5px">איכות וליקויים</div>
+       <div class="h" style="font-size:76px;color:var(--night);margin-top:30px">איטום: למה הרטיבות תמיד חוזרת לאותו קיר</div>
+       <div style="width:190px;height:14px;background:var(--red);margin:30px 0 26px"></div>
+       <div style="font-family:Almoni;font-size:34px;color:#45606e">המדריך לתהליך הבנייה · 6 דקות קריאה</div>
+       <div style="font-family:Almoni;font-size:40px;line-height:1.35;color:#203c4a;margin-top:28px">כתם רטיבות שחוזר אחרי כל צביעה זה לא מזל רע. איטום כושל משאיר חתימה.</div>
+       <div style="margin-top:34px">${[100,92,96,70].map(w=>`<div style="height:20px;width:${w}%;background:#dfe5ea;border-radius:10px;margin-bottom:18px"></div>`).join('')}</div>
+     </div>
+   </div>
+   <div id="tagA" class="h" style="position:absolute;right:60px;top:1000px;background:var(--night);border:4px solid var(--red);padding:18px 30px;font-size:50px;border-radius:10px;opacity:0">✓ איפה לחפש</div>
+   <div id="tagB" class="h" style="position:absolute;left:60px;top:1080px;background:var(--night);border:4px solid var(--red);padding:18px 30px;font-size:50px;border-radius:10px;opacity:0">✓ מה בודקים באיטום</div>
+ </div>
+
+ <div class="scene" id="v-save">
+   <div id="minilist" class="paper" style="position:absolute;left:170px;right:170px;top:260px;height:560px;overflow:visible">
+     <div style="background:var(--night);color:#fff;padding:22px 34px 16px;border-radius:8px 8px 0 0" class="h"><span style="font-size:42px">רשימת בדיקה · איטום</span></div>
+     ${['חדירות במעטפת הבית','חיבורים בין חלקי המבנה','סדקים'].map((x,i)=>`<div style="display:flex;align-items:center;gap:22px;padding:0 34px;height:150px;${i?'border-top:3px dashed #b7c2cc;':''}">
+        <span class="h" style="font-size:54px;color:var(--red)">0${i+1}</span><span class="h" style="font-size:44px;color:var(--night)">${x}</span></div>`).join('')}
+     <svg id="bm" width="110" height="160" viewBox="0 0 110 160" style="position:absolute;left:40px;top:-20px"><path d="M0 0 H110 V160 L55 118 L0 160 Z" fill="#a90b0c"/><path d="M33 62 L50 78 L78 44" fill="none" stroke="#fff" stroke-width="10" stroke-linecap="round" stroke-linejoin="round"/></svg>
+   </div>
+   <svg width="1080" height="400" style="position:absolute;left:0;top:830px">
+     <path id="sendpath" d="M540 20 C540 160 300 160 220 280" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="4" stroke-dasharray="14 12"/>
+     ${[[220,300],[540,320],[860,300]].map(([x,y],i)=>`<g class="av" transform="translate(${x},${y})" opacity="0"><circle r="62" fill="#105572" stroke="#fff" stroke-width="5"/><circle cy="-14" r="20" fill="#8fb6c8"/><path d="M-34 34 C-30 6 30 6 34 34" fill="#8fb6c8"/></g>`).join('')}
+     <g id="plane" opacity="0"><path d="M-40 -18 L44 0 L-40 18 L-28 0 Z" fill="#fff"/></g>
+   </svg>
+ </div>
+
+ <div class="scene" id="v-cta">
+   <div id="ctak" style="position:absolute;left:0;right:0;top:215px;text-align:center"><div class="h" style="font-size:112px">לכתבה המלאה</div></div>
+   <div id="qrcard" style="position:absolute;left:330px;top:370px;width:420px;background:#fff;border-radius:16px;padding:26px 26px 18px;text-align:center;box-shadow:0 30px 70px rgba(0,0,0,.35)">
+     <img src="qr.png" style="width:368px;height:368px;display:block">
+     <div class="lbl" style="color:var(--night);font-size:34px;margin-top:10px">סרקו לכתבה</div></div>
+   <div id="urlpill" style="position:absolute;left:110px;right:110px;top:880px;background:var(--night);border-radius:60px;padding:22px 30px;text-align:center">
+     <div style="font-family:Heebo;font-weight:700;font-size:40px;direction:ltr">kurkoos-group.co.il</div>
+     <div style="font-family:Heebo;font-weight:700;font-size:25px;color:var(--mist);direction:ltr;margin-top:4px">/constructions/itum-retivut-chozeret-oto-makom</div></div>
+   <div id="phone" style="position:absolute;left:0;right:0;top:1060px;text-align:center;direction:ltr;font-family:Heebo;font-weight:900;font-size:66px;letter-spacing:.01em">
+     <svg width="56" height="56" viewBox="0 0 24 24" style="vertical-align:-6px;margin-right:16px"><path fill="#fff" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1z"/></svg>055-981-1814</div>
+ </div>`;
+ // progress bar segments
+ $('#prog').innerHTML=VIS.map(()=>'<div><i></i></div>').join('');
+}
+
+const CHIP={hook:'איטום',rain:'רטיבות',stain:'כתם חוזר',paint:'צבע זה לא פתרון',where:'רשימת בדיקה',list:'רשימת בדיקה',now:'לפני החורף',article:'הכתבה המלאה',save:'שמרו ושתפו',cta:'קבוצת קורקוס'};
+
+function setup(tl){
+ TL=tl; tl.scenes.forEach(s=>S[s.id]=s);
+ const groups=[['hook',['hook']],['rain',['rain']],['stain',['stain']],['paint',['paint']],['where',['where']],['list',['one','two','three']],['now',['now']],['article',['article']],['save',['save']],['cta',['cta']]];
+ VIS=groups.map(([id,ids],i)=>({id,a:i?S[ids[0]].start-0.35:0,b:i<groups.length-1?S[groups[i+1][1][0]].start-0.35:tl.total,ids}));
+ build();
+}
+const w=(sid,i)=>S[sid].words[i<0?S[sid].words.length+i:i].s;
+
+function render(t){
+ // ---- scene visibility ----
+ let cur=0;
+ VIS.forEach((v,i)=>{const el=document.getElementById('v-'+v.id);
+  const inn=i===0?1:eo(seg(t,v.a-0.05,v.a+0.45)), out=i===VIS.length-1?0:seg(t,v.b-0.1,v.b+0.3);
+  const vis=t>=v.a-0.05&&t<v.b+0.3;
+  el.style.display=vis?'block':'none';
+  if(!vis)return;
+  if(t>=v.a)cur=i;
+  el.style.opacity=Math.min(inn,1-out);
+  el.style.transform=`translateY(${(1-inn)*70-out*50}px) scale(${1+out*0.03})`;
+ });
+ const V=VIS[cur];
+ $('#chip').textContent=CHIP[V.id];
+ $('#counter').textContent=String(cur+1).padStart(2,'0')+' / '+String(VIS.length).padStart(2,'0');
+ [...$('#prog').children].forEach((d,i)=>{const v=VIS[i];d.firstChild.style.width=(seg(t,v.a,v.b)*100)+'%';});
+
+ // ---- red end background ----
+ const red=eo(seg(t,VIS[VIS.length-1].a,VIS[VIS.length-1].a+0.5));
+ $('#redbg').style.opacity=red;
+ $('#chip').style.background=red>.5?'#07293a':'#a90b0c';
+ $('#vignette').style.opacity=1-red*.6;
+ document.querySelectorAll('#prog i').forEach(i=>i.style.background=red>.5?'#fff':'#a90b0c');
+
+ // ---- captions ----
+ let sc=null; for(const s of TL.scenes){ if(t>=s.start-0.3 && t<s.end+0.3) sc=s; }
+ const cl=$('#capline');
+ const endLogoOn = t>=w('cta',4)-0.1;
+ if(sc && !(sc.id==='cta' && endLogoOn)){
+  // phrase-group: current phrase, merge very short phrases with neighbour
+  let curW=sc.words.findIndex(x=>t<x.e+0.12); if(curW<0)curW=sc.words.length-1;
+  let p=sc.words[curW].p;
+  let words=sc.words.filter(x=>x.p===p);
+  // merge tiny phrases (<=1 word) with next phrase for readability
+  if(words.length<=1){const nxt=sc.words.filter(x=>x.p===p+1); if(nxt.length&&nxt.length<4)words=words.concat(nxt);}
+  if(words.length<=1){const prv=sc.words.filter(x=>x.p===p-1); if(prv.length&&prv.length<4)words=prv.concat(words);}
+  const key=sc.id+':'+words[0].s;
+  if(cl.dataset.key!==key){cl.dataset.key=key;cl.innerHTML=words.map(x=>`<span>${x.t}</span>`).join(' ');}
+  const ph=seg(t,words[0].s-0.25,words[0].s);
+  const fadeOut=seg(t,sc.end+0.05,sc.end+0.3);
+  cl.style.opacity=Math.min(eo(ph),1-fadeOut);
+  cl.style.transform=`translateY(${(1-eo(ph))*30}px)`;
+  [...cl.children].forEach((sp,i)=>{const x=words[i];
+   const nx=words[i+1]; const endA=nx?Math.min(x.e+0.06,nx.s-0.03):x.e+0.06; const active=t>=x.s-0.03&&t<endA, done=t>=endA;
+   const pop=seg(t,x.s-0.03,x.s+0.12);
+   sp.style.opacity=active||done?1:0.32;
+   sp.style.background=active?(red>.5?'#07293a':'#a90b0c'):'transparent';
+   sp.style.transform=active?`scale(${1+0.08*Math.sin(pop*Math.PI)})`:'scale(1)';
+  });
+ } else { cl.style.opacity=0; }
+ const el=seg(t,w('cta',4)-0.1,w('cta',4)+0.4);
+ $('#endlogo').style.opacity=eo(el);
+ $('#endlogo').style.transform=`translateY(${(1-eo(el))*40}px)`;
+
+ // ---- per-scene animation ----
+ // hook
+ { const lt=t; $('#hookimg').style.transform=`scale(${1.04+lt*0.025})`;
+   $('#rays').setAttribute('transform',`rotate(${t*18})`);
+   const ht=eo(seg(t,0.3,1.0)); $('#hooktitle').style.opacity=ht; $('#hooktitle').style.transform=`translateX(${(1-ht)*-80}px)`;
+   $('#hookbar').style.width=(190*eo(seg(t,0.8,1.4)))+'px';
+   const sun=back(seg(t,0.2,0.9)); $('#sun').style.transform=`scale(${sun})`; }
+ // rain
+ if(t>VIS[1].a-0.2&&t<VIS[1].b+0.4){ const a=VIS[1].a;
+   document.querySelectorAll('#h1 .dr').forEach((p,i)=>{const L=p.getTotalLength?p.getTotalLength():2000;p.style.strokeDasharray=L;p.style.strokeDashoffset=L*(1-eio(seg(t,a+i*0.08,a+0.9+i*0.08)));});
+   const c=eo(seg(t,w('rain',2)-0.5,w('rain',5)));
+   $('#cl1').setAttribute('transform',`translate(${lerp(-420,120,c)},${170}) scale(1.4)`);
+   $('#cl2').setAttribute('transform',`translate(${lerp(1200,640,c)},${110}) scale(1.1)`);
+   $('#cl3').setAttribute('transform',`translate(${lerp(1300,420,c)},${240}) scale(.9)`);
+   updRain('rain1',t,0.75*seg(t,w('rain',5)-0.3,w('rain',6)));
+   const s=back(seg(t,w('rain',3),w('rain',3)+0.5)); $('#rstain').setAttribute('transform',`translate(700,700) scale(${0.45*s})`);
+ }
+ // stain
+ if(t>VIS[2].a-0.2&&t<VIS[2].b+0.4){
+   const g=eo(seg(t,w('stain',1)-0.3,w('stain',1)+0.4)), d=eio(seg(t,w('stain',2),w('stain',2)+0.6)), r=back(seg(t,w('stain',5),w('stain',5)+0.6));
+   const sc=g*(1-0.6*d)+0.6*d*0+ (r>0? (r*1.05 - (1-0.6)*0) : 0);
+   let scale=g*(1-0.62*d); if(r>0)scale=lerp(scale,1.08,clamp(r,0,1.2));
+   const op= (1-0.75*d) + 0.75*clamp(r);
+   const st=$('#st1'); st.setAttribute('transform',`translate(620,520) scale(${scale})`); st.setAttribute('opacity',clamp(op));
+   const tg=seg(t,w('stain',-1)-0.2,w('stain',-1)+0.3); $('#stTarget').setAttribute('opacity',eo(tg));
+   $('#stCirc').setAttribute('r',lerp(260,190,eo(tg)));
+   const marks=[w('stain',1),w('stain',2),w('stain',5)];
+   document.querySelectorAll('#v-stain .stp').forEach((e,i)=>{const on=t>=marks[i]-0.1; const nx=i<2?t>=marks[i+1]-0.1:false;
+     e.style.opacity=on?(nx?0.45:1):0.2; e.style.color=on&&!nx?'#fff':'#8fb6c8'; e.style.borderBottom=on&&!nx?'8px solid #a90b0c':'8px solid transparent';});
+ }
+ // paint
+ if(t>VIS[3].a-0.2&&t<VIS[3].b+0.4){
+   const p=eio(seg(t,w('paint',3)-0.1,w('paint',4)+0.25));
+   const x=lerp(1060,60,p); $('#roller').setAttribute('transform',`translate(${x},${520+Math.sin(p*Math.PI*3)*90}) rotate(${-4+Math.sin(t*6)*2})`);
+   $('#coatrect').setAttribute('x',x); $('#coatrect').setAttribute('width',Math.max(0,960-x));
+   const rollerOut=seg(t,w('paint',4)+0.25,w('paint',4)+0.6); if(rollerOut>0)$('#roller').setAttribute('transform',`translate(${lerp(60,-300,eio(rollerOut))},520)`);
+   $('#ghost').setAttribute('opacity',0.85*eio(seg(t,w('paint',5),w('paint',7)+0.2)));
+   const s=seg(t,w('paint',7)-0.05,w('paint',7)+0.3); $('#stamp').setAttribute('opacity',clamp(s*3));
+   $('#stamp').setAttribute('transform',`translate(540,780) rotate(-7) scale(${lerp(1.6,1,eo(s))})`);
+ }
+ // where
+ if(t>VIS[4].a-0.2&&t<VIS[4].b+0.4){ const a=VIS[4].a;
+   document.querySelectorAll('#h2 .dr').forEach(p=>{p.style.strokeDasharray='none';});
+   const wt=eo(seg(t,a+0.2,a+0.7)); $('#wtitle').style.opacity=wt; $('#wtitle').style.transform=`translateY(${(1-wt)*40}px)`;
+   const m=seg(t,a+0.3,S.where.end); const pts=[[900,300],[230,640],[540,485],[700,780]];
+   const k=Math.min(2.999,m*3), i=Math.floor(k), f=eio(k-i);
+   const mx=lerp(pts[i][0],pts[i+1][0],f), my=lerp(pts[i][1],pts[i+1][1],f);
+   $('#mag').setAttribute('transform',`translate(${mx},${my})`);
+   document.querySelectorAll('#dots .dot').forEach((d,j)=>{const on=seg(t,a+0.3+(j+1)*(S.where.end-a-0.3)/3-0.15,a+0.3+(j+1)*(S.where.end-a-0.3)/3+0.2);
+     const [x,y]=pts[j+1]; d.setAttribute('opacity',on); d.setAttribute('transform',`translate(${x},${y}) scale(${0.6+0.4*back(on)+0.06*Math.sin(t*6+j)})`);});
+ }
+ // list
+ if(t>VIS[5].a-0.2&&t<VIS[5].b+0.4){
+   const st=[S.one.start,S.two.start,S.three.start];
+   document.querySelectorAll('#v-list .row').forEach((r,i)=>{const on=eo(seg(t,st[i]-0.1,st[i]+0.35)); const curi=t>=st[i]&&(i===2||t<st[i+1]);
+     r.style.opacity=on*(curi?1:0.55); r.style.transform=`translateX(${(1-on)*-60}px)`; r.style.background=curi?'rgba(169,11,12,.07)':'transparent';
+     r.style.boxShadow=curi?'inset -12px 0 0 #a90b0c':'none';});
+   const ci=t<st[1]-0.15?0:t<st[2]-0.15?1:2;
+   ['#ill1','#ill2','#ill3'].forEach((id,i)=>{const a=i?st[i]-0.2:VIS[5].a, b=i<2?st[i+1]-0.2:1e9; const o=Math.min(seg(t,a,a+0.3),1-seg(t,b,b+0.3)); $(id).style.opacity=i===0&&t<a+0.3?seg(t,VIS[5].a,VIS[5].a+0.3):o; $(id).style.transform=`scale(${0.96+0.04*o})`;});
+   // ill1 drops travelling into gap
+   document.querySelectorAll('#p1d .drop').forEach((d,i)=>{const ph=((t*0.9+i*0.25)%1); d.setAttribute('transform',`translate(${lerp(140,370,ph)},${190+Math.sin(ph*9)*4}) scale(${1-ph*0.5})`); d.setAttribute('opacity',ph<0.9?1:0);});
+   $('#p1c').setAttribute('stroke-dashoffset',-t*60);
+   $('#p2c').setAttribute('stroke-dashoffset',-t*60); $('#flow').setAttribute('stroke-dashoffset',-t*120);
+   $('#jline').setAttribute('opacity',0.5+0.5*Math.sin(t*8));
+   const cr=eio(seg(t,S.three.start,S.three.start+1.0)); $('#crack').setAttribute('stroke-dashoffset',1-cr); $('#crack2').setAttribute('stroke-dashoffset',1-eio(seg(t,S.three.start+0.6,S.three.start+1.2)));
+   $('#p3c').setAttribute('opacity',seg(t,S.three.start+0.9,S.three.start+1.2)); $('#p3c').setAttribute('stroke-dashoffset',-t*60);
+ }
+ // now
+ let shake=0;
+ if(t>VIS[6].a-0.2&&t<VIS[6].b+0.4){ const a=S.now.start;
+   const fl=Math.max(0,1-Math.abs(t-(a-0.05))/0.12)*0.85 + Math.max(0,1-Math.abs(t-(a+0.18))/0.08)*0.6;
+   const f2=w('now',-3); const fl2=Math.max(0,1-Math.abs(t-(f2+0.05))/0.1)*0.45;
+   $('#flash').style.opacity=fl+fl2; $('#bolt').setAttribute('opacity',clamp((fl+fl2)*1.5));
+   shake=Math.max(seg(t,a-0.1,a)*(1-seg(t,a,a+0.6)),0)*12;
+   updRain('rain2',t,0.55);
+   $('#nowimg').style.transform=`scale(${1.1+(t-a)*0.02})`;
+   const ca=back(seg(t,a+0.2,a+0.7)); $('#cardA').style.opacity=clamp(ca); $('#cardA').style.transform=`scale(${0.8+0.2*ca})`;
+   $('#cardA').style.boxShadow=t<w('now',8)?`0 0 0 6px rgba(255,255,255,${0.5+0.3*Math.sin(t*6)})`:'none';
+   const nt=eo(seg(t,w('now',5)-0.1,w('now',5)+0.4)); $('#nowtitle').style.opacity=nt; $('#nowtitle').style.transform=`translateY(${(1-nt)*30}px)`;
+   const cb=back(seg(t,w('now',8)-0.1,w('now',8)+0.4)); $('#cardB').style.opacity=clamp(cb); $('#cardB').style.transform=`scale(${0.8+0.2*cb})`;
+   $('#strike').style.width=(380*eio(seg(t,w('now',-1)-0.1,w('now',-1)+0.4)))+'px';
+ } else { $('#flash').style.opacity=0; }
+ $('#stage').style.transform=shake?`translate(${Math.sin(t*90)*shake}px,${Math.cos(t*70)*shake}px)`:'none';
+ // article
+ if(t>VIS[7].a-0.2&&t<VIS[7].b+0.4){ const a=VIS[7].a;
+   const c=eo(seg(t,a,a+0.8)); $('#acard').style.transform=`translateY(${(1-c)*400}px) rotate(${(1-c)*-4}deg)`;
+   $('#ainner').style.transform=`translateY(${-eio(seg(t,a+1.5,S.article.end))*60}px)`;
+   const ta=back(seg(t,w('article',4)-0.1,w('article',4)+0.35)); $('#tagA').style.opacity=clamp(ta); $('#tagA').style.transform=`scale(${0.7+0.3*ta}) rotate(-3deg)`;
+   const tb=back(seg(t,w('article',6)-0.1,w('article',6)+0.35)); $('#tagB').style.opacity=clamp(tb); $('#tagB').style.transform=`scale(${0.7+0.3*tb}) rotate(2deg)`;
+ }
+ // save
+ if(t>VIS[8].a-0.2&&t<VIS[8].b+0.4){ const a=VIS[8].a;
+   const m=eo(seg(t,a,a+0.6)); $('#minilist').style.transform=`scale(${0.9+0.1*m})`;
+   const b=seg(t,w('save',0)-0.1,w('save',0)+0.45); $('#bm').style.transform=`translateY(${(1-back(b))*-160}px)`; $('#bm').style.opacity=clamp(b*3);
+   const sp=seg(t,w('save',3),w('save',3)+1.6);
+   const path=$('#sendpath'); const L=path.getTotalLength(); path.style.strokeDasharray='14 12';
+   path.setAttribute('opacity',seg(t,w('save',3)-0.2,w('save',3)));
+   document.querySelectorAll('#v-save .av').forEach((g,i)=>{const o=back(seg(t,w('save',3)+i*0.18,w('save',3)+0.4+i*0.18)); g.setAttribute('opacity',clamp(o)); const xy=[[220,300],[540,320],[860,300]][i]; g.setAttribute('transform',`translate(${xy[0]},${xy[1]}) scale(${0.5+0.5*o})`);});
+   for(let k=0;k<3;k++){}
+   const pl=$('#plane'); const ps=seg(t,w('save',4),w('save',4)+1.2);
+   if(ps>0&&ps<1){const pt=path.getPointAtLength(L*eio(ps)); const p2=path.getPointAtLength(Math.min(L,L*eio(ps)+2)); const ang=Math.atan2(p2.y-pt.y,p2.x-pt.x)*180/Math.PI; pl.setAttribute('transform',`translate(${pt.x},${pt.y}) rotate(${ang})`); pl.setAttribute('opacity',1);} else pl.setAttribute('opacity',0);
+ }
+ // cta
+ if(t>VIS[9].a-0.2){ const a=VIS[9].a;
+   const k=eo(seg(t,a,a+0.5)); $('#ctak').style.opacity=k; $('#ctak').style.transform=`translateY(${(1-k)*-30}px)`;
+   const q=back(seg(t,a+0.3,a+0.8)); $('#qrcard').style.opacity=clamp(q); $('#qrcard').style.transform=`scale(${(0.6+0.4*q)*(1+0.02*Math.sin(t*4))})`;
+   const u=eo(seg(t,w('cta',2)-0.1,w('cta',2)+0.4)); $('#urlpill').style.opacity=u; $('#urlpill').style.transform=`translateY(${(1-u)*40}px)`;
+   const ph=eo(seg(t,w('cta',3),w('cta',3)+0.4)); $('#phone').style.opacity=ph; $('#phone').style.transform=`translateY(${(1-ph)*40}px)`;
+ }
+}
+window.__ready=fetch('timeline.json').then(r=>r.json()).then(tl=>{setup(tl);render(0);return document.fonts.ready;}).then(()=>true);
+</script>
+</body>
+</html>

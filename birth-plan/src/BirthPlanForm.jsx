@@ -127,7 +127,7 @@ export default function BirthPlanForm() {
           {draft?.answers && Object.keys(draft.answers).length > 0 ? (
             <div className="bp-draft">
               <div className="bp-muted">מצאנו תכנית שהתחלת למלא</div>
-              <button className="bp-btn" onClick={() => { setIdx(draft.idx || 0); setPhase('form') }}>להמשיך מאיפה שעצרתי</button>
+              <button className="bp-btn" onClick={() => { setIdx(Math.min(Math.max(0, Number(draft.idx) || 0), STEPS.length - 1)); setPhase('form') }}>להמשיך מאיפה שעצרתי</button>
               <button className="bp-link" onClick={() => { store.clear(); setAnswers({}); setIdx(0); setPhase('form') }}>להתחיל מחדש</button>
             </div>
           ) : (
@@ -209,10 +209,24 @@ export default function BirthPlanForm() {
 
 function CopyButton({ text }) {
   const [done, setDone] = useState(false)
-  const copy = () => navigator.clipboard?.writeText(text)
-    .then(() => { setDone(true); setTimeout(() => setDone(false), 2000) })
-    .catch(() => setDone(false))
-  return <button className="bp-btn bp-ghost" onClick={copy}>{done ? 'הועתק ✓' : 'העתקת התכנית'}</button>
+  const [manual, setManual] = useState(false)
+  const area = useRef(null)
+  useEffect(() => { if (manual) area.current?.select() }, [manual])
+  const copy = () => {
+    const p = navigator.clipboard?.writeText ? navigator.clipboard.writeText(text) : Promise.reject()
+    p.then(() => { setDone(true); setTimeout(() => setDone(false), 2000) }).catch(() => setManual(true))
+  }
+  return (
+    <>
+      <button className="bp-btn bp-ghost" onClick={copy}>{done ? 'הועתק ✓' : 'העתקת התכנית'}</button>
+      {manual && (
+        <div className="bp-manual">
+          <p className="bp-muted bp-small">ההעתקה האוטומטית לא זמינה כאן. הטקסט מסומן: לחצי עליו לחיצה ארוכה ובחרי "העתק".</p>
+          <textarea id="bp-plan-copy" ref={area} className="bp-input bp-long" readOnly rows={8} value={text} onFocus={e => e.target.select()} />
+        </div>
+      )}
+    </>
+  )
 }
 
 function Shell({ children, progress }) {

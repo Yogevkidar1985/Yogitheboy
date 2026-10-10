@@ -124,3 +124,5 @@ kbd { font: 600 12px Heebo, sans-serif; background: var(--box); border: 1px soli
 .bp-mailrow .bp-btn { font-size: 15px; padding: 9px 16px; }
 .bp-btn:focus-visible, .bp-opt:focus-visible, .bp-link:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+.bp-manual { flex-basis: 100%; display: flex; flex-direction: column; gap: 6px; }
+.bp-manual .bp-long { margin-top: 0; font-size: 14px; min-height: 160px; }

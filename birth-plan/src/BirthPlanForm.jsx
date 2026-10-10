@@ -15,7 +15,10 @@ import { PLAN_EMAIL, DOULA_NAME, DOULA_PHONE } from './config.js'
 const DRAFT_KEY = 'birth_plan_form_v1'
 // Static single-file build (no /api, no print dialog): VITE_TARGET=artifact
 const STATIC = import.meta.env.VITE_TARGET === 'artifact'
-const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+// Option keys shown as Hebrew letters; pressing the letter (Hebrew layout) or its
+// position-equivalent Latin letter (a = א, b = ב…) picks the option
+const LETTERS = 'אבגדהוזחטיכלמנסעפצקרשת'
+const LATIN = 'abcdefghijklmnopqrstuv'
 
 const store = {
   get() { try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null') } catch { return null } },
@@ -90,8 +93,9 @@ export default function BirthPlanForm() {
       if (tag === 'INPUT' || tag === 'TEXTAREA') return
       if (e.key === 'ArrowUp') { e.preventDefault(); go(idx - 1) }
       if (e.key === 'ArrowDown') { e.preventDefault(); next() }
-      if ((step.type === 'choice' || step.type === 'multi') && /^[a-z]$/i.test(e.key) && !e.ctrlKey && !e.metaKey) {
-        const opt = step.opts[LETTERS.indexOf(e.key.toUpperCase())]
+      if ((step.type === 'choice' || step.type === 'multi') && e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
+        const k = e.key.toLowerCase(), i = LETTERS.includes(k) ? LETTERS.indexOf(k) : LATIN.indexOf(k)
+        const opt = i >= 0 && step.opts[i]
         if (opt) pick(opt.v)
       }
     }
@@ -119,7 +123,7 @@ export default function BirthPlanForm() {
         <div className="bp-card bp-welcome">
           <div className="bp-heart" aria-hidden>♡</div>
           <h1>תכנית הלידה שלך</h1>
-          <p className="bp-sub">שאלון קצר של כ־5 דקות. בסופו התכנית תישלח ליוגב במייל ותוכלי לשלוח אותה ישירות ל{DOULA_NAME} הדולה בוואטסאפ.</p>
+          <p className="bp-sub">כמה דקות של שקט, רק בשבילך. נעבור יחד על מה שחשוב לך בלידה: האווירה, הצוות והרגעים הראשונים עם התינוק, כדי שתגיעי ללידה רגועה ובטוחה.</p>
           {draft?.answers && Object.keys(draft.answers).length > 0 ? (
             <div className="bp-draft">
               <div className="bp-muted">מצאנו תכנית שהתחלת למלא</div>
@@ -286,7 +290,7 @@ function Review({ answers, onEdit, onSubmit, sending }) {
 }
 
 // Edit target for each summary row — the step whose title / label matches
-const EDIT_ID = { 'שם': 'name', 'טלפון': 'phone', 'לידה מספר': 'birthNo', 'תאריך לידה משוער': 'dueDate', 'בית חולים': 'hospital', 'מלווים': 'companions', 'פרטים מיוחדים לצוות': 'special', 'בקשות ורצונות': 'wishes' }
+const EDIT_ID = { 'שם': 'name', 'טלפון': 'phone', 'מספר לידה': 'birthNo', 'תאריך לידה משוער': 'dueDate', 'בית חולים': 'hospital', 'מלווים': 'companions', 'פרטים מיוחדים לצוות': 'special', 'בקשות ורצונות': 'wishes' }
 const stepIdFor = (secId, label) => EDIT_ID[label] || STEPS.find(s => s.section === secId && s.title === label)?.id
 
 function PlanView({ answers, onEdit, printable }) {

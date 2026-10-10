@@ -21,6 +21,7 @@ test('plan groups answers by section with full option text', () => {
   assert.match(pain.value[0], /כדור פיזיו/)
   assert.equal(plan[0].items.find(i => i.label === 'תאריך לידה משוער').value, '01/12/2026')
   assert.equal(plan[3].items[0].value, 'אפס הפרדה — ביות מלא')
+  assert.equal(plan[0].items.find(i => i.label === 'מספר לידה').value, 'שנייה')
 })
 
 test('text and e-mail render and escape', () => {

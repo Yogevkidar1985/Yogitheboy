@@ -32,7 +32,7 @@ export const STEPS = [
   { id: 'phone', section: 'about', type: 'phone', required: true,
     q: 'מה מספר הטלפון שלך?', help: 'כדי שהדס תוכל לחזור אלייך', ph: '050-000-0000' },
   { id: 'birthNo', section: 'about', type: 'choice', required: true, grid: true,
-    q: 'זו הלידה מספר…', opts: ['1', '2', '3', '4', '5', '6+'].map(v => o(v, v === '1' ? 'ראשונה' : v === '6+' ? '6 ומעלה' : v)) },
+    q: 'איזו לידה זו בשבילך?', opts: [o('1', 'ראשונה'), o('2', 'שנייה'), o('3', 'שלישית'), o('4', 'רביעית'), o('5', 'חמישית'), o('6+', 'שש ומעלה')] },
   { id: 'dueDate', section: 'about', type: 'date',
     q: 'מה תאריך הלידה המשוער?' },
   { id: 'hospital', section: 'about', type: 'text',
@@ -156,7 +156,7 @@ const optLabel = (step, v) => step.opts?.find(x => x.v === v)?.l || v
 function answerText(step, v) {
   if (isEmpty(v)) return ''
   if (step.type === 'date') return fmtDate(v)
-  if (step.type === 'choice') return step.id === 'birthNo' ? (v === '1' ? 'ראשונה' : v) : optLabel(step, v)
+  if (step.type === 'choice') return optLabel(step, v)
   if (step.type === 'multi') return v.map(x => optLabel(step, x))
   return String(v).trim()
 }
@@ -168,7 +168,7 @@ export function buildPlan(a) {
   out.push({ id: 'about', title: 'פרטים', items: [
     { label: 'שם', value: ab('name') },
     { label: 'טלפון', value: ab('phone') },
-    { label: 'לידה מספר', value: ab('birthNo') },
+    { label: 'מספר לידה', value: ab('birthNo') },
     { label: 'תאריך לידה משוער', value: ab('dueDate') },
     { label: 'בית חולים', value: ab('hospital') },
     { label: 'מלווים', value: ab('companions') },

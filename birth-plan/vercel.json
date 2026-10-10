@@ -2,5 +2,5 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist",
   "framework": "vite",
-  "functions": { "api/birth-plan.js": { "maxDuration": 15 } }
+  "functions": { "api/birth-plan.js": { "maxDuration": 60 } }
 }

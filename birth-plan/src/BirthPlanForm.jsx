@@ -6,12 +6,14 @@
 //   questions, Ctrl/⌘+Enter inside long answers.
 // • Auto-saves a draft (browser + Claude per-person store when available) so
 //   she can stop and resume where she left off.
-// • On submit the plan is e-mailed to Yogev (/api/birth-plan) and the finish
+// • On submit a PDF of the plan is built in the browser and /api/birth-plan
+//   e-mails it and sends it on WhatsApp; the finish
 //   screen opens a WhatsApp chat with Hadas the doula, pre-filled with the plan.
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { STEPS, SECTIONS, validateStep, buildPlan, planText, isEmpty, otherKey } from './schema.js'
-import { PLAN_EMAIL, DOULA_NAME, DOULA_PHONE } from './config.js'
+import { PLAN_EMAILS, DOULA_NAME, DOULA_PHONE } from './config.js'
+import { buildPlanPdf, pdfFileName, blobToBase64 } from './pdf.js'
 import { drafts } from './draftStore.js'
 
 // Static single-file build (no /api, no print dialog): VITE_TARGET=artifact
@@ -43,7 +45,8 @@ export default function BirthPlanForm() {
   const [err, setErr] = useState('')
   const [returnToReview, setReturnToReview] = useState(false)
   const [sending, setSending] = useState(false)
-  const [mailed, setMailed] = useState(false)
+  const [delivery, setDelivery] = useState(null)       // { email, whatsapp: { team, mother } } from the API
+  const [pdf, setPdf] = useState(null)                 // Blob
 
   const step = STEPS[idx]
   const section = SECTIONS.find(s => s.id === step.section)
@@ -93,14 +96,19 @@ export default function BirthPlanForm() {
     const missing = STEPS.find(s => validateStep(s, answers))
     if (missing) { setReturnToReview(true); go(STEPS.indexOf(missing)); return }
     setSending(true)
+    let blob = null
+    try { blob = await buildPlanPdf(answers) } catch {}
+    setPdf(blob)
     if (!STATIC) try {
-      const r = await fetch('/api/birth-plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ answers }) })
+      const r = await fetch('/api/birth-plan', { method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ answers, pdf: blob ? await blobToBase64(blob) : '', pdfName: pdfFileName(answers), website: '' }) })
       const j = await r.json().catch(() => ({}))
-      setMailed(!!(r.ok && j.ok))
-    } catch { setMailed(false) }
+      setDelivery(j && j.ok ? j : null)
+    } catch { setDelivery(null) }
     setSending(false)
     drafts.clear()
     setPhase('done')
+    window.scrollTo({ top: 0 })
   }
 
   // ── keyboard ───────────────────────────────────────────────────────────────
@@ -148,7 +156,7 @@ export default function BirthPlanForm() {
         <div className="bp-card bp-welcome">
           <div className="bp-heart" aria-hidden>♡</div>
           <h1>תכנית הלידה שלך</h1>
-          <p className="bp-sub">כמה דקות של שקט, רק בשבילך. נעבור יחד על מה שחשוב לך בלידה: האווירה, הצוות והרגעים הראשונים עם התינוק, כדי שתגיעי ללידה רגועה ובטוחה.</p>
+          <p className="bp-sub">השאלון עובר איתך על מה שחשוב לך בלידה ובימים שאחריה. זה לוקח בערך עשר דקות, ואפשר לעצור ולהמשיך מתי שנוח לך.</p>
           {draft ? (
             <div className="bp-draft">
               <div className="bp-muted">מצאנו תכנית שהתחלת למלא{draftWhere(draft)}</div>
@@ -158,7 +166,7 @@ export default function BirthPlanForm() {
           ) : (
             <button className="bp-btn" onClick={() => setPhase('form')}>בואי נתחיל ←</button>
           )}
-          <div className="bp-hint">לחצי <kbd>Enter ↵</kbd> כדי להתקדם</div>
+          <div className="bp-hint bp-desk">לחצי <kbd>Enter ↵</kbd> כדי להתקדם</div>
         </div>
       </div>
     </Shell>
@@ -167,32 +175,37 @@ export default function BirthPlanForm() {
   if (phase === 'done') {
     const text = planText(answers)
     const first = String(answers.name || '').trim().split(/\s+/)[0]
+    const sent = !!delivery && (delivery.email || delivery.whatsapp?.team > 0)
     return (
       <Shell>
         <div className="bp-center">
           <div className="bp-card bp-done">
             <div className="bp-check" aria-hidden>✓</div>
             <h1>תודה{first ? `, ${first}` : ''}!</h1>
-            <p className="bp-sub">
-              {mailed ? 'תכנית הלידה נשלחה ליוגב במייל. ' : ''}
-              {mailed ? `עכשיו נשאר רק לשלוח אותה ל${DOULA_NAME} הדולה.` : `עכשיו נשאר לשלוח אותה ל${DOULA_NAME} הדולה וליוגב.`}
-            </p>
+            {sent ? (
+              <p className="bp-sub">
+                התכנית נשלחה ל{DOULA_NAME}{delivery.email ? ' ולמייל' : ''}.
+                {delivery.whatsapp?.mother ? ' שלחנו לך עותק בוואטסאפ, כדאי לשמור אותו ולהביא ללידה.' : ''}
+              </p>
+            ) : (
+              <p className="bp-sub">{STATIC ? `נשאר רק לשלוח את התכנית ל${DOULA_NAME}.` : 'השליחה האוטומטית לא עברה הפעם. אפשר לשלוח את התכנית בעצמך, זה לוקח רגע.'}</p>
+            )}
             <div className="bp-actions">
-              <a className="bp-btn bp-wa" href={waLink(DOULA_PHONE, text)} target="_blank" rel="noopener noreferrer">שליחה ל{DOULA_NAME} בוואטסאפ</a>
-              {!DOULA_PHONE && <p className="bp-muted bp-small">בוואטסאפ בחרי את {DOULA_NAME} מרשימת אנשי הקשר</p>}
-              {DOULA_PHONE && <a className="bp-btn bp-ghost" href={`tel:+${DOULA_PHONE}`}>התקשרות ל{DOULA_NAME}</a>}
-              {!mailed && (
+              {!sent && <a className="bp-btn bp-wa" href={waLink(DOULA_PHONE, text)} target="_blank" rel="noopener noreferrer">שליחה ל{DOULA_NAME} בוואטסאפ</a>}
+              {!sent && !DOULA_PHONE && <p className="bp-muted bp-small">בוואטסאפ בחרי את {DOULA_NAME} מרשימת אנשי הקשר</p>}
+              {pdf && <PdfButton blob={pdf} name={pdfFileName(answers)} />}
+              {!sent && (
                 <div className="bp-mailbox">
-                  <div className="bp-muted">שליחה ליוגב במייל</div>
-                  <div className="bp-addr" dir="ltr">{PLAN_EMAIL}</div>
+                  <div className="bp-muted">שליחה במייל</div>
+                  {PLAN_EMAILS.map(m => <div key={m} className="bp-addr" dir="ltr">{m}</div>)}
                   <div className="bp-mailrow">
                     <CopyButton text={planText(answers, { bold: false })} />
-                    <a className="bp-btn bp-ghost" href={mailLink(PLAN_EMAIL, `תכנית לידה: ${String(answers.name || '').trim()}`, planText(answers, { bold: false }))}>פתיחת המייל</a>
+                    <a className="bp-btn bp-ghost" href={mailLink(PLAN_EMAILS.join(','), `תכנית לידה: ${String(answers.name || '').trim()}`, planText(answers, { bold: false }))}>פתיחת המייל</a>
                   </div>
-                  <p className="bp-muted bp-small">העתיקי את התכנית והדביקי אותה במייל לכתובת הזו</p>
+                  <p className="bp-muted bp-small">העתיקי את התכנית והדביקי אותה במייל לכתובות האלו</p>
                 </div>
               )}
-              {!STATIC && <button className="bp-btn bp-ghost" onClick={() => window.print()}>הדפסה / שמירה כ־PDF</button>}
+              {DOULA_PHONE && <a className="bp-btn bp-ghost" href={`tel:+${DOULA_PHONE}`}>התקשרות ל{DOULA_NAME}</a>}
             </div>
           </div>
           <PlanView answers={answers} printable />
@@ -231,6 +244,18 @@ export default function BirthPlanForm() {
       </nav>}
     </Shell>
   )
+}
+
+// Website: a normal download link. Inside a Claude Artifact the frame can't
+// download directly, so the viewer's `downloads` capability saves it instead.
+function PdfButton({ blob, name }) {
+  const [url] = useState(() => URL.createObjectURL(blob))
+  const [dl, setDl] = useState(undefined)
+  useEffect(() => () => URL.revokeObjectURL(url), [url])
+  useEffect(() => { if (STATIC) window.claude?.use?.('downloads').then(d => setDl(d || null), () => setDl(null)) }, [])
+  if (!STATIC) return <a className="bp-btn bp-ghost" href={url} download={name}>הורדת התכנית כקובץ PDF</a>
+  if (!dl) return null
+  return <button className="bp-btn bp-ghost" onClick={() => dl.save({ filename: name, data: blob }).catch(() => {})}>שמירת התכנית כקובץ PDF</button>
 }
 
 function CopyButton({ text }) {
@@ -277,7 +302,7 @@ function Question({ step, qNo, total, value, onChange, onPick, onNext, err, retu
       <div className="bp-qno">{qNo} <span>מתוך {total}</span></div>
       <h2>{step.q}{step.required && <span className="bp-req" title="שדה חובה"> *</span>}</h2>
       {step.help && <p className="bp-help">{step.help}</p>}
-      {multi && <p className="bp-help">אפשר לסמן כמה שרוצים — או לדלג</p>}
+      {multi && <p className="bp-help">אפשר לסמן כמה תשובות, או לדלג</p>}
 
       {(step.type === 'text' || step.type === 'phone') && (
         <input ref={ref} className="bp-input" type={step.type === 'phone' ? 'tel' : 'text'} dir={step.type === 'phone' ? 'ltr' : 'rtl'}
@@ -314,7 +339,7 @@ function Question({ step, qNo, total, value, onChange, onPick, onNext, err, retu
       {(step.type !== 'choice' || (step.other && value === step.other.v)) && (
         <div className="bp-row">
           <button className="bp-btn" onClick={onNext}>{returnToReview ? 'חזרה לסיכום' : (multi && isEmpty(value)) || (!step.required && isEmpty(value)) ? 'דילוג' : 'אישור ✓'}</button>
-          <span className="bp-hint">{step.type === 'long' ? <>או <kbd>Ctrl + Enter ↵</kbd></> : <>או לחצי <kbd>Enter ↵</kbd></>}</span>
+          <span className="bp-hint bp-desk">{step.type === 'long' ? <>או <kbd>Ctrl + Enter ↵</kbd></> : <>או לחצי <kbd>Enter ↵</kbd></>}</span>
         </div>
       )}
     </div>
@@ -351,9 +376,9 @@ function Review({ answers, onEdit, onSubmit, sending }) {
       <p className="bp-sub">עברי על התכנית. אפשר לערוך כל חלק בלחיצה על "עריכה".</p>
       <PlanView answers={answers} onEdit={onEdit} />
       <div className="bp-row">
-        <button className="bp-btn bp-big" onClick={onSubmit} disabled={sending}>{sending ? 'שולחת…' : 'סיום ושליחת התכנית'}</button>
+        <button className="bp-btn bp-big" onClick={onSubmit} disabled={sending}>{sending ? 'שולחת את התכנית…' : 'סיום ושליחת התכנית'}</button>
       </div>
-      <p className="bp-muted bp-small">התכנית תישלח ליוגב במייל, ובמסך הבא תוכלי לשלוח אותה ל{DOULA_NAME} בוואטסאפ.</p>
+      <p className="bp-muted bp-small">{STATIC ? `במסך הבא תוכלי לשלוח את התכנית ל${DOULA_NAME} בוואטסאפ ובמייל.` : `התכנית תישלח ל${DOULA_NAME} בוואטסאפ ובמייל, ותקבלי עותק לוואטסאפ שלך.`}</p>
     </div>
   )
 }
@@ -367,7 +392,7 @@ function PlanView({ answers, onEdit, printable }) {
   const secs = SECTIONS.filter(s => s.id !== 'review').map(s => plan.find(p => p.id === s.id) || { id: s.id, title: s.title, items: [] })
   return (
     <div className={`bp-plan${printable ? ' bp-printable' : ''}`}>
-      {printable && <h1 className="bp-print-title">תכנית לידה — {answers.name}</h1>}
+      {printable && <h1 className="bp-print-title">תכנית הלידה של {answers.name}</h1>}
       {secs.map(sec => sec.items.length ? (
         <section key={sec.id} className="bp-sec">
           <h3>{sec.title}</h3>

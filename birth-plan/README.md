@@ -28,9 +28,9 @@
 | `PLAN_EMAIL_TO` | `Daske2725@gmail.com,kidaryogev@gmail.com` |
 | `WA_GREENAPI_INSTANCE` | מספר ה Instance מ https://console.green-api.com |
 | `WA_GREENAPI_TOKEN` | ה API Token של אותו Instance |
-| `WA_NOTIFY_PHONES` | המספרים שמקבלים את הסיכום, מופרדים בפסיק, למשל `0521111111,0522222222` |
+| `WA_NOTIFY_PHONES` | מי מקבל את הסיכום בוואטסאפ. ברירת מחדל: הדס `972542299787`. אפשר להוסיף מספרים מופרדים בפסיק |
 | `WA_COPY_TO_MOTHER` | `1` כדי לשלוח ליולדת עותק, `0` כדי לא |
-| `VITE_DOULA_PHONE` | הטלפון של הדס לכפתור הגיבוי, למשל `972521111111` |
+| `VITE_DOULA_PHONE` | הטלפון של הדס לכפתור הגיבוי (כבר מוגדר: `972542299787`) |
 
 אם יש כבר חשבון Green API (כמו באתר של אפיק הנחל), אפשר להשתמש באותו Instance.
 

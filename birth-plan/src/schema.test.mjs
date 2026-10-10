@@ -105,3 +105,14 @@ test('API rejects a bot and an incomplete form', async () => {
   await handler({ method: 'POST', body: { answers: {} } }, res); assert.equal(status, 400)
   await handler({ method: 'POST', body: { answers: A, website: 'spam' } }, res); assert.equal(status, 200)
 })
+
+test('without WA_NOTIFY_PHONES the summary goes to Hadas', async () => {
+  const calls = []
+  const realFetch = globalThis.fetch
+  globalThis.fetch = async (url, init) => { calls.push({ url: String(url), init }); return new Response('{}', { status: 200 }) }
+  Object.assign(process.env, { WA_GREENAPI_INSTANCE: '7105123456', WA_GREENAPI_TOKEN: 'tok', WA_COPY_TO_MOTHER: '0' })
+  delete process.env.WA_NOTIFY_PHONES
+  const res = { setHeader() {}, status() { return this }, json() { return this } }
+  try { await handler({ method: 'POST', body: { answers: A } }, res) } finally { globalThis.fetch = realFetch; delete process.env.WA_COPY_TO_MOTHER }
+  assert.deepEqual(calls.map(c => JSON.parse(c.init.body).chatId), ['972542299787@c.us'])
+})

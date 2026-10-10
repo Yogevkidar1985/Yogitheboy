@@ -2,13 +2,14 @@
 // Body: { answers, pdf?: base64, pdfName?: string, website?: '' (honeypot) }
 //
 // • E-mail (Gmail SMTP) to PLAN_EMAIL_TO, full plan in the body + PDF attached
-// • WhatsApp (Green API) to WA_NOTIFY_PHONES: short summary + the PDF
+// • WhatsApp (Green API) to WA_NOTIFY_PHONES (default Hadas): short summary + the PDF
 // • WhatsApp copy to the mother herself (WA_COPY_TO_MOTHER, on by default)
 // Every channel is best effort; the response says which ones went out.
 import { validateStep, STEPS, planText } from '../src/schema.js'
 import { emailHtml, emailText, emailSubject, teamWhatsApp, motherWhatsApp, intlPhone, stamp } from '../src/messages.js'
 
 const DEFAULT_TO = 'Daske2725@gmail.com,kidaryogev@gmail.com'
+const DEFAULT_NOTIFY = '972542299787'            // Hadas
 const MAX_PDF = 3.5 * 1024 * 1024
 const list = v => String(v || '').split(/[,;\s]+/).map(s => s.trim()).filter(Boolean)
 
@@ -53,7 +54,7 @@ async function waFile(phone, pdf, fileName, caption) {
 
 async function sendWhatsApp(a, pdf, pdfName, when) {
   if (!GI() || !GT()) return { ok: false, error: 'WA_GREENAPI_INSTANCE / WA_GREENAPI_TOKEN missing' }
-  const team = list(process.env.WA_NOTIFY_PHONES).map(intlPhone).filter(Boolean)
+  const team = list(process.env.WA_NOTIFY_PHONES || DEFAULT_NOTIFY).map(intlPhone).filter(Boolean)
   const mother = /^(0|false|no)$/i.test(process.env.WA_COPY_TO_MOTHER || '') ? '' : intlPhone(a.phone)
   const out = { team: 0, mother: false, errors: [] }
 

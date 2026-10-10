@@ -84,7 +84,7 @@ kbd { font: 600 12px Heebo, sans-serif; background: var(--box); border: 1px soli
 .bp-row { display: flex; align-items: center; gap: 14px; margin-top: 24px; flex-wrap: wrap; }
 .bp-error { color: var(--err); font-weight: 500; margin-top: 12px; font-size: 15px; }
 
-.bp-nav { position: fixed; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); inset-inline-start: 18px; display: flex; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px var(--shadow); }
+.bp-nav { position: fixed; bottom: calc(18px + env(safe-area-inset-bottom, 0px)); left: calc(18px + env(safe-area-inset-left, 0px)); display: flex; direction: ltr; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px var(--shadow); }
 .bp-nav button { border: 0; background: var(--deep); color: var(--onDeep); width: 42px; height: 38px; font-size: 13px; }
 .bp-nav button + button { border-inline-start: 1px solid var(--tint2); }
 .bp-nav button:disabled { opacity: .45; cursor: default; }

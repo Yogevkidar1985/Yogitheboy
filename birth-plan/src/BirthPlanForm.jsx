@@ -176,6 +176,7 @@ export default function BirthPlanForm() {
     const text = planText(answers)
     const first = String(answers.name || '').trim().split(/\s+/)[0]
     const sent = !!delivery && (delivery.email || delivery.whatsapp?.team > 0)
+    const shareable = !sent && !!pdf && canSharePdf(pdf, pdfFileName(answers))
     return (
       <Shell>
         <div className="bp-center">
@@ -191,7 +192,8 @@ export default function BirthPlanForm() {
               <p className="bp-sub">{STATIC ? `נשאר רק לשלוח את התכנית ל${DOULA_NAME}.` : 'השליחה האוטומטית לא עברה הפעם. אפשר לשלוח את התכנית בעצמך, זה לוקח רגע.'}</p>
             )}
             <div className="bp-actions">
-              {!sent && <a className="bp-btn bp-wa" href={waLink(DOULA_PHONE, text)} target="_blank" rel="noopener noreferrer">שליחה ל{DOULA_NAME} בוואטסאפ</a>}
+              {!sent && shareable && <SharePdfButton blob={pdf} name={pdfFileName(answers)} className="bp-btn bp-wa" />}
+              {!sent && <a className={shareable ? 'bp-btn bp-ghost' : 'bp-btn bp-wa'} href={waLink(DOULA_PHONE, text)} target="_blank" rel="noopener noreferrer">{shareable ? `שליחה ל${DOULA_NAME} כהודעת טקסט` : `שליחה ל${DOULA_NAME} בוואטסאפ`}</a>}
               {!sent && !DOULA_PHONE && <p className="bp-muted bp-small">בוואטסאפ בחרי את {DOULA_NAME} מרשימת אנשי הקשר</p>}
               {pdf && <PdfButton blob={pdf} name={pdfFileName(answers)} />}
               {!sent && (
@@ -246,16 +248,34 @@ export default function BirthPlanForm() {
   )
 }
 
-// Website: a normal download link. Inside a Claude Artifact the frame can't
-// download directly, so the viewer's `downloads` capability saves it instead.
 function PdfButton({ blob, name }) {
   const [url] = useState(() => URL.createObjectURL(blob))
-  const [dl, setDl] = useState(undefined)
   useEffect(() => () => URL.revokeObjectURL(url), [url])
-  useEffect(() => { if (STATIC) window.claude?.use?.('downloads').then(d => setDl(d || null), () => setDl(null)) }, [])
-  if (!STATIC) return <a className="bp-btn bp-ghost" href={url} download={name}>הורדת התכנית כקובץ PDF</a>
-  if (!dl) return null
-  return <button className="bp-btn bp-ghost" onClick={() => dl.save({ filename: name, data: blob }).catch(() => {})}>שמירת התכנית כקובץ PDF</button>
+  return <a className="bp-btn bp-ghost" href={url} download={name}>הורדת התכנית כקובץ PDF</a>
+}
+
+// Backup when automatic delivery failed: the phone's own share sheet with the
+// PDF attached, so she picks WhatsApp and Hadas. Only where the browser can
+// share files (most phones); elsewhere the text button below does the job.
+const pdfFile = (blob, name) => { try { return new File([blob], name, { type: 'application/pdf' }) } catch { return null } }
+const canSharePdf = (blob, name) => {
+  const f = blob && pdfFile(blob, name)
+  try { return !!(f && navigator.canShare?.({ files: [f] })) } catch { return false }
+}
+function SharePdfButton({ blob, name, className }) {
+  const [err, setErr] = useState('')
+  const share = () => {
+    setErr('')
+    navigator.share({ files: [pdfFile(blob, name)], title: name.replace(/\.pdf$/, '') })
+      .catch(e => { if (e?.name !== 'AbortError') setErr('השיתוף לא נפתח. אפשר להוריד את הקובץ ולשלוח אותו בוואטסאפ.') })
+  }
+  return (
+    <>
+      <button type="button" className={className} onClick={share}>שליחת התכנית ל{DOULA_NAME} בוואטסאפ (קובץ PDF)</button>
+      <p className="bp-muted bp-small">במסך השיתוף בחרי וואטסאפ ואז את {DOULA_NAME}</p>
+      {err && <p className="bp-error">{err}</p>}
+    </>
+  )
 }
 
 function CopyButton({ text }) {

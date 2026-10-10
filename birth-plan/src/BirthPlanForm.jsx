@@ -97,7 +97,7 @@ export default function BirthPlanForm() {
     if (missing) { setReturnToReview(true); go(STEPS.indexOf(missing)); return }
     setSending(true)
     let blob = null
-    try { blob = await buildPlanPdf(answers) } catch {}
+    if (!STATIC) try { blob = await buildPlanPdf(answers) } catch {}   // the shared Claude link can't hand out files
     setPdf(blob)
     if (!STATIC) try {
       const r = await fetch('/api/birth-plan', { method: 'POST', headers: { 'Content-Type': 'application/json' },

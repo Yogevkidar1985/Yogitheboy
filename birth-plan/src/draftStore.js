@@ -1,10 +1,9 @@
 // ─── Draft persistence ───────────────────────────────────────────────────────
 // Two layers, newest wins on load:
 // • localStorage — every viewer, same browser/device only.
-// • the Claude Artifact viewer's per-person private store (db capability,
-//   `data/users/<id>/draft`) — signed-in viewers who may write, any device.
-//   Absent everywhere else (a plain website, signed-out or view-only guests),
-//   in which case it silently stays off.
+// • a host-provided per-person store (`window.claude.use('db')`,
+//   `data/users/<id>/draft`) when one exists, for any-device resume.
+//   Off in the public Claude link, which must load for signed-out guests.
 const KEY = 'birth_plan_form_v1'
 
 const local = {
@@ -20,6 +19,8 @@ let pending = null, timer = null, writing = false
 function remote() {
   if (remoteReady) return remoteReady
   remoteReady = (async () => {
+    // The public Claude link stays signed-out friendly: no per-person store there
+    if (import.meta.env?.VITE_TARGET === 'artifact') return null
     try {
       const c = typeof window !== 'undefined' && window.claude
       if (!c?.use) return null

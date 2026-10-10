@@ -9,7 +9,7 @@
 //   screen opens a WhatsApp chat with Hadas the doula, pre-filled with the plan.
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { STEPS, SECTIONS, validateStep, buildPlan, planText, isEmpty } from './schema.js'
+import { STEPS, SECTIONS, validateStep, buildPlan, planText, isEmpty, otherKey } from './schema.js'
 import { PLAN_EMAIL, DOULA_NAME, DOULA_PHONE } from './config.js'
 
 const DRAFT_KEY = 'birth_plan_form_v1'
@@ -86,7 +86,7 @@ export default function BirthPlanForm() {
       const tag = e.target.tagName
       if (e.key === 'Enter') {
         if (tag === 'TEXTAREA' && !(e.ctrlKey || e.metaKey)) return
-        if (tag === 'BUTTON' && !e.target.classList.contains('bp-opt')) return
+        if (tag === 'BUTTON' && !e.target.matches('.bp-opt, .bp-chip')) return
         if (step.type === 'review') return
         e.preventDefault(); next(); return
       }
@@ -106,6 +106,7 @@ export default function BirthPlanForm() {
   const pick = v => {
     if (step.type === 'choice') {
       set(step.id, v)
+      if (step.other && v === step.other.v) return   // wait for the name, then "אישור"
       setTimeout(() => {
         setDir(1)
         if (returnToReview) { setReturnToReview(false); setIdx(STEPS.length - 1) } else setIdx(i => i + 1)
@@ -194,7 +195,8 @@ export default function BirthPlanForm() {
               <Review answers={answers} onEdit={editStep} onSubmit={submit} sending={sending} />
             ) : (
               <Question step={step} qNo={qNo} total={questions.length} value={answers[step.id]}
-                onChange={v => set(step.id, v)} onPick={pick} onNext={next} err={err} returnToReview={returnToReview} />
+                onChange={v => set(step.id, v)} onPick={pick}
+                otherValue={answers[otherKey(step.id)] || ''} onOther={v => set(otherKey(step.id), v)} onNext={next} err={err} returnToReview={returnToReview} />
             )}
           </motion.div>
         </AnimatePresence>
@@ -239,7 +241,7 @@ function Shell({ children, progress }) {
   )
 }
 
-function Question({ step, qNo, total, value, onChange, onPick, onNext, err, returnToReview }) {
+function Question({ step, qNo, total, value, onChange, onPick, onNext, err, returnToReview, otherValue, onOther }) {
   const ref = useRef(null)
   const box = useRef(null)
   useEffect(() => { (ref.current || box.current)?.focus({ preventScroll: true }) }, [step.id])
@@ -277,13 +279,40 @@ function Question({ step, qNo, total, value, onChange, onPick, onNext, err, retu
         </div>
       )}
 
+      {step.other && value === step.other.v && (
+        <input autoFocus className="bp-input" type="text" value={otherValue} placeholder={step.other.ph} onChange={e => onOther(e.target.value)} />
+      )}
+      {step.examples && <Examples items={step.examples} value={value || ''} long={step.type === 'long'} onChange={onChange} />}
+
       {err && <div className="bp-error" role="alert">{err}</div>}
-      {step.type !== 'choice' && (
+      {(step.type !== 'choice' || (step.other && value === step.other.v)) && (
         <div className="bp-row">
           <button className="bp-btn" onClick={onNext}>{returnToReview ? 'חזרה לסיכום' : (multi && isEmpty(value)) || (!step.required && isEmpty(value)) ? 'דילוג' : 'אישור ✓'}</button>
           <span className="bp-hint">{step.type === 'long' ? <>או <kbd>Ctrl + Enter ↵</kbd></> : <>או לחצי <kbd>Enter ↵</kbd></>}</span>
         </div>
       )}
+    </div>
+  )
+}
+
+// Tap-to-add inspiration: long answers get one idea per line, short ones a comma list
+function Examples({ items, value, long, onChange }) {
+  const sep = long ? '\n' : ', '
+  const has = x => value.split(long ? '\n' : ',').some(p => p.trim() === x)
+  const add = x => {
+    if (has(x)) return onChange(value.split(long ? '\n' : ',').map(p => p.trim()).filter(p => p && p !== x).join(sep))
+    onChange(value.trim() ? `${value.replace(/[\s,]+$/, '')}${sep}${x}` : x)
+  }
+  return (
+    <div className="bp-examples">
+      <div className="bp-muted bp-small">רעיונות לדוגמה, לחצי כדי להוסיף:</div>
+      <div className="bp-chips">
+        {items.map(x => (
+          <button key={x} type="button" className={`bp-chip${has(x) ? ' on' : ''}`} aria-pressed={has(x)} onClick={() => add(x)}>
+            {has(x) ? '✓ ' : '+ '}{x}
+          </button>
+        ))}
+      </div>
     </div>
   )
 }

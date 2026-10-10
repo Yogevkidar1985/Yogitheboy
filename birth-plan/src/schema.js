@@ -36,15 +36,34 @@ export const STEPS = [
   { id: 'dueDate', section: 'about', type: 'date',
     q: 'מה תאריך הלידה המשוער?' },
   { id: 'hospital', section: 'about', type: 'text',
-    q: 'באיזה בית חולים את מתכננת ללדת?', ph: 'למשל: מאיר, כפר סבא' },
+    q: 'באיזה בית חולים את מתכננת ללדת?', ph: 'למשל: מאיר, כפר סבא',
+    examples: ['מאיר, כפר סבא', 'לניאדו, נתניה', 'איכילוב, תל אביב', 'עוד לא החלטתי'] },
   { id: 'companions', section: 'about', type: 'text',
-    q: 'מי המלווים שתרצי איתך בלידה?', help: 'למשל בן/בת זוג, אמא, הדס הדולה', ph: 'שמות והקשר אלייך' },
+    q: 'מי המלווים שתרצי איתך בלידה?', help: 'שמות והקשר אלייך', ph: 'למשל: דני, בן הזוג שלי',
+    examples: ['בן הזוג שלי', 'אמא שלי', 'אחותי', 'חברה קרובה', 'הדס הדולה'] },
   { id: 'special', section: 'about', type: 'long',
     q: 'פרטים מיוחדים שחשוב שצוות חדר הלידה יידע?', help: 'רקע רפואי, לידות קודמות, פחדים, רגישויות — כל מה שחשוב לך שיידעו',
-    ph: 'כתבי בחופשיות…' },
+    ph: 'כתבי בחופשיות…',
+    examples: [
+      'זו הלידה הראשונה שלי ואני גם מתרגשת וגם חוששת',
+      'בלידה הקודמת עברתי ניתוח קיסרי',
+      'הלידה הקודמת הייתה קשה עבורי ואשמח לרגישות מיוחדת',
+      'יש לי פחד ממחטים, אשמח להסבר לפני כל דקירה',
+      'אני רגישה לתרופה מסוימת (פניצילין למשל)',
+      'יש לי סוכרת הריון',
+      'ההריון הגיע אחרי טיפולי פוריות',
+    ] },
   { id: 'wishes', section: 'about', type: 'long',
     q: 'אילו בקשות ורצונות יש לך לגבי הלידה?', help: 'איך היית רוצה שהלידה תיראה ותרגיש',
-    ph: 'כתבי בחופשיות…' },
+    ph: 'כתבי בחופשיות…',
+    examples: [
+      'הייתי רוצה לידה טבעית ככל האפשר',
+      'חשוב לי להרגיש בשליטה ולהיות שותפה לכל החלטה',
+      'אשמח להיעזר במים: מקלחת חמה או אמבטיה',
+      'חשוב לי שבן הזוג יהיה מעורב ותומך לאורך כל הדרך',
+      'אני פתוחה לאפידורל אם ארגיש שאני צריכה',
+      'חשובה לי אווירה שקטה ואינטימית',
+    ] },
 
   // ═══════════════════ 2. DELIVERY ROOM ═════════════════════════════════════
   { id: 'd_intro', section: 'delivery', type: 'intro' },
@@ -103,10 +122,24 @@ export const STEPS = [
     opts: [
       o('companion', 'המלווה שלי'),
       o('me',        'אני'),
+      o('other',     'מישהו אחר'),
       o('none',      'אין לי העדפה'),
-    ] },
+    ],
+    other: { v: 'other', ph: 'מי? למשל: אמא שלי, אחותי' } },
   { id: 'd_more', section: 'delivery', type: 'long', title: 'בקשות נוספות',
-    q: 'בקשות נוספות לחדר הלידה?', ph: 'כתבי בחופשיות…' },
+    q: 'בקשות נוספות לחדר הלידה?', ph: 'כתבי בחופשיות…',
+    examples: [
+      'אשמח לשתות ולאכול משהו קל בזמן הצירים',
+      'אבקש להמתין עם חיתוך חבל הטבור עד שיפסיק לפעום',
+      'אבקש לגעת בראש התינוק כשהוא מופיע',
+      'אשמח לראות את רגע ההכתרה במראה',
+      'אבקש שהמלווה שלי יכריז על מין התינוק',
+      'אבקש לצלם ולתעד את רגע הלידה',
+      'אבקש שקט ופרטיות, כמה שפחות אנשים בחדר',
+      'אשמח להשתמש במקלחת חמה, ג׳קוזי או טנס להקלה',
+      'אבקש לשמור את השליה',
+      'אם יהיה צורך בניתוח קיסרי: אבקש שהמלווה יהיה איתי ועור לעור כבר בחדר הניתוח',
+    ] },
 
   // ═══════════════════ 3. NEWBORN ═══════════════════════════════════════════
   { id: 'n_intro', section: 'newborn', type: 'intro' },
@@ -130,7 +163,13 @@ export const STEPS = [
       o('none',    'עוד לא החלטתי'),
     ] },
   { id: 'p_more', section: 'postpart', type: 'long', title: 'הערות נוספות',
-    q: 'משהו נוסף שחשוב לך שהדס תדע?', ph: 'כתבי בחופשיות…' },
+    q: 'משהו נוסף שחשוב לך שהדס תדע?', ph: 'כתבי בחופשיות…',
+    examples: [
+      'אשמח לליווי של יועצת הנקה בימים הראשונים',
+      'אבקש להגביל ביקורים בבית החולים',
+      'אבקש לדחות את הרחצה הראשונה של התינוק',
+      'אני חוששת מהימים הראשונים בבית ואשמח לתמיכה',
+    ] },
 
   // ═══════════════════ 5. REVIEW ════════════════════════════════════════════
   { id: 'review', section: 'review', type: 'review' },
@@ -153,17 +192,23 @@ const fmtDate = d => {
 }
 const optLabel = (step, v) => step.opts?.find(x => x.v === v)?.l || v
 
-function answerText(step, v) {
+// Free-text twin of a choice's "other" option (e.g. d_cord → d_cord_other)
+export const otherKey = id => `${id}_other`
+
+function answerText(step, v, a = {}) {
   if (isEmpty(v)) return ''
   if (step.type === 'date') return fmtDate(v)
-  if (step.type === 'choice') return optLabel(step, v)
+  if (step.type === 'choice') {
+    const extra = step.other && v === step.other.v ? String(a[otherKey(step.id)] || '').trim() : ''
+    return extra ? `${optLabel(step, v)}: ${extra}` : optLabel(step, v)
+  }
   if (step.type === 'multi') return v.map(x => optLabel(step, x))
   return String(v).trim()
 }
 
 // Sections → [{ title, items: [{ label, value }] }]; value is a string or a list
 export function buildPlan(a) {
-  const ab = id => answerText(STEPS.find(s => s.id === id), a[id])
+  const ab = id => answerText(STEPS.find(s => s.id === id), a[id], a)
   const out = []
   out.push({ id: 'about', title: 'פרטים', items: [
     { label: 'שם', value: ab('name') },
@@ -178,7 +223,7 @@ export function buildPlan(a) {
 
   for (const sec of SECTIONS.filter(s => !['about', 'review'].includes(s.id))) {
     const items = STEPS.filter(s => s.section === sec.id && s.title && !isEmpty(a[s.id]))
-      .map(s => ({ label: s.title, value: answerText(s, a[s.id]) }))
+      .map(s => ({ label: s.title, value: answerText(s, a[s.id], a) }))
     if (!items.length) continue
     out.push({ id: sec.id, title: sec.title, items })
   }

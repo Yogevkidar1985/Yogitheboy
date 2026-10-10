@@ -31,3 +31,8 @@ test('text and e-mail render and escape', () => {
   const html = buildEmailHtml({ ...A, name: '<b>x</b>' })
   assert.ok(html.includes('&lt;b&gt;x&lt;/b&gt;') && !html.includes('<b>x</b>'))
 })
+
+test('"someone else" cuts the cord: name is carried into the plan', () => {
+  const plan = buildPlan({ ...A, d_cord: 'other', d_cord_other: 'אמא שלי' })
+  assert.equal(plan[1].items.find(i => i.label === 'חיתוך חבל הטבור').value, 'מישהו אחר: אמא שלי')
+})

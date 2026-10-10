@@ -13,6 +13,8 @@ import { STEPS, SECTIONS, validateStep, buildPlan, planText, isEmpty } from './s
 import { PLAN_EMAIL, DOULA_NAME, DOULA_PHONE } from './config.js'
 
 const DRAFT_KEY = 'birth_plan_form_v1'
+// Static single-file build (no /api, no print dialog): VITE_TARGET=artifact
+const STATIC = import.meta.env.VITE_TARGET === 'artifact'
 const LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'
 
 const store = {
@@ -21,7 +23,7 @@ const store = {
   clear() { try { localStorage.removeItem(DRAFT_KEY) } catch {} },
 }
 
-const waLink = (phone, text) => `https://wa.me/${phone}?text=${encodeURIComponent(text)}`
+const waLink = (phone, text) => `https://wa.me/${phone || ''}?text=${encodeURIComponent(text)}`
 const mailLink = (to, subject, body) => `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
 export default function BirthPlanForm() {
@@ -64,7 +66,7 @@ export default function BirthPlanForm() {
     const missing = STEPS.find(s => validateStep(s, answers))
     if (missing) { setReturnToReview(true); go(STEPS.indexOf(missing)); return }
     setSending(true)
-    try {
+    if (!STATIC) try {
       const r = await fetch('/api/birth-plan', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ answers }) })
       const j = await r.json().catch(() => ({}))
       setMailed(!!(r.ok && j.ok))
@@ -144,15 +146,24 @@ export default function BirthPlanForm() {
             <h1>תודה{first ? `, ${first}` : ''}!</h1>
             <p className="bp-sub">
               {mailed ? 'תכנית הלידה נשלחה ליוגב במייל. ' : ''}
-              עכשיו נשאר רק לשלוח אותה ל{DOULA_NAME} הדולה.
+              {mailed ? `עכשיו נשאר רק לשלוח אותה ל${DOULA_NAME} הדולה.` : `עכשיו נשאר לשלוח אותה ל${DOULA_NAME} הדולה וליוגב.`}
             </p>
             <div className="bp-actions">
-              {DOULA_PHONE
-                ? <a className="bp-btn bp-wa" href={waLink(DOULA_PHONE, text)} target="_blank" rel="noopener noreferrer">שליחה ל{DOULA_NAME} בוואטסאפ</a>
-                : <div className="bp-error">מספר הטלפון של {DOULA_NAME} עוד לא הוגדר (VITE_DOULA_PHONE)</div>}
+              <a className="bp-btn bp-wa" href={waLink(DOULA_PHONE, text)} target="_blank" rel="noopener noreferrer">שליחה ל{DOULA_NAME} בוואטסאפ</a>
+              {!DOULA_PHONE && <p className="bp-muted bp-small">בוואטסאפ בחרי את {DOULA_NAME} מרשימת אנשי הקשר</p>}
               {DOULA_PHONE && <a className="bp-btn bp-ghost" href={`tel:+${DOULA_PHONE}`}>התקשרות ל{DOULA_NAME}</a>}
-              {!mailed && <a className="bp-btn bp-ghost" href={mailLink(PLAN_EMAIL, `תכנית לידה: ${String(answers.name || '').trim()}`, planText(answers, { bold: false }))}>שליחה ליוגב במייל</a>}
-              <button className="bp-btn bp-ghost" onClick={() => window.print()}>הדפסה / שמירה כ־PDF</button>
+              {!mailed && (
+                <div className="bp-mailbox">
+                  <div className="bp-muted">שליחה ליוגב במייל</div>
+                  <div className="bp-addr" dir="ltr">{PLAN_EMAIL}</div>
+                  <div className="bp-mailrow">
+                    <CopyButton text={planText(answers, { bold: false })} />
+                    <a className="bp-btn bp-ghost" href={mailLink(PLAN_EMAIL, `תכנית לידה: ${String(answers.name || '').trim()}`, planText(answers, { bold: false }))}>פתיחת המייל</a>
+                  </div>
+                  <p className="bp-muted bp-small">העתיקי את התכנית והדביקי אותה במייל לכתובת הזו</p>
+                </div>
+              )}
+              {!STATIC && <button className="bp-btn bp-ghost" onClick={() => window.print()}>הדפסה / שמירה כ־PDF</button>}
             </div>
           </div>
           <PlanView answers={answers} printable />
@@ -190,6 +201,14 @@ export default function BirthPlanForm() {
       </nav>}
     </Shell>
   )
+}
+
+function CopyButton({ text }) {
+  const [done, setDone] = useState(false)
+  const copy = () => navigator.clipboard?.writeText(text)
+    .then(() => { setDone(true); setTimeout(() => setDone(false), 2000) })
+    .catch(() => setDone(false))
+  return <button className="bp-btn bp-ghost" onClick={copy}>{done ? 'הועתק ✓' : 'העתקת התכנית'}</button>
 }
 
 function Shell({ children, progress }) {

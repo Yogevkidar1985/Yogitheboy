@@ -4,15 +4,16 @@
 //
 // • Keyboard first: Enter = continue, letters pick options, ↑/↓ move between
 //   questions, Ctrl/⌘+Enter inside long answers.
-// • Auto-saves a draft to localStorage so she can stop and resume.
+// • Auto-saves a draft (browser + Claude per-person store when available) so
+//   she can stop and resume where she left off.
 // • On submit the plan is e-mailed to Yogev (/api/birth-plan) and the finish
 //   screen opens a WhatsApp chat with Hadas the doula, pre-filled with the plan.
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { STEPS, SECTIONS, validateStep, buildPlan, planText, isEmpty, otherKey } from './schema.js'
 import { PLAN_EMAIL, DOULA_NAME, DOULA_PHONE } from './config.js'
+import { drafts } from './draftStore.js'
 
-const DRAFT_KEY = 'birth_plan_form_v1'
 // Static single-file build (no /api, no print dialog): VITE_TARGET=artifact
 const STATIC = import.meta.env.VITE_TARGET === 'artifact'
 // Option keys shown as Hebrew letters; pressing the letter (Hebrew layout) or its
@@ -20,19 +21,23 @@ const STATIC = import.meta.env.VITE_TARGET === 'artifact'
 const LETTERS = 'אבגדהוזחטיכלמנסעפצקרשת'
 const LATIN = 'abcdefghijklmnopqrstuv'
 
-const store = {
-  get() { try { return JSON.parse(localStorage.getItem(DRAFT_KEY) || 'null') } catch { return null } },
-  set(v) { try { localStorage.setItem(DRAFT_KEY, JSON.stringify(v)) } catch {} },
-  clear() { try { localStorage.removeItem(DRAFT_KEY) } catch {} },
+
+const QUESTIONS = STEPS.filter(s => s.type !== 'intro' && s.type !== 'review')
+function draftWhere(d) {
+  const step = STEPS[Math.min(Math.max(0, Number(d.idx) || 0), STEPS.length - 1)]
+  const n = QUESTIONS.indexOf(step) + 1
+  return n > 0 ? ` (נעצרת בשאלה ${n} מתוך ${QUESTIONS.length})` : step.type === 'review' ? ' (הגעת עד הסיכום)' : ''
 }
 
 const waLink = (phone, text) => `https://wa.me/${phone || ''}?text=${encodeURIComponent(text)}`
 const mailLink = (to, subject, body) => `mailto:${to}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`
 
 export default function BirthPlanForm() {
-  const draft = useMemo(() => store.get(), [])
+  const [draft, setDraft] = useState(() => drafts.local())
   const [phase, setPhase] = useState('welcome')          // welcome | form | done
-  const [answers, setAnswers] = useState(draft?.answers || {})
+  const [answers, setAnswers] = useState({})
+  const [savedAt, setSavedAt] = useState(0)
+  const [cloud, setCloud] = useState(false)
   const [idx, setIdx] = useState(0)
   const [dir, setDir] = useState(1)
   const [err, setErr] = useState('')
@@ -46,7 +51,26 @@ export default function BirthPlanForm() {
   const qNo = questions.indexOf(step) + 1
   const progress = Math.round((idx / (STEPS.length - 1)) * 100)
 
-  useEffect(() => { if (phase === 'form') store.set({ answers, idx, at: Date.now() }) }, [answers, idx, phase])
+  // newer draft from another device, if the viewer has one
+  useEffect(() => {
+    let live = true
+    drafts.load().then(d => { if (live && d) setDraft(cur => (!cur || (d.at || 0) > (cur.at || 0) ? d : cur)) })
+    drafts.synced().then(ok => live && setCloud(ok))
+    return () => { live = false }
+  }, [])
+
+  useEffect(() => {
+    if (phase !== 'form' || !Object.keys(answers).length) return
+    const at = Date.now()
+    drafts.save({ answers, idx, at }); setSavedAt(at)
+  }, [answers, idx, phase])
+
+  const resume = () => {
+    setAnswers(draft.answers)
+    setIdx(Math.min(Math.max(0, Number(draft.idx) || 0), STEPS.length - 1))
+    setPhase('form')
+  }
+  const restart = () => { drafts.clear(); setDraft(null); setAnswers({}); setIdx(0); setPhase('form') }
 
   const set = useCallback((id, v) => { setAnswers(a => ({ ...a, [id]: v })); setErr('') }, [])
 
@@ -75,7 +99,7 @@ export default function BirthPlanForm() {
       setMailed(!!(r.ok && j.ok))
     } catch { setMailed(false) }
     setSending(false)
-    store.clear()
+    drafts.clear()
     setPhase('done')
   }
 
@@ -125,11 +149,11 @@ export default function BirthPlanForm() {
           <div className="bp-heart" aria-hidden>♡</div>
           <h1>תכנית הלידה שלך</h1>
           <p className="bp-sub">כמה דקות של שקט, רק בשבילך. נעבור יחד על מה שחשוב לך בלידה: האווירה, הצוות והרגעים הראשונים עם התינוק, כדי שתגיעי ללידה רגועה ובטוחה.</p>
-          {draft?.answers && Object.keys(draft.answers).length > 0 ? (
+          {draft ? (
             <div className="bp-draft">
-              <div className="bp-muted">מצאנו תכנית שהתחלת למלא</div>
-              <button className="bp-btn" onClick={() => { setIdx(Math.min(Math.max(0, Number(draft.idx) || 0), STEPS.length - 1)); setPhase('form') }}>להמשיך מאיפה שעצרתי</button>
-              <button className="bp-link" onClick={() => { store.clear(); setAnswers({}); setIdx(0); setPhase('form') }}>להתחיל מחדש</button>
+              <div className="bp-muted">מצאנו תכנית שהתחלת למלא{draftWhere(draft)}</div>
+              <button className="bp-btn" onClick={resume}>להמשיך מאיפה שעצרתי ←</button>
+              <button className="bp-link" onClick={restart}>להתחיל מחדש</button>
             </div>
           ) : (
             <button className="bp-btn" onClick={() => setPhase('form')}>בואי נתחיל ←</button>
@@ -178,7 +202,7 @@ export default function BirthPlanForm() {
   }
 
   return (
-    <Shell progress={progress}>
+    <Shell progress={progress} saved={!!savedAt} cloud={cloud}>
       <div className="bp-stage">
         <AnimatePresence mode="wait" custom={dir} initial={false}>
           <motion.div key={step.id} custom={dir} className="bp-step"
@@ -231,11 +255,13 @@ function CopyButton({ text }) {
   )
 }
 
-function Shell({ children, progress }) {
+function Shell({ children, progress, saved, cloud }) {
   return (
     <div className="bp-root" dir="rtl">
       {progress != null && <div className="bp-progress" role="progressbar" aria-valuenow={progress} aria-valuemin={0} aria-valuemax={100}><span style={{ width: `${progress}%` }} /></div>}
-      <header className="bp-top"><span className="bp-brand">תכנית לידה</span><span className="bp-muted">עם {DOULA_NAME} · דולה</span></header>
+      <header className="bp-top"><span className="bp-brand">תכנית לידה</span>
+        {saved ? <span className="bp-saved" role="status">✓ {cloud ? 'נשמר, אפשר להמשיך גם ממכשיר אחר' : 'נשמר, אפשר לחזור ולהמשיך'}</span>
+               : <span className="bp-muted">עם {DOULA_NAME} · דולה</span>}</header>
       {children}
     </div>
   )

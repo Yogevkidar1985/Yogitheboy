@@ -133,3 +133,4 @@ kbd { font: 600 12px Heebo, sans-serif; background: var(--box); border: 1px soli
 .bp-chip:hover { background: var(--tint); }
 .bp-chip.on { background: var(--tint); border-color: var(--deep); color: var(--accentText); font-weight: 500; }
 .bp-chip:focus-visible { outline: 2px solid var(--purple); outline-offset: 2px; }
+.bp-saved { color: var(--ok); font-size: 13px; font-weight: 500; text-align: end; }

@@ -1,7 +1,7 @@
 :root {
   --ink: #26242B; --ink2: #4A4852; --muted: #75727C; --canvas: #EFEFF1; --paper: #FFFFFF;
   --line: #DCDCE0; --box: #F2F2F5; --boxHover: #E8E8EE; --purple: #8490D8; --deep: #3F4EB0; --deepHover: #33409A;
-  --onDeep: #FFFFFF; --accentText: #3F4EB0; --ph: #B8B6BF; --shadow: var(--shadow);
+  --onDeep: #FFFFFF; --accentText: #3F4EB0; --ph: #B8B6BF; --shadow: rgba(30, 30, 60, .12);
   --tint: #EEF0FA; --tint2: #DFE3F6; --ok: #1F9D55; --okTint: #E3F5EA; --err: #D93B3B; --wa: #1FA855; --waHover: #188F47;
 }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {

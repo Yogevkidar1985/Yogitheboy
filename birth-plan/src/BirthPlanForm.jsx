@@ -353,7 +353,7 @@ function Question({ step, qNo, total, value, onChange, onPick, onNext, err, retu
       {step.other && value === step.other.v && (
         <input autoFocus className="bp-input" type="text" value={otherValue} placeholder={step.other.ph} onChange={e => onOther(e.target.value)} />
       )}
-      {step.examples && <Examples items={step.examples} value={value || ''} long={step.type === 'long'} onChange={onChange} />}
+      {step.examples && <Examples items={step.examples} single={step.single} other={step.otherChip} inputRef={ref} value={value || ''} long={step.type === 'long'} onChange={onChange} />}
 
       {err && <div className="bp-error" role="alert">{err}</div>}
       {(step.type !== 'choice' || (step.other && value === step.other.v)) && (
@@ -367,23 +367,41 @@ function Question({ step, qNo, total, value, onChange, onPick, onNext, err, retu
 }
 
 // Tap-to-add inspiration: long answers get one idea per line, short ones a comma list
-function Examples({ items, value, long, onChange }) {
+function Examples({ items, single, other, inputRef, value, long, onChange }) {
+  const [hint, setHint] = useState('')
+  const [focusTick, setFocusTick] = useState(0)
+  // after the separator is in the field, put the cursor at its end
+  useEffect(() => {
+    if (!focusTick) return
+    const el = inputRef?.current
+    if (el) { el.focus(); el.setSelectionRange?.(el.value.length, el.value.length) }
+  }, [focusTick])
   const sep = long ? '\n' : ', '
-  const has = x => value.split(long ? '\n' : ',').some(p => p.trim() === x)
+  const has = x => single ? value.trim() === x : value.split(long ? '\n' : ',').some(p => p.trim() === x)
   const add = x => {
+    if (single) return onChange(has(x) ? '' : x)
     if (has(x)) return onChange(value.split(long ? '\n' : ',').map(p => p.trim()).filter(p => p && p !== x).join(sep))
     onChange(value.trim() ? `${value.replace(/[\s,]+$/, '')}${sep}${x}` : x)
   }
   return (
     <div className="bp-examples">
-      <div className="bp-muted bp-small">רעיונות לדוגמה, לחצי כדי להוסיף:</div>
+      <div className="bp-muted bp-small">{single ? "אפשר לבחור מהרשימה:" : "רעיונות לדוגמה, לחצי כדי להוסיף:"}</div>
       <div className="bp-chips">
         {items.map(x => (
           <button key={x} type="button" className={`bp-chip${has(x) ? ' on' : ''}`} aria-pressed={has(x)} onClick={() => add(x)}>
             {has(x) ? '✓ ' : '+ '}{x}
           </button>
         ))}
+        {other && (
+          <button type="button" className="bp-chip" onClick={() => {
+            if (single) { if (items.includes(value.trim())) onChange('') }
+            else if (value.trim() && !/[,\n]\s*$/.test(value)) onChange(`${value.replace(/\s+$/, '')}${sep}`)
+            setHint(other.hint)
+            setFocusTick(t => t + 1)
+          }}>+ {other.l}</button>
+        )}
       </div>
+      {hint && <div className="bp-muted bp-small" role="status">{hint}</div>}
     </div>
   )
 }

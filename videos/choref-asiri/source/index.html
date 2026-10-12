@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Kurkoos tenth winter video</title>
+<style>
+@font-face{font-family:Heebo;font-weight:900;src:url(heebo-hebrew-900-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:Heebo;font-weight:900;src:url(heebo-latin-900-normal.woff2) format('woff2')}
+@font-face{font-family:Heebo;font-weight:700;src:url(heebo-hebrew-700-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:Heebo;font-weight:700;src:url(heebo-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:Almoni;font-weight:400;src:url(almoni-400.woff2) format('woff2')}
+@font-face{font-family:Almoni;font-weight:700;src:url(almoni-700.woff2) format('woff2')}
+:root{--night:#07293a;--teal:#105572;--bp:#13506c;--mist:#8fb6c8;--paper:#f7f8fa;--red:#a90b0c;--gold:#ffd47a}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bp)}
+body{font-family:Almoni,Heebo,sans-serif;color:#fff}
+#stage{position:absolute;inset:0;overflow:hidden;background:linear-gradient(180deg,#a9d0e0 0%,#96c3d6 38%,#5d8ea8 62%,#1f4560 82%,#14334a 100%)}
+#redbg{position:absolute;inset:0;background:var(--red);opacity:0}
+.grid{position:absolute;inset:0;background-image:
+ linear-gradient(rgba(23,56,79,.10) 2px,transparent 2px),linear-gradient(90deg,rgba(23,56,79,.10) 2px,transparent 2px),
+ linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);
+ background-size:300px 300px,300px 300px,60px 60px,60px 60px;background-position:-1px -1px}
+.h{font-family:Heebo;font-weight:900;letter-spacing:-.02em;line-height:1.04}
+.lbl{font-family:Almoni;font-weight:700}
+.crop{position:absolute;width:44px;height:44px;border-color:rgba(255,255,255,.55);border-style:solid;border-width:0}
+.scene{position:absolute;left:0;top:0;width:1080px;height:1920px;opacity:0;display:none}
+#header{position:absolute;top:0;left:0;right:0;height:200px;z-index:20}
+#logo{position:absolute;left:70px;top:78px;width:300px}
+#chip{position:absolute;right:70px;top:84px;color:#17384f;font-family:Almoni;font-weight:700;font-size:36px;padding:10px 0 8px;white-space:nowrap;display:flex;align-items:center;gap:16px}
+#chip i{display:inline-block;width:22px;height:22px;background:var(--red)}
+#caps{position:absolute;left:60px;right:60px;top:1215px;height:420px;z-index:15;display:flex;align-items:center;justify-content:center;text-align:center}
+#capline{font-family:Heebo;font-weight:900;font-size:74px;line-height:1.22;letter-spacing:-.01em;text-shadow:0 4px 18px rgba(0,0,0,.3)}
+#capline span{display:inline-block;padding:0 12px;margin:2px 0;border-radius:12px;transform-origin:50% 60%}
+#endlogo{position:absolute;left:0;right:0;top:1250px;text-align:center;opacity:0;z-index:16}
+#bottom{position:absolute;left:70px;right:70px;top:1680px;height:200px;z-index:20}
+#prog{position:absolute;top:0;left:0;right:0;height:10px;display:flex;gap:8px;direction:rtl}
+#prog div{flex:1;background:rgba(255,255,255,.2);position:relative;overflow:hidden;border-radius:2px}
+#prog div i{position:absolute;top:0;bottom:0;right:0;background:var(--red)}
+#ticks{position:absolute;top:22px;left:0;right:0;height:14px;background-image:linear-gradient(90deg,rgba(255,255,255,.4) 2px,transparent 2px);background-size:40px 14px}
+#brand{position:absolute;right:0;top:62px;text-align:right}
+#brand .n{font-family:Heebo;font-weight:900;font-size:44px;letter-spacing:-.02em}
+#brand .t{font-family:Almoni;font-size:30px;color:#cfe0e8;margin-top:4px}
+#site{position:absolute;left:0;top:78px;font-family:Heebo;font-weight:700;font-size:32px;direction:ltr}
+#counter{position:absolute;left:0;top:124px;font-family:Heebo;font-weight:700;font-size:26px;direction:ltr;color:var(--mist)}
+#vignette{position:absolute;inset:0;z-index:14;pointer-events:none;background:radial-gradient(ellipse at 50% 40%,transparent 55%,rgba(0,0,0,.28) 100%)}
+svg{overflow:visible}
+.ln{fill:none;stroke:#fff;stroke-width:5;stroke-linejoin:round;stroke-linecap:round}
+.thin{fill:none;stroke:rgba(255,255,255,.75);stroke-width:2.5}
+.dash{fill:none;stroke:#fff;stroke-width:4;stroke-dasharray:18 12}
+.tile{fill:rgba(255,255,255,.14);stroke:#fff;stroke-width:4}
+.dot{fill:#a90b0c}
+.tag{font-family:Heebo;font-weight:900;fill:#fff}
+.tagl{font-family:Almoni;font-weight:700;fill:#dbe9f0}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="redbg"></div>
+  <div class="grid"></div>
+  <div id="scenes"></div>
+  <div id="vignette"></div>
+  <div id="header"><img id="logo" src="kurkoos-logo-h.svg"><div id="chip"><span id="chipt">פרטים קטנים</span><i></i></div></div>
+  <div id="caps"><div id="capline"></div></div>
+  <div id="endlogo"><img src="kurkoos-logo-h-white.svg" style="width:620px"><div class="lbl" style="font-size:46px;margin-top:22px">קבוצת קורקוס. מקרקע ועד מסירת מפתח.</div></div>
+  <div id="bottom"><div id="prog"></div><div id="ticks"></div>
+    <div id="brand"><div class="n">קבוצת קורקוס</div><div class="t">מקרקע ועד מסירת מפתח</div></div>
+    <div id="site">kurkoos-group.co.il</div><div id="counter">01 / 12</div></div>
+  <div class="crop" style="left:30px;top:30px;border-left-width:3px;border-top-width:3px"></div>
+  <div class="crop" style="right:30px;top:30px;border-right-width:3px;border-top-width:3px"></div>
+  <div class="crop" style="left:30px;bottom:30px;border-left-width:3px;border-bottom-width:3px"></div>
+  <div class="crop" style="right:30px;bottom:30px;border-right-width:3px;border-bottom-width:3px"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const seg=(t,a,b)=>clamp((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3);
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const e5=x=>1-Math.pow(1-x,5);
+const back=x=>{const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+let TL,S={},VIS=[],VI={};
+
+// ---------- drawings ----------
+// floor/wall section. Wall face at x=220, tiles from x=242 (gap 22) or 220 (no gap).
+const TW=118, TP=124;
+function hatch(x,y,w,h,step=26){let s='';for(let k=-h;k<w;k+=step){const x1=Math.max(x,x+k),y1=y+(x+k<x?(x-(x+k)):0);s+=`<line x1="${x+k}" y1="${y+h}" x2="${x+k+h}" y2="${y}"/>`;}
+  return `<g clip-path="inset(0)" ><clipPath id="c${x}_${y}_${w}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath><g clip-path="url(#c${x}_${y}_${w})" stroke="rgba(255,255,255,.55)" stroke-width="2.5">${s}</g></g>`;}
+function section(id,gap=22,opts={}){
+  const x0=220+gap, wt=opts.wallTop||300;
+  let tiles='';for(let i=0;i<6;i++)tiles+=`<rect class="tile" data-i="${i}" x="${x0+i*TP}" y="${774}" width="${gap?TW:TW}" height="26" rx="2"/>`;
+  return `<g id="${id}">
+   ${hatch(140,800,840,60)}<rect class="ln" x="140" y="800" width="840" height="60"/>
+   ${hatch(140,wt,80,800-wt)}<rect class="ln" x="140" y="${wt}" width="80" height="${800-wt}"/>
+   <line class="thin" x1="220" y1="800" x2="980" y2="800"/>
+   <g class="tiles">${tiles}</g>
+  </g>`;}
+function check(x,y,r=40,ok=true){return ok?`<g transform="translate(${x},${y})"><circle r="${r}" fill="#fff"/><path d="M${-r*.45} ${r*.02} L${-r*.1} ${r*.35} L${r*.5} ${-r*.35}" fill="none" stroke="#105572" stroke-width="${r*.22}" stroke-linecap="round" stroke-linejoin="round"/></g>`
+ :`<g transform="translate(${x},${y})"><circle r="${r}" fill="#a90b0c"/><path d="M${-r*.38} ${-r*.38} L${r*.38} ${r*.38} M${r*.38} ${-r*.38} L${-r*.38} ${r*.38}" stroke="#fff" stroke-width="${r*.22}" stroke-linecap="round"/></g>`;}
+
+const NV='#17384f';
+function P(x,y,z,o){const c=0.866,s=0.5;return [o.cx+(x-y)*c*o.s, o.cy+(x+y)*s*o.s-z*o.s];}
+function poly(pts,o,attrs){return `<polygon points="${pts.map(p=>P(...p,o).map(v=>v.toFixed(1)).join(',')).join(' ')}" ${attrs}/>`;}
+function house(id,o){const H=3.2,W=10,D=8;let s=`<g id="${id}">`;
+ s+=poly([[-2,-2,0],[12,-2,0],[12,10,0],[-2,10,0]],o,`fill="rgba(255,255,255,.18)" stroke="${NV}" stroke-width="3"`);
+ s+=poly([[0,D,0],[W,D,0],[W,D,H],[0,D,H]],o,`class="fl" fill="#7fa9bd" stroke="${NV}" stroke-width="4"`);
+ s+=poly([[W,0,0],[W,D,0],[W,D,H],[W,0,H]],o,`class="fr" fill="#5e8aa1" stroke="${NV}" stroke-width="4"`);
+ s+=poly([[0,0,H],[W,0,H],[W,D,H],[0,D,H]],o,`class="roof" fill="#a7cbdb" stroke="${NV}" stroke-width="4"`);
+ s+=poly([[0.5,0.5,H],[W-0.5,0.5,H],[W-0.5,D-0.5,H],[0.5,D-0.5,H]],o,`fill="none" stroke="${NV}" stroke-width="2.5" opacity=".7"`);
+ [[1.2,2.8],[4.2,5.8],[7.2,8.8]].forEach(([a,b])=>s+=poly([[a,D,0.9],[b,D,0.9],[b,D,2.4],[a,D,2.4]],o,`fill="#2c5872" stroke="${NV}" stroke-width="3"`));
+ [[2,3.6],[5,6.6]].forEach(([a,b])=>s+=poly([[W,a,0.9],[W,b,0.9],[W,b,2.4],[W,a,2.4]],o,`fill="#2c5872" stroke="${NV}" stroke-width="3"`));
+ s+=poly([[6,2.5,H],[8,2.5,H],[8,4.5,H],[6,4.5,H]],o,`fill="#a7cbdb" stroke="${NV}" stroke-width="3"`);
+ s+=poly([[8,2.5,H],[8,4.5,H],[8,4.5,H+0.6],[8,2.5,H+0.6]],o,`fill="#5e8aa1" stroke="${NV}" stroke-width="3"`);
+ s+=poly([[6,4.5,H],[8,4.5,H],[8,4.5,H+0.6],[6,4.5,H+0.6]],o,`fill="#7fa9bd" stroke="${NV}" stroke-width="3"`);
+ s+=poly([[6,2.5,H+0.6],[8,2.5,H+0.6],[8,4.5,H+0.6],[6,4.5,H+0.6]],o,`fill="#c4dde8" stroke="${NV}" stroke-width="3"`);
+ [[2,2],[3,6.5]].forEach(([x,y])=>{const [a,b]=P(x,y,H,o);s+=`<ellipse cx="${a}" cy="${b}" rx="${o.s*0.55}" ry="${o.s*0.3}" fill="#2c5872" stroke="${NV}" stroke-width="3"/>`;});
+ return s+'</g>';}
+const SPK=(x,y,r)=>`<path class="spk" d="M${x} ${y-r} Q${x} ${y} ${x+r} ${y} Q${x} ${y} ${x} ${y+r} Q${x} ${y} ${x-r} ${y} Q${x} ${y} ${x} ${y-r}Z" fill="#fff"/>`;
+function rain(n,id){let s=`<g id="${id}" stroke="#e8f3f8" stroke-width="4" stroke-linecap="round" opacity="0">`;for(let i=0;i<n;i++)s+=`<line x1="0" y1="0" x2="-34" y2="56"/>`;return s+'</g>';}
+function updRain(id,t,amt,sp=1600){const g=document.getElementById(id);if(!g)return;g.setAttribute('opacity',amt);[...g.children].forEach((l,i)=>{const x=(i*137.3)%1300-60,v=sp+(i%7)*90,y=((t*v+i*233)%1150)-120;l.setAttribute('transform',`translate(${x+y*0.62},${y})`);});}
+const card=(inner,lbl)=>`<div class="ic" style="width:280px;height:330px;background:rgba(255,255,255,.92);border-radius:22px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:24px;opacity:0;box-shadow:0 20px 50px rgba(23,56,79,.25)">${inner}<div style="font-family:Heebo;font-weight:900;font-size:40px;color:${NV}">${lbl}</div></div>`;
+function build(){
+ const HO={cx:540,cy:300,s:40}, HS={cx:540,cy:420,s:30};
+ $('#scenes').innerHTML=`<svg width="0" height="0" style="position:absolute"><defs><pattern id="hat" width="22" height="22" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="22" stroke="${NV}" stroke-width="3" opacity=".55"/></pattern></defs></svg>
+ <div class="scene" id="v-hook"><svg width="1080" height="1000" style="position:absolute;left:0;top:200px">${house('h1',HO)}
+   <g id="spk1">${SPK(250,250,26)}${SPK(840,180,34)}${SPK(790,560,22)}${SPK(330,620,30)}${SPK(560,120,20)}</g></svg>
+   <div id="hchip" style="position:absolute;right:80px;top:1030px;display:flex;align-items:center;gap:18px;background:#fff;color:${NV};padding:16px 32px;border-radius:50px;font-family:Heebo;font-weight:900;font-size:44px;opacity:0">
+     <svg width="56" height="40" viewBox="0 0 56 40"><circle cx="14" cy="20" r="11" fill="none" stroke="#a90b0c" stroke-width="6"/><path d="M25 20 H52 M44 20 V30 M36 20 V27" stroke="#a90b0c" stroke-width="6" stroke-linecap="round"/></svg>יום המסירה</div></div>
+
+ <div class="scene" id="v-shine"><div style="position:absolute;left:60px;right:60px;top:380px;display:flex;justify-content:space-between;direction:rtl">
+   ${card(`<svg width="150" height="130" viewBox="0 0 150 130"><rect x="10" y="10" width="110" height="44" rx="12" fill="${NV}"/><path d="M120 32 H138 V70 H70 V92" fill="none" stroke="${NV}" stroke-width="8"/><rect x="60" y="92" width="20" height="36" rx="6" fill="#a90b0c"/></svg>`,'צבע טרי')}
+   ${card(`<svg width="150" height="130" viewBox="0 0 150 130"><path d="M10 70 L75 35 L140 70 L75 105Z" fill="#c4dde8" stroke="${NV}" stroke-width="6"/><path d="M42 52 L108 88 M42 88 L108 52" stroke="${NV}" stroke-width="4"/></svg>`,'רצפה נקייה')}
+   ${card(`<svg width="150" height="130" viewBox="0 0 150 130"><path d="M40 30 H100 V48 H118 V78 H100 V60 H58 V48 H40Z" fill="${NV}"/><rect x="62" y="12" width="16" height="20" fill="${NV}"/><rect x="45" y="6" width="50" height="10" rx="5" fill="${NV}"/><path d="M109 86 C104 96 102 100 102 104 A7 7 0 1 0 116 104 C116 100 114 96 109 86Z" fill="#6aa8c9"/></svg>`,'ברזים מבריקים')}
+ </div>${''}</div>
+
+ <div class="scene" id="v-test">
+   <svg width="1080" height="600" style="position:absolute;left:0;top:200px">${house('h2',{cx:540,cy:180,s:22})}</svg>
+   <div style="position:absolute;left:0;right:0;top:620px;text-align:center">
+     <div class="lbl" style="font-size:44px;color:${NV};letter-spacing:.06em">שנה</div>
+     <div id="yr" class="h" style="font-size:300px;color:#fff;text-shadow:0 10px 40px rgba(23,56,79,.35)">0</div></div>
+ </div>
+
+ <div class="scene" id="v-weather"><svg width="1080" height="1000" style="position:absolute;left:0;top:200px">
+   <g id="sun" opacity="0" transform="translate(800,90)"><circle r="62" fill="#ffd47a"/><g id="srays" stroke="#ffd47a" stroke-width="10" stroke-linecap="round">${[...Array(10)].map((_,i)=>`<line x1="0" y1="-88" x2="0" y2="-112" transform="rotate(${i*36})"/>`).join('')}</g></g>
+   ${house('h3',HO)}
+   <g id="heat" opacity="0" stroke="#e2793f" stroke-width="6" fill="none" stroke-linecap="round">${[0,1,2,3].map(i=>`<path class="hw" d="M${400+i*90} 230 c-14 -20 14 -36 0 -56 c-14 -20 14 -36 0 -56"/>`).join('')}</g>
+   ${rain(70,'wrain')}
+   <g id="wlbl1" opacity="0"><rect x="70" y="40" width="300" height="76" rx="38" fill="#fff"/><text x="220" y="92" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="40" fill="${NV}">גשם מהצד</text></g>
+   <g id="wlbl2" opacity="0"><rect x="70" y="140" width="300" height="76" rx="38" fill="#fff"/><text x="220" y="192" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="40" fill="#c4572a">קיץ על הגג</text></g>
+ </svg></div>
+
+ <div class="scene" id="v-three">
+   <div style="position:absolute;right:80px;left:80px;top:250px;display:flex;align-items:center;gap:34px">
+     <div id="t3" class="h" style="font-size:330px;color:#fff;line-height:.85;text-shadow:0 10px 40px rgba(23,56,79,.3)">3</div>
+     <div><div id="t3a" class="h" style="font-size:96px;color:${NV}">פרטים<br>קטנים</div>
+       <div id="t3b" style="display:inline-block;margin-top:20px;background:#a90b0c;color:#fff;font-family:Heebo;font-weight:900;font-size:40px;padding:10px 26px;border-radius:8px">נבדקים לעשר שנים</div></div></div>
+   <div style="position:absolute;right:80px;left:80px;top:720px">
+     ${[['01','אף מים'],['02','שיפועים'],['03','חדירות']].map(([n,x])=>`<div class="tl" style="display:flex;gap:30px;align-items:baseline;border-top:3px solid rgba(23,56,79,.35);padding:18px 0;opacity:0"><span class="h" style="font-size:60px;color:#a90b0c">${n}</span><span class="h" style="font-size:64px;color:#fff">${x}</span></div>`).join('')}</div>
+ </div>
+
+ <div class="scene" id="v-d1"><svg width="1080" height="1000" style="position:absolute;left:0;top:200px">
+   
+   <rect x="700" y="60" width="150" height="860" fill="url(#hat)" stroke="${NV}" stroke-width="5"/>
+   <rect x="700" y="60" width="150" height="860" fill="rgba(255,255,255,.2)"/>
+   <path id="sill" d="M700 380 L330 400 L330 452 L700 452 Z" fill="#e9f2f6" stroke="${NV}" stroke-width="5"/>
+   <path id="groove" d="M372 452 a14 14 0 0 0 28 0" fill="#9fc8da" stroke="#a90b0c" stroke-width="5" opacity="0"/>
+   <circle id="gring" cx="386" cy="456" r="46" fill="none" stroke="#a90b0c" stroke-width="5" stroke-dasharray="12 8" opacity="0"/>
+   <path id="badpath" d="M340 462 L690 462" fill="none" stroke="#a90b0c" stroke-width="4" stroke-dasharray="10 8" opacity="0"/>
+   <ellipse id="stain" cx="700" cy="520" rx="0" ry="0" fill="#5b4a33" opacity=".45"/>
+   <path id="drop1" d="M0 -16 C8 -4 11 3 11 8 A11 11 0 1 1 -11 8 C-11 3 -8 -4 0 -16Z" fill="#2f86c8" opacity="0"/>
+   <path id="drop2" d="M0 -16 C8 -4 11 3 11 8 A11 11 0 1 1 -11 8 C-11 3 -8 -4 0 -16Z" fill="#a90b0c" opacity="0"/>
+   <g id="okd1" opacity="0">${check(250,780,40,true)}<text x="305" y="795" font-family="Heebo" font-weight="900" font-size="44" fill="${NV}" text-anchor="end">הטיפה נופלת</text></g>
+   <g id="xd1" opacity="0">${check(640,600,34,false)}<text x="590" y="613" font-family="Heebo" font-weight="900" font-size="40" fill="#a90b0c" text-anchor="start">בלי חריץ: זוחלת לקיר</text></g>
+   <text x="330" y="360" font-family="Heebo" font-weight="900" font-size="44" fill="${NV}">אדן</text>
+ </svg></div>
+
+ <div class="scene" id="v-d2"><svg width="1080" height="1000" style="position:absolute;left:0;top:200px">
+   <rect x="790" y="120" width="140" height="760" fill="url(#hat)" stroke="${NV}" stroke-width="5"/>
+   <g id="slab"><rect x="150" y="560" width="640" height="60" fill="#e9f2f6" stroke="${NV}" stroke-width="5"/></g>
+   <g id="drain" transform="translate(180,560)"><path d="M-30 0 H30 L14 46 H-14Z" fill="${NV}"/><rect x="-14" y="46" width="28" height="200" fill="${NV}"/></g>
+   <g id="wdrops">${[...Array(9)].map(()=>`<ellipse rx="12" ry="7" fill="#2f86c8"/>`).join('')}</g>
+   <g id="sarrow" opacity="0"><path d="M720 500 L260 500" stroke="#a90b0c" stroke-width="8" fill="none"/><path d="M290 480 L256 500 L290 520" stroke="#a90b0c" stroke-width="8" fill="none" stroke-linejoin="round"/>
+     <text x="490" y="470" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="46" fill="${NV}">אל הניקוז</text></g>
+   <g id="tags2">${['מרפסת','גג','חצר'].map((x,i)=>`<g class="tg2" opacity="0"><rect x="${160+i*220}" y="170" width="190" height="80" rx="40" fill="#fff"/><text x="${255+i*220}" y="224" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="42" fill="${NV}">${x}</text></g>`).join('')}</g>
+   <g id="xd2" opacity="0"><path d="M500 760 L760 760" stroke="#a90b0c" stroke-width="7" stroke-dasharray="14 10"/><path d="M730 742 L764 760 L730 778" stroke="#a90b0c" stroke-width="7" fill="none"/>${check(470,760,32,false)}<text x="630" y="830" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="40" fill="#a90b0c">לא אל הבית</text></g>
+ </svg></div>
+
+ <div class="scene" id="v-d3"><svg width="1080" height="1000" style="position:absolute;left:0;top:200px">
+   <rect x="120" y="560" width="840" height="90" fill="url(#hat)" stroke="${NV}" stroke-width="5"/>
+   <line id="memb" x1="120" y1="552" x2="960" y2="552" stroke="#a90b0c" stroke-width="10" opacity="0"/>
+   <rect id="pipe" x="500" y="300" width="80" height="560" fill="#c4dde8" stroke="${NV}" stroke-width="5"/>
+   <path id="upturn" d="M120 552 H476 V430 M604 430 V552 H960" fill="none" stroke="#a90b0c" stroke-width="10" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+   <path id="fill1" d="M476 552 L476 510 L430 552Z" fill="#a90b0c" opacity="0"/><path id="fill2" d="M604 552 L604 510 L650 552Z" fill="#a90b0c" opacity="0"/>
+   <rect id="collar" x="470" y="420" width="140" height="26" rx="6" fill="${NV}" opacity="0"/>
+   <g id="pdrops">${[...Array(10)].map(()=>`<path d="M0 -14 C7 -3 10 3 10 7 A10 10 0 1 1 -10 7 C-10 3 -7 -3 0 -14Z" fill="#2f86c8"/>`).join('')}</g>
+   <g id="plbl" opacity="0"><line x1="610" y1="433" x2="760" y2="330" stroke="${NV}" stroke-width="3"/><rect x="740" y="250" width="260" height="80" rx="40" fill="#fff"/><text x="870" y="304" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="38" fill="${NV}">פרט איטום</text></g>
+   <text x="140" y="700" font-family="Heebo" font-weight="900" font-size="40" fill="#fff">גג</text>
+ </svg></div>
+
+ <div class="scene" id="v-photo">
+   <div id="pol" style="position:absolute;left:170px;right:170px;top:280px;height:820px;background:#fff;border-radius:10px;padding:30px 30px 0;box-shadow:0 30px 70px rgba(23,56,79,.35)">
+     <div style="height:620px;background:linear-gradient(180deg,#bfe0ee,#e9f4f8);overflow:hidden;position:relative"><svg width="680" height="620">${house('h4',{cx:340,cy:220,s:26})}
+       ${[[180,440],[470,380],[420,150]].map(([x,y])=>`<g class="q" opacity="0"><circle cx="${x}" cy="${y}" r="44" fill="rgba(255,255,255,.6)" stroke="#a90b0c" stroke-width="5" stroke-dasharray="10 8"/><text x="${x}" y="${y+18}" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="54" fill="#a90b0c">?</text></g>`).join('')}</svg></div>
+     <div style="font-family:Heebo;font-weight:900;font-size:46px;color:${NV};text-align:center;margin-top:36px">תמונת המסירה</div></div>
+   <div id="pflash" style="position:absolute;inset:0;background:#fff;opacity:0"></div>
+ </div>
+
+ <div class="scene" id="v-winter"><div id="storm" style="position:absolute;inset:0;background:linear-gradient(180deg,#30485a,#1b2c3a 60%,#0e1a24)"></div>
+   <svg width="1080" height="1000" style="position:absolute;left:0;top:200px">${house('h5',HO)}
+     ${[[200,640],[700,520],[770,215]].map(([x,y],i)=>`<g class="wk" opacity="0">${check(x,y,34,true)}</g>`).join('')}
+     ${rain(110,'srain')}</svg>
+   <div id="w10" style="position:absolute;right:80px;top:200px;text-align:right;opacity:0"><div class="lbl" style="font-size:40px;color:#cfe0e8">שנה</div><div class="h" style="font-size:200px;color:#fff">10</div></div>
+   <div id="lflash" style="position:absolute;inset:0;background:#fff;opacity:0"></div>
+ </div>
+
+ <div class="scene" id="v-belief">
+   <svg width="200" height="160" style="position:absolute;right:90px;top:230px"><g id="qm" opacity="0"><path d="M150 10 L110 150 M80 10 L40 150" stroke="#a90b0c" stroke-width="22"/></g></svg>
+   <svg width="1080" height="1000" style="position:absolute;left:0;top:260px">${house('h6',{cx:540,cy:300,s:34})}
+     <g id="stamp" transform="translate(800,620) rotate(-10)"><rect x="-150" y="-55" width="300" height="110" rx="10" fill="rgba(255,255,255,.85)" stroke="#2c7a4b" stroke-width="8"/><text x="0" y="20" text-anchor="middle" font-family="Heebo" font-weight="900" font-size="56" fill="#2c7a4b">נבדק ✓</text></g></svg>
+ </div>
+
+ <div class="scene" id="v-cta">
+   <div style="position:absolute;right:80px;left:80px;top:230px">
+     ${[['bm','שמרו לבדיקה הבאה'],['sh','שלחו למי שמקבל מפתח'],['cm','כתבו בתגובות']].map(([k,x],i)=>`<div class="act" style="display:flex;align-items:center;gap:28px;padding:18px 0;border-bottom:3px dashed rgba(255,255,255,.35);opacity:0">
+       <div style="width:92px;height:92px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex:none">${
+        k==='bm'?'<svg width="44" height="58"><path d="M2 2 H42 V56 L22 40 L2 56 Z" fill="#a90b0c"/></svg>':
+        k==='sh'?'<svg width="56" height="50"><path d="M4 26 L52 4 L36 46 L28 30 Z" fill="#a90b0c"/></svg>':
+        '<svg width="56" height="52"><path d="M6 6 H50 V36 H22 L10 48 V36 H6 Z" fill="#a90b0c"/></svg>'}</div>
+       <div class="h" style="font-size:56px;color:#fff">${x}</div></div>`).join('')}
+     <div id="bubble" style="margin-top:28px;display:inline-block;background:#fff;color:#07293a;border-radius:28px 28px 28px 6px;padding:16px 40px;font-family:Heebo;font-weight:900;font-size:70px;opacity:0"><span id="typed"></span><span id="caret" style="color:#a90b0c">|</span></div>
+   </div>
+   <div id="qrrow" style="position:absolute;right:80px;left:80px;top:860px;display:flex;align-items:center;gap:40px;opacity:0;direction:rtl">
+     <div style="background:#fff;border-radius:14px;padding:14px;flex:none"><img src="qr.png" style="width:220px;height:220px;display:block"></div>
+     <div style="color:#fff"><div style="font-family:Heebo;font-weight:900;font-size:42px;direction:ltr;text-align:right">kurkoos-group.co.il</div>
+       <div style="font-family:Heebo;font-weight:700;font-size:30px;text-align:right;color:#ffd9d9">ביצוע ובנייה</div>
+       <div style="font-family:Heebo;font-weight:900;font-size:56px;direction:ltr;text-align:right;margin-top:12px">055-981-1814</div></div>
+   </div>
+ </div>`;
+ $('#prog').innerHTML=VIS.map(()=>'<div><i></i></div>').join('');
+}
+const CHIP={hook:'פרטים קטנים',shine:'פרטים קטנים',test:'פרטים קטנים',weather:'פרטים קטנים',three:'פרטים קטנים',d1:'01 אף מים',d2:'02 שיפועים',d3:'03 חדירות',photo:'החורף העשירי',winter:'החורף העשירי',belief:'קבוצת קורקוס',cta:'קבוצת קורקוס'};
+
+function setup(tl){TL=tl; tl.scenes.forEach(s=>S[s.id]=s);
+ VIS=tl.scenes.map((s,i)=>({id:s.id,a:i?s.start-0.4:0,b:i<tl.scenes.length-1?tl.scenes[i+1].start-0.75:tl.total}));
+ VIS.forEach(v=>VI[v.id]=v); build();}
+const w=(sid,i)=>S[sid].words[i<0?S[sid].words.length+i:i].s;
+const on=id=>{const v=VI[id];return TT>v.a-0.2&&TT<v.b+0.5;};
+let TT=0;
+
+function render(t){ TT=t;
+ let cur=0;
+ VIS.forEach((v,i)=>{const el=$('#v-'+v.id);
+  const inn=i===0?1:eo(seg(t,v.a-0.05,v.a+0.28)), out=i===VIS.length-1?0:seg(t,v.b-0.06,v.b+0.2);
+  const vis=t>=v.a-0.05&&t<v.b+0.2; el.style.display=vis?'block':'none'; if(!vis)return;
+  if(t>=v.a)cur=i; el.style.opacity=Math.min(inn,1-out);
+  el.style.transform=`translateX(${(1-inn)*-140+out*140}px) scale(${1+(1-inn)*0.06+out*0.04})`;});
+ const V=VIS[cur];
+ $('#chipt').textContent=CHIP[V.id];
+ $('#counter').textContent=String(cur+1).padStart(2,'0')+' / '+String(VIS.length).padStart(2,'0');
+ [...$('#prog').children].forEach((d,i)=>{const v=VIS[i];d.firstChild.style.width=(seg(t,v.a,v.b)*100)+'%';});
+ const red=eo(seg(t,VI.cta.a,VI.cta.a+0.5));
+ $('#redbg').style.opacity=red; $('#chip i').style.background=red>.5?'#07293a':'#a90b0c';
+ $$('#prog i').forEach(i=>i.style.background=red>.5?'#fff':'#a90b0c');
+
+ // captions (reading pace, phrase by phrase)
+ let sc=null; for(const s of TL.scenes){ if(t>=s.start-0.3 && t<s.end+0.5) sc=s; }
+ const cl=$('#capline'); const endOn=t>=S.cta.end+0.6;
+ if(sc && !endOn){
+  let ci=sc.words.findIndex(x=>t<x.e+0.25); if(ci<0)ci=sc.words.length-1;
+  const p=sc.words[ci].p; let words=sc.words.filter(x=>x.p===p);
+  if(words.length<=1){const nx=sc.words.filter(x=>x.p===p+1); if(nx.length&&nx.length<5)words=words.concat(nx);}
+  const key=sc.id+':'+words[0].s;
+  if(cl.dataset.key!==key){cl.dataset.key=key;cl.innerHTML=words.map(x=>`<span>${x.t}</span>`).join(' ');}
+  const ph=seg(t,words[0].s-0.18,words[0].s), fo=seg(t,sc.end+0.35,sc.end+0.5);
+  cl.style.opacity=Math.min(eo(ph),1-fo); cl.style.transform=`translateY(${(1-eo(ph))*26}px)`;
+  [...cl.children].forEach((sp,i)=>{const x=words[i],nx=words[i+1];const endA=nx?Math.min(x.e+0.05,nx.s-0.02):x.e+0.4;
+   const act=t>=x.s-0.02&&t<endA, done=t>=endA, pop=seg(t,x.s-0.02,x.s+0.14);
+   sp.style.opacity=act||done?1:0.3; sp.style.background=act?(red>.5?'#07293a':'#a90b0c'):'transparent';
+   sp.style.transform=act?`scale(${1+0.07*Math.sin(pop*Math.PI)})`:'scale(1)';});
+ } else cl.style.opacity=0;
+ const el=seg(t,S.cta.end+0.6,S.cta.end+1.0); $('#endlogo').style.opacity=eo(el); $('#endlogo').style.transform=`translateY(${(1-eo(el))*40}px)`;
+
+ if(on('hook')){ $$('#h1 polygon').forEach((p,i)=>{const q=e5(seg(t,0.1+i*0.04,0.5+i*0.04)); p.style.opacity=q; p.style.transform=`translateY(${(1-q)*30}px)`;});
+  $$('#spk1 .spk').forEach((s,i)=>{const v=Math.max(0,Math.sin(t*5+i*1.7)); const bb=s.getBBox(); s.setAttribute('transform',`translate(${bb.x+bb.width/2},${bb.y+bb.height/2}) scale(${0.3+0.9*v*seg(t,0.6,1)}) translate(${-bb.x-bb.width/2},${-bb.y-bb.height/2})`);});
+  const c=back(seg(t,w('hook',1)-0.1,w('hook',1)+0.3)); $('#hchip').style.opacity=clamp(c); $('#hchip').style.transform=`scale(${clamp(c,0,1.2)})`;}
+ if(on('shine')){ const m=[w('shine',0),w('shine',2),w('shine',4)]; $$('#v-shine .ic').forEach((e,i)=>{const p=back(seg(t,m[i]-0.1,m[i]+0.3)); e.style.opacity=clamp(p); e.style.transform=`translateY(${(1-clamp(p))*120}px) rotate(${(1-clamp(p))*(i-1)*8}deg) scale(${clamp(p,0,1.2)})`;});}
+ if(on('test')){ const y=Math.floor(clamp((t-w('test',3))/1.1)*10); $('#yr').textContent=y; $('#yr').style.transform=`scale(${1+0.06*Math.sin(t*20)*(y>0&&y<10?1:0)})`;}
+ if(on('weather')){ const r=seg(t,w('weather',0)-0.2,w('weather',1))*(1-seg(t,w('weather',4)-0.2,w('weather',4)+0.1)); updRain('wrain',t,r*0.9,1800);
+  $('#wlbl1').setAttribute('opacity',r>0.2?1:0); const su=e5(seg(t,w('weather',4)-0.1,w('weather',4)+0.4)); $('#sun').setAttribute('opacity',su); $('#sun').setAttribute('transform',`translate(800,${lerp(-60,90,su)})`); $('#srays').setAttribute('transform',`rotate(${t*40})`);
+  $('#wlbl2').setAttribute('opacity',su); const hh=seg(t,w('weather',5),w('weather',6)); $('#heat').setAttribute('opacity',hh); $$('#heat .hw').forEach((p,i)=>p.setAttribute('transform',`translate(0,${-((t*60+i*20)%40)})`));
+  $('#h3 .roof').setAttribute('fill',hh>0?`rgb(${lerp(167,236,hh)},${lerp(203,170,hh)},${lerp(219,130,hh)})`:'#a7cbdb');}
+ if(on('three')){ const b=back(seg(t,w('three',0)-0.15,w('three',0)+0.25)); $('#t3').style.transform=`scale(${clamp(b,0,1.3)})`; $('#t3').style.opacity=clamp(b);
+  const a=e5(seg(t,w('three',1)-0.1,w('three',1)+0.25)); $('#t3a').style.opacity=a; $('#t3b').style.opacity=e5(seg(t,w('three',6)-0.1,w('three',6)+0.25));
+  $$('#v-three .tl').forEach((e,i)=>{const p=e5(seg(t,w('three',7)+i*0.15,w('three',7)+0.3+i*0.15)); e.style.opacity=p; e.style.transform=`translateX(${(1-p)*-80}px)`;});}
+ if(on('d1')){ const g=back(seg(t,w('d1',2)-0.1,w('d1',2)+0.3)); $('#groove').setAttribute('opacity',clamp(g)); $('#gring').setAttribute('opacity',clamp(g)); $('#gring').setAttribute('stroke-dashoffset',-t*40);
+  // good drop: runs under the sill to the groove, then falls
+  const d=seg(t,w('d1',4),w('d1',5)+0.6); const D1=$('#drop1'); D1.setAttribute('opacity',d>0&&d<1?1:0);
+  const dx=d<0.45?lerp(336,386,d/0.45):386, dy=d<0.45?466:lerp(466,760,eio((d-0.45)/0.55)); D1.setAttribute('transform',`translate(${dx},${dy}) rotate(180)`);
+  $('#okd1').setAttribute('opacity',e5(seg(t,w('d1',5)+0.4,w('d1',5)+0.7)));
+  // bad drop: no groove, crawls back to the wall
+  const b2=seg(t,w('d1',7),w('d1',10)+0.2); const D2=$('#drop2'); D2.setAttribute('opacity',b2>0?1:0); D2.setAttribute('transform',`translate(${lerp(340,690,eio(b2))},466) rotate(180)`);
+  $('#badpath').setAttribute('opacity',b2>0?0.8:0); const st=e5(seg(t,w('d1',10),w('d1',11)+0.3)); $('#stain').setAttribute('rx',36*st); $('#stain').setAttribute('ry',60*st);
+  $('#xd1').setAttribute('opacity',e5(seg(t,w('d1',8),w('d1',8)+0.3)));}
+ if(on('d2')){ $$('#tags2 .tg2').forEach((g,i)=>{const p=back(seg(t,w('d2',1+i)-0.1,w('d2',1+i)+0.25)); g.setAttribute('opacity',clamp(p)); g.setAttribute('transform',`translate(0,${(1-clamp(p))*40})`);});
+  const tilt=eio(seg(t,w('d2',4)-0.1,w('d2',4)+0.5)); const ang=-3.2*tilt; $('#slab').setAttribute('transform',`rotate(${ang} 790 560)`);
+  $('#sarrow').setAttribute('opacity',e5(seg(t,w('d2',7),w('d2',8)))); $('#sarrow').setAttribute('transform',`rotate(${ang} 790 560)`);
+  const fl=seg(t,w('d2',6)-0.2,w('d2',6)); const rad=ang*Math.PI/180;
+  $$('#wdrops ellipse').forEach((e,i)=>{const ph=((t*0.9+i/9)%1); const x=lerp(760,190,ph); const y=560+(x-790)*Math.tan(-rad)*-1-8; e.setAttribute('cx',x); e.setAttribute('cy',x<215?y+ (215-x)*3:y); e.setAttribute('opacity',fl*(x<200?0.3:1));});
+  $('#xd2').setAttribute('opacity',e5(seg(t,w('d2',9),w('d2',9)+0.3)));}
+ if(on('d3')){ const p=e5(seg(t,w('d3',1)-0.1,w('d3',3)+0.2)); $('#pipe').setAttribute('transform',`translate(0,${(1-p)*-500})`); $('#pipe').setAttribute('opacity',p>0?1:0);
+  $('#memb').setAttribute('opacity',seg(t,w('d3',4),w('d3',5))*(1-seg(t,w('d3',9),w('d3',10))));
+  $('#upturn').setAttribute('stroke-dashoffset',1-eio(seg(t,w('d3',9),w('d3',11)+0.2)));
+  const f=back(seg(t,w('d3',11),w('d3',11)+0.3)); $('#fill1').setAttribute('opacity',clamp(f)); $('#fill2').setAttribute('opacity',clamp(f));
+  const co=back(seg(t,w('d3',12)-0.1,w('d3',12)+0.3)); $('#collar').setAttribute('opacity',clamp(co)); $('#collar').setAttribute('transform',`translate(540,433) scale(${clamp(co,0,1.2)},1) translate(-540,-433)`);
+  $('#plbl').setAttribute('opacity',e5(seg(t,w('d3',12),w('d3',12)+0.3)));
+  const rr=seg(t,w('d3',12)+0.2,w('d3',12)+0.5); $$('#pdrops path').forEach((d,i)=>{const ph=((t*1.1+i*0.1)%1); const x=200+i*70; const top=(x>460&&x<620)?300:540; const y=lerp(-40,top,Math.min(1,ph*1.3)); const bounce=ph>0.77?(ph-0.77)*-300:0; d.setAttribute('transform',`translate(${x+(ph>0.77?(x<540?-1:1)*(ph-0.77)*200:0)},${y+bounce})`); d.setAttribute('opacity',rr*(ph<0.95?1:0));});}
+ if(on('photo')){ const a=VI.photo.a; const p=e5(seg(t,a,a+0.4)); $('#pol').style.transform=`rotate(${lerp(-12,-3,p)}deg) scale(${lerp(1.3,1,p)})`; $('#pol').style.opacity=p;
+  $('#pflash').style.opacity=Math.max(0,1-Math.abs(t-w('photo',5))/0.12)*0.9;
+  $$('#v-photo .q').forEach((g,i)=>{const q=back(seg(t,w('photo',1)+i*0.12,w('photo',1)+0.3+i*0.12)); g.setAttribute('opacity',clamp(q)*(0.4+0.6*Math.abs(Math.sin(t*4+i))));});}
+ if(on('winter')){ const a=VI.winter.a; updRain('srain',t,0.85,2000); $('#lflash').style.opacity=Math.max(0,1-Math.abs(t-(a+0.25))/0.08)*0.8+Math.max(0,1-Math.abs(t-(a+0.45))/0.06)*0.5;
+  $$('#v-winter .wk').forEach((g,i)=>{const q=back(seg(t,w('winter',1)+i*0.18,w('winter',1)+0.3+i*0.18)); g.setAttribute('opacity',clamp(q)); const bb=g.getBBox(); g.setAttribute('transform',`translate(${bb.x+bb.width/2},${bb.y+bb.height/2}) scale(${clamp(q,0,1.25)}) translate(${-bb.x-bb.width/2},${-bb.y-bb.height/2})`);});
+  const ten=back(seg(t,w('winter',5)-0.1,w('winter',5)+0.3)); $('#w10').style.opacity=clamp(ten); $('#w10').style.transform=`scale(${clamp(ten,0,1.2)})`;}
+ if(on('belief')){ const a=VI.belief.a; $('#qm').setAttribute('opacity',e5(seg(t,a+0.1,a+0.4)));
+  const st=seg(t,w('belief',4),w('belief',5)+0.5); $('#stamp').setAttribute('opacity',1-eio(st)); $('#stamp').style.filter=`blur(${eio(st)*10}px)`;}
+ if(on('cta')){ const marks=[w('cta',0),w('cta',3),w('cta',7)];
+  $$('#v-cta .act').forEach((e,i)=>{const p=back(seg(t,marks[i]-0.1,marks[i]+0.3)); e.style.opacity=clamp(p); e.style.transform=`translateX(${(1-clamp(p))*-60}px)`;});
+  $('#bubble').style.opacity=eo(seg(t,w('cta',8)-0.1,w('cta',8)+0.25));
+  const word='פרטים', n=Math.floor(clamp((t-w('cta',8))/0.4)*word.length+0.0001); $('#typed').textContent=word.slice(0,n); $('#caret').style.opacity=Math.floor(t*2.5)%2?0:1;
+  const q=eo(seg(t,w('cta',9),w('cta',9)+0.5)); $('#qrrow').style.opacity=q; $('#qrrow').style.transform=`translateY(${(1-q)*40}px)`;}
+}
+window.__ready=fetch('timeline.json').then(r=>r.json()).then(tl=>{setup(tl);render(0);return document.fonts.ready;}).then(()=>true);
+</script>
+</body>
+</html>

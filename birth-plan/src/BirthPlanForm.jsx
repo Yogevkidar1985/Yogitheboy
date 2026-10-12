@@ -18,6 +18,9 @@ import { drafts } from './draftStore.js'
 
 // Static single-file build (no /api, no print dialog): VITE_TARGET=artifact
 const STATIC = import.meta.env.VITE_TARGET === 'artifact'
+// Static website (GitHub Pages): PDF and the phone's share sheet work, but
+// there is no server, so nothing is sent automatically.
+const HAS_API = !STATIC && import.meta.env.VITE_TARGET !== 'pages'
 // Option keys shown as Hebrew letters; pressing the letter (Hebrew layout) or its
 // position-equivalent Latin letter (a = א, b = ב…) picks the option
 const LETTERS = 'אבגדהוזחטיכלמנסעפצקרשת'
@@ -99,7 +102,7 @@ export default function BirthPlanForm() {
     let blob = null
     if (!STATIC) try { blob = await buildPlanPdf(answers) } catch {}   // the shared Claude link can't hand out files
     setPdf(blob)
-    if (!STATIC) try {
+    if (HAS_API) try {
       const r = await fetch('/api/birth-plan', { method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ answers, pdf: blob ? await blobToBase64(blob) : '', pdfName: pdfFileName(answers), website: '' }) })
       const j = await r.json().catch(() => ({}))
@@ -189,10 +192,11 @@ export default function BirthPlanForm() {
                 {delivery.whatsapp?.mother ? ' שלחנו לך עותק בוואטסאפ, כדאי לשמור אותו ולהביא ללידה.' : ''}
               </p>
             ) : (
-              <p className="bp-sub">{STATIC ? `נשאר רק לשלוח את התכנית ל${DOULA_NAME}.` : 'השליחה האוטומטית לא עברה הפעם. אפשר לשלוח את התכנית בעצמך, זה לוקח רגע.'}</p>
+              <p className="bp-sub">{!HAS_API ? (pdf ? `התכנית מוכנה כקובץ PDF. נשאר רק לשלוח אותה ל${DOULA_NAME}.` : `נשאר רק לשלוח את התכנית ל${DOULA_NAME}.`) : 'השליחה האוטומטית לא עברה הפעם. אפשר לשלוח את התכנית בעצמך, זה לוקח רגע.'}</p>
             )}
             <div className="bp-actions">
               {!sent && shareable && <SharePdfButton blob={pdf} name={pdfFileName(answers)} className="bp-btn bp-wa" />}
+              {!sent && shareable && <SharePdfButton kind="mail" blob={pdf} name={pdfFileName(answers)} plainText={planText(answers, { bold: false })} className="bp-btn bp-mail" />}
               {!sent && <a className={shareable ? 'bp-btn bp-ghost' : 'bp-btn bp-wa'} href={waLink(DOULA_PHONE, text)} target="_blank" rel="noopener noreferrer">{shareable ? `שליחה ל${DOULA_NAME} כהודעת טקסט` : `שליחה ל${DOULA_NAME} בוואטסאפ`}</a>}
               {!sent && !DOULA_PHONE && <p className="bp-muted bp-small">בוואטסאפ בחרי את {DOULA_NAME} מרשימת אנשי הקשר</p>}
               {pdf && <PdfButton blob={pdf} name={pdfFileName(answers)} />}
@@ -262,17 +266,28 @@ const canSharePdf = (blob, name) => {
   const f = blob && pdfFile(blob, name)
   try { return !!(f && navigator.canShare?.({ files: [f] })) } catch { return false }
 }
-function SharePdfButton({ blob, name, className }) {
+function SharePdfButton({ blob, name, className, kind = 'wa', plainText = '' }) {
+  const [msg, setMsg] = useState('')
   const [err, setErr] = useState('')
   const share = () => {
-    setErr('')
-    navigator.share({ files: [pdfFile(blob, name)], title: name.replace(/\.pdf$/, '') })
-      .catch(e => { if (e?.name !== 'AbortError') setErr('השיתוף לא נפתח. אפשר להוריד את הקובץ ולשלוח אותו בוואטסאפ.') })
+    setErr(''); setMsg('')
+    const file = pdfFile(blob, name)
+    const title = name.replace(/\.pdf$/, '')
+    let data = { files: [file], title }
+    if (kind === 'mail') {
+      // the share sheet can't fill in recipients, so the addresses go to the clipboard
+      navigator.clipboard?.writeText(PLAN_EMAILS.join(', ')).then(() => setMsg('כתובות המייל הועתקו. הדביקי אותן בשדה "אל".'), () => {})
+      data = { files: [file], title, text: `${title} מצורפת כקובץ PDF.\n\n${plainText}` }
+    }
+    navigator.share(data).catch(e => { if (e?.name !== 'AbortError') setErr('השיתוף לא נפתח. אפשר להוריד את הקובץ ולצרף אותו ידנית.') })
   }
   return (
     <>
-      <button type="button" className={className} onClick={share}>שליחת התכנית ל{DOULA_NAME} בוואטסאפ (קובץ PDF)</button>
-      <p className="bp-muted bp-small">במסך השיתוף בחרי וואטסאפ ואז את {DOULA_NAME}</p>
+      <button type="button" className={className} onClick={share}>
+        {kind === 'mail' ? 'שליחה במייל עם קובץ PDF' : `שליחה ל${DOULA_NAME} בוואטסאפ עם קובץ PDF`}
+      </button>
+      <p className="bp-muted bp-small">{kind === 'mail' ? 'במסך השיתוף בחרי את אפליקציית המייל' : `במסך השיתוף בחרי וואטסאפ ואז את ${DOULA_NAME}`}</p>
+      {msg && <p className="bp-saved bp-small" role="status">{msg}</p>}
       {err && <p className="bp-error">{err}</p>}
     </>
   )
@@ -416,7 +431,7 @@ function Review({ answers, onEdit, onSubmit, sending }) {
       <div className="bp-row">
         <button className="bp-btn bp-big" onClick={onSubmit} disabled={sending}>{sending ? 'שולחת את התכנית…' : 'סיום ושליחת התכנית'}</button>
       </div>
-      <p className="bp-muted bp-small">{STATIC ? `במסך הבא תוכלי לשלוח את התכנית ל${DOULA_NAME} בוואטסאפ ובמייל.` : `התכנית תישלח ל${DOULA_NAME} בוואטסאפ ובמייל, ותקבלי עותק לוואטסאפ שלך.`}</p>
+      <p className="bp-muted bp-small">{!HAS_API ? `במסך הבא תוכלי לשלוח את התכנית ל${DOULA_NAME} בוואטסאפ ובמייל.` : `התכנית תישלח ל${DOULA_NAME} בוואטסאפ ובמייל, ותקבלי עותק לוואטסאפ שלך.`}</p>
     </div>
   )
 }

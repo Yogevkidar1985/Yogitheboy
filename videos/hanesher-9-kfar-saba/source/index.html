@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>HaNesher 9 listing</title>
+<style>
+@font-face{font-family:H;font-weight:300;src:url(heebo-hebrew-300-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:H;font-weight:300;src:url(heebo-latin-300-normal.woff2) format('woff2')}
+@font-face{font-family:H;font-weight:500;src:url(heebo-hebrew-500-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:H;font-weight:500;src:url(heebo-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:H;font-weight:900;src:url(heebo-hebrew-900-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:H;font-weight:900;src:url(heebo-latin-900-normal.woff2) format('woff2')}
+:root{--ink:#0b0c10;--ivory:#f1ece2;--mute:#b9b2a5;--green:#9be7a5}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--ink);font-family:H;color:var(--ivory)}
+.lay{position:absolute;inset:0;overflow:hidden}
+.lay img{position:absolute;left:0;top:0;width:1080px;height:1920px;object-fit:cover;will-change:transform}
+#shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(11,12,16,.55) 0%,rgba(11,12,16,0) 22%,rgba(11,12,16,0) 55%,rgba(11,12,16,.82) 100%);pointer-events:none}
+#flash{position:absolute;inset:0;background:#fff;opacity:0}
+.k{font-family:H;font-weight:300;letter-spacing:.42em;font-size:26px;direction:ltr;text-transform:uppercase}
+.t{font-family:H;font-weight:900;letter-spacing:-.02em;line-height:1}
+.l{font-family:H;font-weight:300}
+#logo{position:absolute;left:64px;top:64px;width:120px;opacity:.95}
+#addr{position:absolute;right:64px;top:78px;text-align:right}
+#idx{position:absolute;right:64px;top:1800px;direction:ltr;font-weight:300;font-size:26px;letter-spacing:.3em;color:var(--mute)}
+#bar{position:absolute;left:64px;right:64px;top:1856px;height:3px;background:rgba(241,236,226,.2)}
+#bar i{position:absolute;right:0;top:0;bottom:0;background:var(--ivory)}
+.cap{position:absolute;right:64px;left:64px;bottom:250px;text-align:right}
+.cap .line{height:3px;background:var(--ivory);width:0;margin:0 0 22px auto}
+.mask{overflow:hidden;display:block}
+.mask>span{display:inline-block}
+.page{position:absolute;inset:0;background:var(--ink);opacity:0;display:none}
+.frame{position:absolute;inset:40px;border:2px solid rgba(241,236,226,.35)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0}
+.cell{border-top:2px solid rgba(241,236,226,.25);padding:44px 0 44px;text-align:right}
+</style>
+</head>
+<body>
+<div class="lay" id="LA"><img id="A"></div>
+<div class="lay" id="LB"><img id="B"></div>
+<div id="shade"></div>
+
+<!-- per-shot captions -->
+<div id="caps"></div>
+
+<!-- info pages -->
+<div class="page" id="p-feat"><div class="frame"></div>
+  <div style="position:absolute;right:100px;left:100px;top:300px">
+    <div class="k" style="text-align:right;color:var(--mute);font-size:30px">FEATURES</div>
+    <div class="t" style="font-size:160px;margin-top:22px">מה יש<br>בדירה</div>
+    <div class="grid2" style="margin-top:80px">
+      ${FEAT}
+    </div>
+  </div></div>
+<div class="page" id="p-bld"><div class="frame"></div>
+  <div style="position:absolute;right:100px;left:100px;top:330px">
+    <div class="k" style="text-align:right;color:var(--mute);font-size:30px">THE BUILDING</div>
+    <div class="t" style="font-size:160px;margin-top:22px">הבניין</div>
+    <div style="display:flex;gap:56px;margin-top:110px;justify-content:flex-end;direction:rtl">
+      <div class="bn"><div class="t" style="font-size:190px">2008</div><div class="l" style="font-size:36px;color:var(--mute)">שנת בנייה</div></div>
+      <div class="bn"><div class="t" style="font-size:190px">15</div><div class="l" style="font-size:36px;color:var(--mute)">דירות</div></div>
+      <div class="bn"><div class="t" style="font-size:190px">5</div><div class="l" style="font-size:36px;color:var(--mute)">קומות</div></div>
+    </div>
+    <div class="bl l" style="font-size:54px;line-height:1.75;margin-top:110px;border-top:2px solid rgba(241,236,226,.25);padding-top:36px">לובי · חדר אופניים · חדר עגלות<br>חדר דיירים · גינה משותפת<br><span style="font-weight:500">ועד בית 300 ₪ לחודש</span></div>
+  </div></div>
+<div class="page" id="p-loc"><div class="frame"></div>
+  <div style="position:absolute;right:100px;left:100px;top:300px">
+    <div class="k" style="text-align:right;color:var(--mute);font-size:30px">WALKING DISTANCE</div>
+    <div class="t" style="font-size:150px;margin-top:22px">במרחק<br>הליכה</div>
+    <div id="locl" class="l" style="font-size:62px;line-height:1.6;margin-top:70px"></div>
+    <div style="margin-top:90px;border-top:2px solid rgba(241,236,226,.25);padding-top:36px">
+      <div class="k" style="text-align:right;color:var(--mute)">PERFECT FOR</div>
+      <div id="fit" class="t" style="font-size:78px;line-height:1.35;margin-top:20px"></div></div>
+  </div></div>
+<div class="page" id="p-cond"><div class="frame"></div>
+  <div style="position:absolute;right:100px;left:100px;top:470px">
+    <div class="k" style="text-align:right;color:var(--mute);font-size:30px">CONDITION</div>
+    <div class="t" style="font-size:170px;margin-top:22px;line-height:1.02">שמורה.<br>מוכנה לכניסה.</div>
+    <div class="cl l" style="font-size:52px;line-height:1.65;margin-top:100px;border-top:2px solid rgba(241,236,226,.25);padding-top:36px">נשארים בנכס: המטבח,<br>ארונות הקיר והמזגנים.<br>טאבו, חניה ומחסן מוצמדים.</div>
+  </div></div>
+<div class="page" id="p-price">
+  <div style="position:absolute;left:0;right:0;top:250px;text-align:center"><img id="bigmono" src="ah-mono.png" style="width:300px"></div>
+  <div style="position:absolute;left:0;right:0;top:640px;text-align:center">
+    <div class="k" style="color:var(--mute)">ASKING PRICE</div>
+    <div id="price" class="t" style="font-size:160px;margin-top:20px">3,400,000 ₪</div>
+    <div id="pline" style="height:3px;background:var(--ivory);width:0;margin:44px auto"></div>
+    <div id="psub" class="l" style="font-size:50px;line-height:1.55">הנשר 9, כפר סבא · 4 חדרים · 131 מ״ר<br>מסירה גמישה, חצי שנה עד שנה</div>
+  </div>
+  <div id="pcta" style="position:absolute;left:100px;right:100px;top:1300px;text-align:center">
+    <div style="display:inline-block;background:var(--ivory);color:var(--ink);padding:26px 64px;font-family:H;font-weight:900;font-size:48px">לתיאום ביקור</div>
+    <div style="font-family:H;font-weight:500;font-size:40px;margin-top:40px;direction:ltr;letter-spacing:.08em">afikhanahal.co.il</div>
+    <div class="k" style="margin-top:22px;color:var(--mute)">AFIK HANACHAL · REAL ESTATE</div>
+  </div>
+</div>
+
+<div id="flash"></div>
+<img id="logo" src="ah-white.png">
+<div id="addr"><div class="t" style="font-size:40px">הנשר 9</div><div class="k" style="font-size:20px;color:var(--mute);margin-top:8px">KFAR SABA</div></div>
+<div id="idx"></div>
+<div id="bar"><i></i></div>
+
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x)), seg=(t,a,b)=>clamp((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3), eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2, e5=x=>1-Math.pow(1-x,5);
+const lerp=(a,b,x)=>a+(b-a)*x;
+let FR={};
+// timeline: video shots and black info pages
+const SH=[
+ {id:'view',   d:2.6, tr:'cut',  k:'FOR SALE',     h:'למכירה',                    big:true},
+ {id:'living', d:2.0, tr:'whip', k:'LIVING ROOM',  h:'4 חדרים',  sub:'131 מ״ר בנוי',  stat:true},
+ {id:'dining', d:1.3, tr:'zoom', k:'FLOOR',        h:'קומה 1 מתוך 5', sub:'שני חדרי רחצה', stat:true},
+ {id:'kitchen',d:2.6, tr:'wipe', k:'KITCHEN',      h:'מטבח חצי פתוח', sub:'אל הסלון'},
+ {id:'balcony',d:2.0, tr:'whip', k:'BALCONY',      h:'מרפסת',          sub:'נוף פתוח'},
+ {id:'sunset', d:1.5, tr:'flash',k:'LIGHT',        h:'פינתית',         sub:'דרום-מערב, מוארת'},
+ {id:'master', d:2.0, tr:'wipe', k:'MASTER BEDROOM',h:'חדר הורים'},
+ {id:'closet', d:1.5, tr:'zoom', k:'WALK-IN',      h:'חדר ארונות'},
+ {id:'kids',   d:1.8, tr:'whip', k:'BEDROOM',      h:'חדר ילדים'},
+ {id:'room3',  d:1.8, tr:'wipe', k:'BEDROOM',      h:'חדר שינה נוסף'},
+ {id:'bath',   d:1.5, tr:'zoom', k:'BATHROOM',     h:'חדר רחצה'},
+ {id:'laundry',d:1.6, tr:'whip', k:'LAUNDRY',      h:'חדר כביסה'},
+ {page:'feat', d:3.4}, {page:'bld', d:3.0}, {page:'loc', d:3.4}, {page:'cond', d:2.6}, {page:'price', d:5.6},
+];
+let T0=0; SH.forEach(s=>{s.s=T0; T0+=s.d; s.e=T0;}); const TOTAL=T0;
+window.TL={total:TOTAL};
+const FEAT=[['ממ״ד','ומעלית'],['חניה','ומחסן 9 מ״ר'],['מיזוג','מיני-מרכזי'],['תריסים','חשמליים וסורגים'],['חימום מים','מרכזי'],['חדר משפחה','בנוסף']];
+function build(){
+ document.body.innerHTML=document.body.innerHTML.replace('${FEAT}',FEAT.map(([a,b])=>`<div class="cell fe"><div class="t" style="font-size:78px;white-space:nowrap">${a}</div><div class="l" style="font-size:42px;color:var(--mute);margin-top:10px">${b}</div></div>`).join(''));
+ $('#caps').innerHTML=SH.filter(s=>s.id&&s.h).map(s=>`<div class="cap" id="c-${s.id}" style="opacity:0">
+   ${s.big?`<div class="k mask" style="color:var(--ivory)"><span>${s.k}</span></div><div class="t mask" style="font-size:220px;margin-top:10px"><span>${s.h}</span></div><div class="line"></div><div class="mask"><span class="t" style="font-size:96px">הנשר 9</span></div><div class="mask"><span class="l" style="font-size:56px;color:var(--ivory)">כפר סבא</span></div>`
+   :`<div class="line"></div><div class="k mask" style="color:var(--ivory)"><span>${s.k}</span></div><div class="t mask" style="font-size:${s.stat?150:104}px;margin-top:14px"><span>${s.h}</span></div>${s.sub?`<div class="mask" style="margin-top:12px"><span class="l" style="font-size:54px">${s.sub}</span></div>`:''}`}
+  </div>`).join('');
+ $('#locl').innerHTML=['בתי ספר וגני ילדים','פארקים ותחבורה ציבורית','מרכזי קניות וקניון','בתי כנסת ובית מרקחת'].map(x=>`<div class="li">${x}</div>`).join('');
+ $('#fit').innerHTML=['משפחות','זוגות צעירים','משפרי דיור'].map(x=>`<span class="fi" style="display:inline-block;margin-left:34px">${x}</span>`).join('');
+}
+function frameSrc(id,lt,slow=1){const n=FR[id];const i=Math.min(n-1,Math.max(0,Math.floor(lt*30*slow)));return `f/${id}/${String(i+1).padStart(4,'0')}.jpg`;}
+const TR=0.22;
+async function render(t){
+ // which video shot is current/next
+ const vids=SH.filter(s=>s.id);
+ let cur=vids.findIndex(s=>t>=s.s&&t<s.e); const lastVid=vids[vids.length-1];
+ const A=$('#A'),B=$('#B'),LA=$('#LA'),LB=$('#LB'); const dec=[];
+ LB.style.display='none'; LA.style.display='block'; LA.style.clipPath='none'; LB.style.clipPath='none';
+ LA.style.filter='none'; LB.style.filter='none'; $('#flash').style.opacity=0;
+ if(cur>=0){
+  const s=vids[cur], lt=t-s.s, slow=s.id==='hall'?0.8:1;
+  const push=1.04+0.07*(lt/s.d);
+  let a=frameSrc(s.id,lt,slow); if(A.getAttribute('src')!==a){A.src=a;dec.push(A.decode().catch(()=>{}));}
+  A.style.transform=`scale(${push})`; LA.style.transform='none'; LA.style.opacity=1;
+  // incoming transition into this shot (first TR seconds)
+  const p=seg(lt,0,TR), prev=vids[cur-1];
+  if(prev&&p<1&&s.tr!=='cut'){
+   const pl=t-prev.s; const b=frameSrc(prev.id,pl,prev.id==='hall'?0.8:1);
+   if(B.getAttribute('src')!==b){B.src=b;dec.push(B.decode().catch(()=>{}));}
+   // B (outgoing) is drawn on top and animated away
+   LB.style.display='block'; B.style.transform=`scale(${1.04+0.07*(pl/prev.d)})`;
+   const q=e5(p);
+   if(s.tr==='whip'){LB.style.transform=`translateX(${q*1080}px)`; LA.style.transform=`translateX(${(q-1)*1080*0.35}px)`; LB.style.filter=`blur(${Math.sin(Math.PI*p)*18}px)`; LA.style.filter=`blur(${(1-q)*14}px)`;}
+   else if(s.tr==='zoom'){LB.style.transform=`scale(${1+q*0.6})`; LB.style.opacity=1-q; A.style.transform=`scale(${push*(1.25-0.25*q)})`;}
+   else if(s.tr==='wipe'){LB.style.transform='none'; LB.style.clipPath=`inset(0 ${q*100}% 0 0)`; LB.style.opacity=1;}
+   else if(s.tr==='flash'){LB.style.opacity=1-seg(p,0.35,0.36); $('#flash').style.opacity=Math.sin(Math.PI*p)*0.9;}
+  } else { LB.style.opacity=1; }
+ }
+ // pages
+ const pg=SH.filter(s=>s.page);
+ pg.forEach((s,i)=>{const el=$('#p-'+s.page); const on=t>=s.s-0.25&&t<s.e+0.25; el.style.display=on?'block':'none'; if(!on)return;
+   const inn=e5(seg(t,s.s-0.25,s.s+0.05)), out=i<pg.length-1?seg(t,s.e-0.05,s.e+0.25):0;
+   el.style.opacity=1; el.style.clipPath=`inset(0 0 0 ${(1-inn)*100}%)`;
+   el.style.transform=`translateX(${-out*1080}px)`;});
+ const onPage=pg.some(s=>t>=s.s&&t<s.e);
+ // captions
+ vids.forEach(s=>{const el=$('#c-'+s.id); if(!el)return; const lt=t-s.s, on=t>=s.s&&t<s.e;
+   el.style.opacity=on?1:0; if(!on)return;
+   const ln=el.querySelector('.line'); if(ln) ln.style.width=(s.big?360:180)*e5(seg(lt,0.12,0.5))+'px';
+   el.querySelectorAll('.mask>span').forEach((sp,j)=>{const p=e5(seg(lt,0.1+j*0.08,0.45+j*0.08)); const o=seg(lt,s.d-0.18,s.d); sp.style.transform=`translateY(${(1-p)*110+o*-110}%)`;});});
+ // page internals
+ const ps=id=>SH.find(s=>s.page===id);
+ {const s=ps('feat'),lt=t-s.s; $$('#p-feat .fe').forEach((e,i)=>{const p=e5(seg(lt,0.2+i*0.12,0.55+i*0.12)); e.style.opacity=p; e.style.transform=`translateY(${(1-p)*40}px)`;});}
+ {const s=ps('bld'),lt=t-s.s; $$('#p-bld .bn').forEach((e,i)=>{const p=e5(seg(lt,0.15+i*0.12,0.5+i*0.12)); e.style.opacity=p; e.style.transform=`translateY(${(1-p)*50}px)`;}); const b=e5(seg(lt,0.7,1.1)); $('#p-bld .bl').style.opacity=b;}
+ {const s=ps('loc'),lt=t-s.s; $$('#locl .li').forEach((e,i)=>{const p=e5(seg(lt,0.2+i*0.12,0.5+i*0.12)); e.style.opacity=p; e.style.transform=`translateX(${(1-p)*-60}px)`;});
+  $$('#fit .fi').forEach((e,i)=>{const p=e5(seg(lt,1.0+i*0.15,1.35+i*0.15)); e.style.opacity=p; e.style.transform=`translateY(${(1-p)*30}px)`;});}
+ {const s=ps('cond'),lt=t-s.s; $('#p-cond .cl').style.opacity=e5(seg(lt,0.5,0.9));}
+ {const s=ps('price'),lt=t-s.s; const m=e5(seg(lt,0.1,0.7)); $('#bigmono').style.opacity=m; $('#bigmono').style.transform=`scale(${0.85+0.15*m})`;
+  const pr=e5(seg(lt,0.4,0.9)); $('#price').style.opacity=pr; $('#price').style.transform=`translateY(${(1-pr)*40}px)`;
+  $('#pline').style.width=320*e5(seg(lt,0.8,1.3))+'px'; $('#psub').style.opacity=e5(seg(lt,1.0,1.4)); $('#pcta').style.opacity=e5(seg(lt,1.4,1.9));
+  $('#pcta').style.transform=`translateY(${(1-e5(seg(lt,1.4,1.9)))*40}px)`;}
+ // chrome
+ const inPrice=t>=ps('price').s; const intro=t<SH[0].e;
+ $('#logo').style.opacity=inPrice?0:(intro?e5(seg(t,0.1,0.5)):0.95);
+ $('#addr').style.opacity=(intro||inPrice)?0:1;
+ $('#shade').style.opacity=onPage?0:1;
+ const vi=cur>=0?cur:-1; $('#idx').textContent=vi>0&&vi<12?String(vi).padStart(2,'0')+' / 11':'';
+ $('#bar i').style.width=(100*t/TOTAL)+'%';
+ await Promise.all(dec);
+}
+window.__ready=fetch('frames.json').then(r=>r.json()).then(async f=>{FR=f;build();await render(0);await document.fonts.ready;return true;});
+</script>
+</body>
+</html>

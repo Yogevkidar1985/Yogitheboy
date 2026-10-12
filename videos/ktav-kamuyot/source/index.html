@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>Kurkoos BOQ rules video</title>
+<style>
+@font-face{font-family:Heebo;font-weight:900;src:url(heebo-hebrew-900-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:Heebo;font-weight:900;src:url(heebo-latin-900-normal.woff2) format('woff2')}
+@font-face{font-family:Heebo;font-weight:700;src:url(heebo-hebrew-700-normal.woff2) format('woff2');unicode-range:U+0590-05FF,U+200C-2010,U+20AA,U+25CC,U+FB1D-FB4F}
+@font-face{font-family:Heebo;font-weight:700;src:url(heebo-latin-700-normal.woff2) format('woff2')}
+@font-face{font-family:Almoni;font-weight:400;src:url(almoni-400.woff2) format('woff2')}
+@font-face{font-family:Almoni;font-weight:700;src:url(almoni-700.woff2) format('woff2')}
+:root{--night:#07293a;--teal:#105572;--bp:#13506c;--mist:#8fb6c8;--paper:#f7f8fa;--red:#a90b0c;--gold:#ffd47a}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{width:1080px;height:1920px;overflow:hidden;background:var(--bp)}
+body{font-family:Almoni,Heebo,sans-serif;color:#fff}
+#stage{position:absolute;inset:0;overflow:hidden;background:radial-gradient(ellipse at 50% 35%,#0c3a50 0%,#07293a 60%,#051d29 100%)}
+#redbg{position:absolute;inset:0;background:var(--red);opacity:0}
+.grid{position:absolute;inset:0;background-image:
+ linear-gradient(rgba(255,255,255,.13) 2px,transparent 2px),linear-gradient(90deg,rgba(255,255,255,.13) 2px,transparent 2px),
+ linear-gradient(rgba(255,255,255,.055) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.055) 1px,transparent 1px);
+ background-size:300px 300px,300px 300px,60px 60px,60px 60px;background-position:-1px -1px}
+.h{font-family:Heebo;font-weight:900;letter-spacing:-.02em;line-height:1.04}
+.lbl{font-family:Almoni;font-weight:700}
+.crop{position:absolute;width:44px;height:44px;border-color:rgba(255,255,255,.55);border-style:solid;border-width:0}
+.scene{position:absolute;left:0;top:0;width:1080px;height:1920px;opacity:0;display:none}
+#header{position:absolute;top:0;left:0;right:0;height:200px;z-index:20}
+#logo{position:absolute;left:70px;top:78px;width:300px}
+#chip{position:absolute;right:70px;top:84px;color:#fff;font-family:Almoni;font-weight:700;font-size:36px;padding:10px 0 8px;white-space:nowrap;display:flex;align-items:center;gap:16px}
+#chip i{display:inline-block;width:22px;height:22px;background:var(--red)}
+#caps{position:absolute;left:60px;right:60px;top:1215px;height:420px;z-index:15;display:flex;align-items:center;justify-content:center;text-align:center}
+#capline{font-family:Heebo;font-weight:900;font-size:74px;line-height:1.22;letter-spacing:-.01em;text-shadow:0 4px 18px rgba(0,0,0,.3)}
+#capline span{display:inline-block;padding:0 12px;margin:2px 0;border-radius:12px;transform-origin:50% 60%}
+#endlogo{position:absolute;left:0;right:0;top:1250px;text-align:center;opacity:0;z-index:16}
+#bottom{position:absolute;left:70px;right:70px;top:1680px;height:200px;z-index:20}
+#prog{position:absolute;top:0;left:0;right:0;height:10px;display:flex;gap:8px;direction:rtl}
+#prog div{flex:1;background:rgba(255,255,255,.2);position:relative;overflow:hidden;border-radius:2px}
+#prog div i{position:absolute;top:0;bottom:0;right:0;background:var(--red)}
+#ticks{position:absolute;top:22px;left:0;right:0;height:14px;background-image:linear-gradient(90deg,rgba(255,255,255,.4) 2px,transparent 2px);background-size:40px 14px}
+#brand{position:absolute;right:0;top:62px;text-align:right}
+#brand .n{font-family:Heebo;font-weight:900;font-size:44px;letter-spacing:-.02em}
+#brand .t{font-family:Almoni;font-size:30px;color:#cfe0e8;margin-top:4px}
+#site{position:absolute;left:0;top:78px;font-family:Heebo;font-weight:700;font-size:32px;direction:ltr}
+#counter{position:absolute;left:0;top:124px;font-family:Heebo;font-weight:700;font-size:26px;direction:ltr;color:var(--mist)}
+#vignette{position:absolute;inset:0;z-index:14;pointer-events:none;background:radial-gradient(ellipse at 50% 40%,transparent 55%,rgba(0,0,0,.28) 100%)}
+svg{overflow:visible}
+.ln{fill:none;stroke:#fff;stroke-width:5;stroke-linejoin:round;stroke-linecap:round}
+.thin{fill:none;stroke:rgba(255,255,255,.75);stroke-width:2.5}
+.dash{fill:none;stroke:#fff;stroke-width:4;stroke-dasharray:18 12}
+.tile{fill:rgba(255,255,255,.14);stroke:#fff;stroke-width:4}
+.dot{fill:#a90b0c}
+.tag{font-family:Heebo;font-weight:900;fill:#fff}
+.tagl{font-family:Almoni;font-weight:700;fill:#dbe9f0}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="redbg"></div>
+  <div class="grid"></div>
+  <div id="scenes"></div>
+  <div id="vignette"></div>
+  <div id="header"><img id="logo" src="kurkoos-logo-h-white.svg"><div id="chip"><span id="chipt">כתב כמויות</span><i></i></div></div>
+  <div id="caps"><div id="capline"></div></div>
+  <div id="endlogo"><img src="kurkoos-logo-h-white.svg" style="width:620px"><div class="lbl" style="font-size:46px;margin-top:22px">קבוצת קורקוס. מקרקע ועד מסירת מפתח.</div></div>
+  <div id="bottom"><div id="prog"></div><div id="ticks"></div>
+    <div id="brand"><div class="n">קבוצת קורקוס</div><div class="t">מקרקע ועד מסירת מפתח</div></div>
+    <div id="site">kurkoos-group.co.il</div><div id="counter">01 / 09</div></div>
+  <div class="crop" style="left:30px;top:30px;border-left-width:3px;border-top-width:3px"></div>
+  <div class="crop" style="right:30px;top:30px;border-right-width:3px;border-top-width:3px"></div>
+  <div class="crop" style="left:30px;bottom:30px;border-left-width:3px;border-bottom-width:3px"></div>
+  <div class="crop" style="right:30px;bottom:30px;border-right-width:3px;border-bottom-width:3px"></div>
+</div>
+<script>
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const clamp=(x,a=0,b=1)=>Math.max(a,Math.min(b,x));
+const seg=(t,a,b)=>clamp((t-a)/(b-a));
+const eo=x=>1-Math.pow(1-x,3);
+const eio=x=>x<.5?4*x*x*x:1-Math.pow(-2*x+2,3)/2;
+const back=x=>{const c=1.7;return 1+(c+1)*Math.pow(x-1,3)+c*Math.pow(x-1,2)};
+const lerp=(a,b,x)=>a+(b-a)*x;
+let TL,S={},VIS=[],VI={};
+
+// ---------- drawings ----------
+// floor/wall section. Wall face at x=220, tiles from x=242 (gap 22) or 220 (no gap).
+const TW=118, TP=124;
+function hatch(x,y,w,h,step=26){let s='';for(let k=-h;k<w;k+=step){const x1=Math.max(x,x+k),y1=y+(x+k<x?(x-(x+k)):0);s+=`<line x1="${x+k}" y1="${y+h}" x2="${x+k+h}" y2="${y}"/>`;}
+  return `<g clip-path="inset(0)" ><clipPath id="c${x}_${y}_${w}"><rect x="${x}" y="${y}" width="${w}" height="${h}"/></clipPath><g clip-path="url(#c${x}_${y}_${w})" stroke="rgba(255,255,255,.55)" stroke-width="2.5">${s}</g></g>`;}
+function section(id,gap=22,opts={}){
+  const x0=220+gap, wt=opts.wallTop||300;
+  let tiles='';for(let i=0;i<6;i++)tiles+=`<rect class="tile" data-i="${i}" x="${x0+i*TP}" y="${774}" width="${gap?TW:TW}" height="26" rx="2"/>`;
+  return `<g id="${id}">
+   ${hatch(140,800,840,60)}<rect class="ln" x="140" y="800" width="840" height="60"/>
+   ${hatch(140,wt,80,800-wt)}<rect class="ln" x="140" y="${wt}" width="80" height="${800-wt}"/>
+   <line class="thin" x1="220" y1="800" x2="980" y2="800"/>
+   <g class="tiles">${tiles}</g>
+  </g>`;}
+function check(x,y,r=40,ok=true){return ok?`<g transform="translate(${x},${y})"><circle r="${r}" fill="#fff"/><path d="M${-r*.45} ${r*.02} L${-r*.1} ${r*.35} L${r*.5} ${-r*.35}" fill="none" stroke="#105572" stroke-width="${r*.22}" stroke-linecap="round" stroke-linejoin="round"/></g>`
+ :`<g transform="translate(${x},${y})"><circle r="${r}" fill="#a90b0c"/><path d="M${-r*.38} ${-r*.38} L${r*.38} ${r*.38} M${r*.38} ${-r*.38} L${-r*.38} ${r*.38}" stroke="#fff" stroke-width="${r*.22}" stroke-linecap="round"/></g>`;}
+
+const TBL=(rows,cls='')=>`<div class="boq ${cls}" style="background:#f7f8fa;color:#07293a;border-radius:10px;overflow:hidden">
+  <div style="display:grid;grid-template-columns:1fr 150px 150px;font-family:Heebo;font-weight:900;font-size:34px;padding:16px 30px;background:#07293a;color:#fff"><span>תיאור</span><span>יחידה</span><span>כמות</span></div>
+  ${rows.map(([d,u,q],i)=>`<div class="br" style="display:grid;grid-template-columns:1fr 150px 150px;align-items:center;font-family:Almoni;font-weight:700;font-size:40px;padding:20px 30px;border-bottom:3px dashed #b7c2cc;position:relative">
+    <span class="bd">${d}</span><span class="bu">${u}</span><span class="bq" style="direction:ltr;text-align:right">${q}</span></div>`).join('')}</div>`;
+function build(){
+ $('#scenes').innerHTML=`
+ <div class="scene" id="v-hook">
+   <div id="cQ" style="position:absolute;right:90px;top:260px;width:400px;height:520px;border:3px solid rgba(255,255,255,.6);border-radius:12px;padding:30px;opacity:0">
+     <div class="h" style="font-size:52px">ההצעה</div>${[...Array(5)].map((_,i)=>`<div style="height:16px;border-radius:8px;background:rgba(255,255,255,.35);margin:26px 0;width:${70+(i*13)%30}%"></div>`).join('')}
+     <div style="position:absolute;bottom:30px;right:30px;left:30px;border-top:4px solid #fff;padding-top:14px" class="h"><span style="font-size:40px">סה״כ</span></div></div>
+   <div id="cF" style="position:absolute;left:90px;top:200px;width:400px;height:640px;background:#f7f8fa;color:#07293a;border-radius:12px;padding:30px;opacity:0">
+     <div class="h" style="font-size:52px">החשבון הסופי</div>${[...Array(7)].map((_,i)=>`<div style="height:16px;border-radius:8px;background:${i>4?'#e08a8b':'#9fb3bf'};margin:26px 0;width:${70+(i*17)%30}%"></div>`).join('')}
+     <div style="position:absolute;bottom:30px;right:30px;left:30px;border-top:4px solid #07293a;padding-top:14px" class="h"><span style="font-size:40px">סה״כ</span></div></div>
+   <svg width="1080" height="1000" style="position:absolute;left:0;top:0"><g id="gapb" opacity="0">
+     <path d="M540 800 V860 M520 800 H560 M520 860 H560" stroke="#a90b0c" stroke-width="8" fill="none"/>
+     <rect x="440" y="880" width="200" height="80" rx="40" fill="#a90b0c"/><text class="tag" x="540" y="935" font-size="46" text-anchor="middle">הפער</text></g></svg>
+ </div>
+
+ <div class="scene" id="v-where">
+   <div style="position:absolute;left:110px;right:110px;top:230px;height:900px;overflow:hidden;border-radius:12px">
+     <div id="wdoc">${TBL([...Array(18)].map((_,i)=>['<span style="display:inline-block;height:16px;border-radius:8px;background:#9fb3bf;width:'+(160+(i*47)%220)+'px"></span>','<span style="display:inline-block;height:16px;width:70px;border-radius:8px;background:#c5d1d8"></span>','<span style="display:inline-block;height:16px;width:60px;border-radius:8px;background:#c5d1d8"></span>']))}</div>
+   </div>
+   <div id="wtag" class="h" style="position:absolute;right:110px;top:180px;background:#a90b0c;padding:8px 22px;font-size:40px;border-radius:6px;opacity:0">כתב כמויות</div>
+   <svg width="1080" height="1300" style="position:absolute;left:0;top:0"><g id="wmag" opacity="0"><circle r="120" fill="rgba(255,255,255,.12)" stroke="#a90b0c" stroke-width="12"/><path d="M85 85 L170 170" stroke="#a90b0c" stroke-width="26" stroke-linecap="round"/></g></svg>
+ </div>
+
+ <div class="scene" id="v-rules">
+   <div style="position:absolute;right:80px;left:80px;top:230px;display:flex;align-items:center;gap:30px">
+     <div id="r3big" class="h" style="font-size:300px;color:var(--gold);line-height:.9">3</div>
+     <div id="rtit" class="h" style="font-size:96px">כללי<br>אצבע</div></div>
+   <div style="position:absolute;right:80px;left:80px;top:640px">
+     ${[['01','כמות ויחידה ברורה'],['02','בלי פאושל'],['03','מה לא כלול, בכתב']].map(([n,x])=>`<div class="ru" style="display:flex;gap:30px;align-items:baseline;border-top:3px dashed rgba(255,255,255,.35);padding:22px 0;opacity:0">
+       <span class="h" style="font-size:62px;color:#ff6b6b">${n}</span><span class="h" style="font-size:58px">${x}</span></div>`).join('')}</div>
+ </div>
+
+ <div class="scene" id="v-r1">
+   <div style="position:absolute;left:70px;right:70px;top:300px" id="r1t">${TBL([['טיח פנים','מ״ר','240'],['צבע','מ״ר','310']])}</div>
+   <svg width="1080" height="1300" style="position:absolute;left:0;top:0"><g id="r1u" opacity="0"><rect x="300" y="364" width="118" height="92" rx="12" fill="none" stroke="#a90b0c" stroke-width="7"/></g>
+     <g id="r1q" opacity="0"><rect x="146" y="364" width="118" height="92" rx="12" fill="none" stroke="#a90b0c" stroke-width="7"/></g></svg>
+   <div id="r1ok" style="position:absolute;right:90px;top:640px;display:flex;align-items:center;gap:20px;opacity:0"><svg width="80" height="80">${check(40,40,36,true)}</svg><span class="h" style="font-size:56px">אפשר למדוד ולבדוק</span></div>
+   <div class="lbl" style="position:absolute;left:70px;top:250px;font-size:28px;color:var(--mist)">דוגמה</div>
+ </div>
+
+ <div class="scene" id="v-r2">
+   <div style="position:absolute;left:70px;right:70px;top:300px">${TBL([['איטום גג','פאושל','1']],'r2a')}</div>
+   <div id="r2x" class="h" style="position:absolute;left:150px;top:330px;border:8px solid #a90b0c;color:#a90b0c;background:rgba(247,248,250,.9);font-size:64px;padding:2px 22px;transform:rotate(-8deg);opacity:0">פאושל?</div>
+   <svg id="r2arr" width="60" height="70" style="position:absolute;left:510px;top:520px;opacity:0"><path class="ln" d="M30 4 V60 M10 40 L30 62 L50 40"/></svg>
+   <div id="r2b" style="position:absolute;left:70px;right:70px;top:610px;opacity:0">${TBL([['איטום גג','מ״ר','185']])}</div>
+   <div class="lbl" style="position:absolute;left:70px;top:250px;font-size:28px;color:var(--mist)">דוגמה</div>
+ </div>
+
+ <div class="scene" id="v-r3">
+   <div id="r3box" style="position:absolute;left:70px;right:70px;top:270px;border:4px dashed #fff;border-radius:14px;padding:30px 40px;opacity:0">
+     <div class="h" style="font-size:66px">לא כלול בהצעה:</div>
+     ${['עבודות פיתוח','מיזוג אוויר','חיבורי תשתית'].map(x=>`<div class="nx" style="display:flex;align-items:center;gap:22px;margin-top:26px;opacity:0"><svg width="56" height="56">${check(28,28,26,false)}</svg><span class="h" style="font-size:56px">${x}</span></div>`).join('')}
+   </div>
+   <div id="r3ok" class="h" style="position:absolute;right:80px;top:900px;font-size:60px;opacity:0;display:flex;gap:20px;align-items:center"><svg width="80" height="80">${check(40,40,36,true)}</svg>כתוב במפורש</div>
+   <div class="lbl" style="position:absolute;left:70px;top:220px;font-size:28px;color:var(--mist)">דוגמה</div>
+ </div>
+
+ <div class="scene" id="v-pen">
+   <div style="position:absolute;left:70px;right:70px;top:250px">${TBL([['ריצוף','פאושל','1']],'pa')}</div>
+   <svg width="1080" height="1300" style="position:absolute;left:0;top:0">
+     <path id="penln" d="M640 360 C600 330 560 390 520 360 S440 330 400 360" fill="none" stroke="#1d56c8" stroke-width="7" stroke-linecap="round" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1"/>
+     <text id="pent" x="300" y="440" font-family="Heebo" font-weight="900" font-size="40" fill="#1d56c8" opacity="0">מ״ר ?</text>
+     <g id="pen" transform="translate(640,330)"><g transform="rotate(35)"><rect x="-14" y="-180" width="28" height="160" rx="8" fill="#f7f8fa" stroke="#07293a" stroke-width="3"/><path d="M-14 -20 H14 L4 10 H-4 Z" fill="#1d56c8"/></g></g></svg>
+   <div id="pA" style="position:absolute;right:70px;top:620px;width:440px;height:300px;border:4px solid #fff;border-radius:14px;padding:26px;opacity:0">
+     <svg width="70" height="70">${check(35,35,32,true)}</svg><div class="h" style="font-size:60px;margin-top:10px">בעט</div><div class="lbl" style="font-size:34px;color:#dbe9f0">עכשיו, לפני החתימה</div></div>
+   <div id="pB" style="position:absolute;left:70px;top:620px;width:440px;height:300px;border:4px solid rgba(255,255,255,.35);border-radius:14px;padding:26px;opacity:0">
+     <svg width="70" height="70">${check(35,35,32,false)}</svg><div class="h" style="font-size:60px;margin-top:10px;color:#cfd8de">בצ׳ק</div><div class="lbl" style="font-size:34px;color:#9fb3bf">אחר כך, באתר</div></div>
+ </div>
+
+ <div class="scene" id="v-hour">
+   <svg width="1080" height="1000" style="position:absolute;left:0;top:200px">
+     <g transform="translate(540,400)"><circle r="300" fill="none" stroke="#fff" stroke-width="10"/>
+       ${[...Array(12)].map((_,i)=>`<line x1="0" y1="-270" x2="0" y2="${i%3?-250:-235}" stroke="#fff" stroke-width="${i%3?4:8}" transform="rotate(${i*30})"/>`).join('')}
+       <path id="harc" d="" fill="rgba(255,212,122,.35)"/>
+       <line id="hmin" x1="0" y1="0" x2="0" y2="-230" stroke="#ffd47a" stroke-width="12" stroke-linecap="round"/>
+       <line id="hhr" x1="0" y1="0" x2="0" y2="-150" stroke="#fff" stroke-width="16" stroke-linecap="round"/><circle r="18" fill="#a90b0c"/></g></svg>
+   <div id="hlbl" class="h" style="position:absolute;left:0;right:0;top:960px;text-align:center;font-size:64px;opacity:0">השעה הכי משתלמת</div>
+ </div>
+
+ <div class="scene" id="v-cta">
+   <div style="position:absolute;right:80px;left:80px;top:230px">
+     ${[['bm','שמרו לפגישה לפני החתימה'],['sh','תייגו מי שמשווה הצעות'],['cm','כתבו בתגובות']].map(([k,x],i)=>`<div class="act" style="display:flex;align-items:center;gap:28px;padding:18px 0;border-bottom:3px dashed rgba(255,255,255,.35);opacity:0">
+       <div style="width:92px;height:92px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;flex:none">${
+        k==='bm'?'<svg width="44" height="58"><path d="M2 2 H42 V56 L22 40 L2 56 Z" fill="#a90b0c"/></svg>':
+        k==='sh'?'<svg width="56" height="56"><circle cx="28" cy="20" r="12" fill="#a90b0c"/><path d="M6 54 C6 34 50 34 50 54 Z" fill="#a90b0c"/></svg>':
+        '<svg width="56" height="52"><path d="M6 6 H50 V36 H22 L10 48 V36 H6 Z" fill="#a90b0c"/></svg>'}</div>
+       <div class="h" style="font-size:54px">${x}</div></div>`).join('')}
+     <div style="display:flex;align-items:center;gap:30px;margin-top:28px">
+       <div id="bubble" style="display:inline-block;background:#fff;color:#07293a;border-radius:28px 28px 28px 6px;padding:16px 40px;font-family:Heebo;font-weight:900;font-size:66px;opacity:0"><span id="typed"></span><span id="caret" style="color:#a90b0c">|</span></div>
+       <div id="tbl" class="lbl" style="font-size:36px;opacity:0">ונשלח את הכתבה<br>על חריגות תקציב</div>
+     </div>
+   </div>
+   <div id="qrrow" style="position:absolute;right:80px;left:80px;top:870px;display:flex;align-items:center;gap:40px;opacity:0;direction:rtl">
+     <div style="background:#fff;border-radius:14px;padding:14px;flex:none"><img src="qr.png" style="width:220px;height:220px;display:block"></div>
+     <div><div style="font-family:Heebo;font-weight:900;font-size:40px;direction:ltr;text-align:right">kurkoos-group.co.il</div>
+       <div style="font-family:Heebo;font-weight:700;font-size:28px;direction:ltr;text-align:right;color:#ffd9d9">חריגות תקציב · הכתבה המלאה</div>
+       <div style="font-family:Heebo;font-weight:900;font-size:56px;direction:ltr;text-align:right;margin-top:12px">055-981-1814</div></div>
+   </div>
+ </div>`;
+ $('#prog').innerHTML=VIS.map(()=>'<div><i></i></div>').join('');
+}
+const CHIP={hook:'כתב כמויות',where:'כתב כמויות',rules:'כללי אצבע',r1:'01 כמות ויחידה',r2:'02 בלי פאושל',r3:'03 מה לא כלול',pen:'לפני החתימה',hour:'לפני החתימה',cta:'קבוצת קורקוס'};
+
+function setup(tl){TL=tl; tl.scenes.forEach(s=>S[s.id]=s);
+ VIS=tl.scenes.map((s,i)=>({id:s.id,a:i?s.start-0.4:0,b:i<tl.scenes.length-1?tl.scenes[i+1].start-0.75:tl.total}));
+ VIS.forEach(v=>VI[v.id]=v); build();}
+const w=(sid,i)=>S[sid].words[i<0?S[sid].words.length+i:i].s;
+const on=id=>{const v=VI[id];return TT>v.a-0.2&&TT<v.b+0.5;};
+let TT=0;
+
+function render(t){ TT=t;
+ let cur=0;
+ VIS.forEach((v,i)=>{const el=$('#v-'+v.id);
+  const inn=i===0?1:eo(seg(t,v.a-0.05,v.a+0.28)), out=i===VIS.length-1?0:seg(t,v.b-0.06,v.b+0.2);
+  const vis=t>=v.a-0.05&&t<v.b+0.2; el.style.display=vis?'block':'none'; if(!vis)return;
+  if(t>=v.a)cur=i; el.style.opacity=Math.min(inn,1-out);
+  el.style.transform=`translateX(${(1-inn)*-140+out*140}px) scale(${1+(1-inn)*0.06+out*0.04})`;});
+ const V=VIS[cur];
+ $('#chipt').textContent=CHIP[V.id];
+ $('#counter').textContent=String(cur+1).padStart(2,'0')+' / '+String(VIS.length).padStart(2,'0');
+ [...$('#prog').children].forEach((d,i)=>{const v=VIS[i];d.firstChild.style.width=(seg(t,v.a,v.b)*100)+'%';});
+ const red=eo(seg(t,VI.cta.a,VI.cta.a+0.5));
+ $('#redbg').style.opacity=red; $('#chip i').style.background=red>.5?'#07293a':'#a90b0c';
+ $$('#prog i').forEach(i=>i.style.background=red>.5?'#fff':'#a90b0c');
+
+ // captions (reading pace, phrase by phrase)
+ let sc=null; for(const s of TL.scenes){ if(t>=s.start-0.3 && t<s.end+0.5) sc=s; }
+ const cl=$('#capline'); const endOn=t>=S.cta.end+0.6;
+ if(sc && !endOn){
+  let ci=sc.words.findIndex(x=>t<x.e+0.25); if(ci<0)ci=sc.words.length-1;
+  const p=sc.words[ci].p; let words=sc.words.filter(x=>x.p===p);
+  if(words.length<=1){const nx=sc.words.filter(x=>x.p===p+1); if(nx.length&&nx.length<5)words=words.concat(nx);}
+  const key=sc.id+':'+words[0].s;
+  if(cl.dataset.key!==key){cl.dataset.key=key;cl.innerHTML=words.map(x=>`<span>${x.t}</span>`).join(' ');}
+  const ph=seg(t,words[0].s-0.18,words[0].s), fo=seg(t,sc.end+0.35,sc.end+0.5);
+  cl.style.opacity=Math.min(eo(ph),1-fo); cl.style.transform=`translateY(${(1-eo(ph))*26}px)`;
+  [...cl.children].forEach((sp,i)=>{const x=words[i],nx=words[i+1];const endA=nx?Math.min(x.e+0.05,nx.s-0.02):x.e+0.4;
+   const act=t>=x.s-0.02&&t<endA, done=t>=endA, pop=seg(t,x.s-0.02,x.s+0.14);
+   sp.style.opacity=act||done?1:0.3; sp.style.background=act?(red>.5?'#07293a':'#a90b0c'):'transparent';
+   sp.style.transform=act?`scale(${1+0.07*Math.sin(pop*Math.PI)})`:'scale(1)';});
+ } else cl.style.opacity=0;
+ const el=seg(t,S.cta.end+0.6,S.cta.end+1.0); $('#endlogo').style.opacity=eo(el); $('#endlogo').style.transform=`translateY(${(1-eo(el))*40}px)`;
+
+ if(on('hook')){ const q=back(seg(t,w('hook',2)-0.1,w('hook',2)+0.3)); $('#cQ').style.opacity=clamp(q); $('#cQ').style.transform=`translateY(${(1-clamp(q))*80}px)`;
+  const f=back(seg(t,w('hook',3)-0.1,w('hook',3)+0.3)); $('#cF').style.opacity=clamp(f); $('#cF').style.transform=`translateY(${(1-clamp(f))*80}px)`;
+  const g=back(seg(t,w('hook',4),w('hook',4)+0.3)); $('#gapb').setAttribute('opacity',clamp(g)); $('#gapb').setAttribute('transform',`translate(540,880) scale(${clamp(g,0,1.2)}) translate(-540,-880)`);}
+ if(on('where')){ $('#wtag').style.opacity=eo(seg(t,w('where',2)-0.1,w('where',2)+0.2));
+  const sc=eio(seg(t,w('where',4),w('where',9))); $('#wdoc').style.transform=`translateY(${-sc*780}px)`; $('#wdoc').style.filter=`blur(${Math.sin(Math.PI*sc)*3}px)`;
+  const m=eo(seg(t,w('where',7)-0.1,w('where',7)+0.3)); $('#wmag').setAttribute('opacity',m); $('#wmag').setAttribute('transform',`translate(${lerp(900,420,m)},${lerp(1100,800,m)})`);
+  const rows=$$('#wdoc .br'); rows.forEach((r,i)=>r.style.background=i===15&&m>0.5?'rgba(169,11,12,.18)':'transparent');}
+ if(on('rules')){ const b=back(seg(t,w('rules',0)-0.15,w('rules',0)+0.25)); $('#r3big').style.transform=`scale(${clamp(b,0,1.3)})`; $('#r3big').style.opacity=clamp(b);
+  const ti=eo(seg(t,w('rules',1)-0.1,w('rules',1)+0.25)); $('#rtit').style.opacity=ti; $('#rtit').style.transform=`translateX(${(1-ti)*-60}px)`;
+  $$('#v-rules .ru').forEach((e,i)=>{const p=eo(seg(t,w('rules',3)+i*0.18,w('rules',3)+0.3+i*0.18)); e.style.opacity=p; e.style.transform=`translateX(${(1-p)*-80}px)`;});}
+ if(on('r1')){ const tb=eo(seg(t,w('r1',0)-0.2,w('r1',0)+0.2)); $('#r1t').style.opacity=tb; $('#r1t').style.transform=`translateY(${(1-tb)*50}px)`;
+  $('#r1q').setAttribute('opacity',back(seg(t,w('r1',3)-0.1,w('r1',3)+0.25))>0?clamp(back(seg(t,w('r1',3)-0.1,w('r1',3)+0.25))):0);
+  $('#r1u').setAttribute('opacity',clamp(back(seg(t,w('r1',4)-0.1,w('r1',4)+0.25))));
+  const ok=back(seg(t,w('r1',6)-0.1,w('r1',6)+0.3)); $('#r1ok').style.opacity=clamp(ok); $('#r1ok').style.transform=`scale(${clamp(ok,0,1.2)})`;}
+ if(on('r2')){ const x=back(seg(t,w('r2',1)-0.05,w('r2',1)+0.25)); $('#r2x').style.opacity=clamp(x); $('#r2x').style.transform=`rotate(-8deg) scale(${lerp(1.8,1,clamp(x))})`;
+  $('#r2arr').style.opacity=eo(seg(t,w('r2',3),w('r2',3)+0.2));
+  const b=eo(seg(t,w('r2',4)-0.05,w('r2',4)+0.3)); $('#r2b').style.opacity=b; $('#r2b').style.transform=`translateY(${(1-b)*60}px)`;}
+ if(on('r3')){ $('#r3box').style.opacity=eo(seg(t,w('r3',1)-0.2,w('r3',1)+0.2));
+  $$('#v-r3 .nx').forEach((e,i)=>{const p=eo(seg(t,w('r3',3)+i*0.15,w('r3',3)+0.25+i*0.15)); e.style.opacity=p; e.style.transform=`translateX(${(1-p)*-60}px)`;});
+  const ok=back(seg(t,w('r3',5)-0.1,w('r3',5)+0.3)); $('#r3ok').style.opacity=clamp(ok); $('#r3ok').style.transform=`scale(${clamp(ok,0,1.2)})`;}
+ if(on('pen')){ const pw=seg(t,w('pen',3),w('pen',6)+0.2); $('#penln').setAttribute('stroke-dashoffset',1-eio(pw)); $('#pent').setAttribute('opacity',seg(t,w('pen',5),w('pen',6)));
+  const L=$('#penln').getTotalLength(), pt=$('#penln').getPointAtLength(L*eio(pw)); $('#pen').setAttribute('transform',`translate(${pt.x},${pt.y-10})`); $('#pen').setAttribute('opacity',pw<1?1:1-seg(t,w('pen',6)+0.2,w('pen',6)+0.5));
+  const A=back(seg(t,w('pen',6)-0.1,w('pen',6)+0.25)); $('#pA').style.opacity=clamp(A); $('#pA').style.transform=`scale(${0.8+0.2*clamp(A,0,1.1)})`;
+  const B=back(seg(t,w('pen',8)-0.1,w('pen',8)+0.25)); $('#pB').style.opacity=clamp(B); $('#pB').style.transform=`scale(${0.8+0.2*clamp(B,0,1.1)})`;}
+ if(on('hour')){ const a=VI.hour.a; const r=eio(seg(t,a+0.1,w('hour',3)+0.3)); const ang=r*360;
+  $('#hmin').setAttribute('transform',`rotate(${ang})`); $('#hhr').setAttribute('transform',`rotate(${ang/12+300})`);
+  const R=230, x=R*Math.sin(ang*Math.PI/180), y=-R*Math.cos(ang*Math.PI/180);
+  $('#harc').setAttribute('d',r>0.001?`M0 0 L0 ${-R} A${R} ${R} 0 ${ang>180?1:0} 1 ${x.toFixed(1)} ${y.toFixed(1)} Z`:'');
+  $('#hlbl').style.opacity=eo(seg(t,w('hour',1)-0.1,w('hour',1)+0.3));}
+ if(on('cta')){ const marks=[w('cta',0),w('cta',2),w('cta',4)];
+  $$('#v-cta .act').forEach((e,i)=>{const p=back(seg(t,marks[i]-0.1,marks[i]+0.3)); e.style.opacity=clamp(p); e.style.transform=`translateX(${(1-clamp(p))*-60}px)`;});
+  $('#bubble').style.opacity=eo(seg(t,w('cta',5)-0.1,w('cta',5)+0.25));
+  const word='כמויות', n=Math.floor(clamp((t-w('cta',5))/0.45)*word.length+0.0001); $('#typed').textContent=word.slice(0,n); $('#caret').style.opacity=Math.floor(t*2.5)%2?0:1;
+  $('#tbl').style.opacity=eo(seg(t,w('cta',7)-0.1,w('cta',7)+0.3));
+  const q=eo(seg(t,w('cta',9),w('cta',9)+0.5)); $('#qrrow').style.opacity=q; $('#qrrow').style.transform=`translateY(${(1-q)*40}px)`;}
+}
+window.__ready=fetch('timeline.json').then(r=>r.json()).then(tl=>{setup(tl);render(0);return document.fonts.ready;}).then(()=>true);
+</script>
+</body>
+</html>
